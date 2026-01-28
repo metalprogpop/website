@@ -1,7 +1,5 @@
 # CLAUDE.md
 
-See [architecture.md](./architecture.md) for full stack, structure, and setup details.
-
 ## Code Guidelines
 
 When writing or modifying code in this project:
