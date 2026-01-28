@@ -1,0 +1,41 @@
+services:
+  db:
+    image: postgres:16-alpine
+    environment:
+      POSTGRES_USER: dev
+      POSTGRES_PASSWORD: dev
+      POSTGRES_DB: app
+    ports:
+      - "5432:5432"
+    volumes:
+      - pgdata:/var/lib/postgresql/data
+
+  server:
+    build: ./server
+    volumes:
+      - ./server/src:/app/src
+      - ./server/package.json:/app/package.json
+      - pnpm-store:/root/.local/share/pnpm/store
+    ports:
+      - "3001:3001"
+    environment:
+      - DATABASE_URL=postgresql://dev:dev@db:5432/app
+    depends_on:
+      - db
+    command: pnpm dev
+
+  client:
+    build: ./client
+    volumes:
+      - ./client/src:/app/src
+      - ./client/package.json:/app/package.json
+      - pnpm-store:/root/.local/share/pnpm/store
+    ports:
+      - "5173:5173"
+    environment:
+      - VITE_API_URL=http://localhost:3001
+    command: pnpm dev
+
+volumes:
+  pgdata:
+  pnpm-store:
