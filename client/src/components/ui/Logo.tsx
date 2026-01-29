@@ -1,21 +1,24 @@
+import logo from '../../assets/images/logo-caras.png';
+
 type LogoProps = {
   className?: string;
-  size?: 'sm' | 'md' | 'lg';
+  size?: 'sm' | 'md' | 'lg' | 'xl' | 'hero';
 };
 
 const sizeClasses = {
-  sm: 'text-xl',
-  md: 'text-2xl',
-  lg: 'text-4xl sm:text-5xl',
+  sm: 'h-8',
+  md: 'h-12',
+  lg: 'h-16 sm:h-20',
+  xl: 'h-24 sm:h-32',
+  hero: 'h-48 sm:h-64 md:h-80 lg:h-96',
 };
 
 export function Logo({ className = '', size = 'md' }: LogoProps) {
   return (
-    <span className={`font-bold tracking-tight ${sizeClasses[size]} ${className}`}>
-      <span className="text-brand">Metal</span>
-      <span className="text-text-primary">Prog</span>
-      <span className="text-brand">Pop</span>
-      <span className="text-text-secondary font-normal"> Cast</span>
-    </span>
+    <img
+      src={logo}
+      alt="MetalProgPop Cast"
+      className={`${sizeClasses[size]} w-auto ${className}`}
+    />
   );
 }
