@@ -31,7 +31,7 @@ services:
       - ./client/package.json:/app/package.json
       - pnpm-store:/root/.local/share/pnpm/store
     ports:
-      - "5173:5173"
+      - "3000:5173"
     environment:
       - VITE_API_URL=http://localhost:3001
     command: pnpm dev
