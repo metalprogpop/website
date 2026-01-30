@@ -12,7 +12,7 @@ function formatDuration(seconds: number): string {
 
 function formatDate(dateString: string): string {
   const date = new Date(dateString);
-  return date.toLocaleDateString('en-US', { month: 'short', day: 'numeric', year: 'numeric' });
+  return date.toLocaleDateString('es-AR', { month: 'short', day: 'numeric', year: 'numeric' });
 }
 
 export function EpisodeCard({ episode }: EpisodeCardProps) {
@@ -21,24 +21,25 @@ export function EpisodeCard({ episode }: EpisodeCardProps) {
       <div className="relative aspect-square overflow-hidden">
         <img
           src={episode.artworkUrl}
-          alt={`Episode ${episode.episodeNumber} artwork`}
-          className="h-full w-full object-cover transition-transform duration-300 group-hover:scale-105"
+          alt={`Episodio ${episode.episodeNumber}`}
+          className="h-full w-full object-cover transition-transform duration-500 group-hover:scale-110"
         />
-        <span className="absolute left-3 top-3 rounded-md bg-brand px-2 py-1 text-xs font-semibold text-white">
+        <div className="absolute inset-0 bg-gradient-to-t from-black/50 via-transparent to-transparent opacity-0 transition-opacity duration-300 group-hover:opacity-100" />
+        <span className="absolute left-3 top-3 rounded-full bg-brand px-3 py-1 font-display text-xs font-bold text-white shadow-lg">
           EP {episode.episodeNumber}
         </span>
       </div>
 
-      <div className="p-4">
-        <h3 className="mb-2 line-clamp-2 text-base font-semibold text-text-primary transition-colors group-hover:text-brand">
+      <div className="p-5">
+        <h3 className="mb-2 line-clamp-2 font-display text-lg font-bold text-text-primary transition-colors group-hover:text-brand">
           {episode.title}
         </h3>
 
-        <p className="mb-3 line-clamp-2 text-sm text-text-secondary">{episode.description}</p>
+        <p className="mb-4 line-clamp-2 text-sm leading-relaxed text-text-secondary">{episode.description}</p>
 
-        <div className="flex items-center gap-3 text-xs text-text-secondary">
+        <div className="flex items-center gap-3 text-xs font-medium text-text-muted">
           <span>{formatDuration(episode.durationSeconds)}</span>
-          <span className="text-border">|</span>
+          <span className="h-1 w-1 rounded-full bg-text-muted" />
           <span>{formatDate(episode.publishedAt)}</span>
         </div>
       </div>

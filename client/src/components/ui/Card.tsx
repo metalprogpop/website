@@ -1,12 +1,12 @@
 import { type ReactNode } from 'react';
 import { cva, type VariantProps } from 'class-variance-authority';
 
-const cardVariants = cva('rounded-xl bg-surface border border-border overflow-hidden', {
+const cardVariants = cva('rounded-2xl bg-surface border border-border overflow-hidden shadow-sm', {
   variants: {
     variant: {
       default: '',
       interactive:
-        'transition-all duration-200 hover:border-brand/50 hover:shadow-lg hover:shadow-brand/5 cursor-pointer',
+        'transition-all duration-300 hover:border-brand/40 hover:shadow-xl hover:-translate-y-1 cursor-pointer',
     },
     padding: {
       none: '',

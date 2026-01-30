@@ -7,11 +7,16 @@ export function PlatformsSection() {
   return (
     <Section id="listen">
       <Container>
-        <h2 className="mb-10 text-center text-2xl font-bold text-text-primary sm:text-3xl">
-          Where to Listen
-        </h2>
+        <div className="mb-12 text-center">
+          <span className="mb-3 inline-block font-display text-sm font-semibold uppercase tracking-widest text-brand">
+            Suscribite
+          </span>
+          <h2 className="font-display text-3xl font-bold tracking-tight text-text-primary sm:text-4xl">
+            Dónde Escuchar
+          </h2>
+        </div>
 
-        <div className="flex flex-wrap items-center justify-center gap-4 sm:gap-8">
+        <div className="mx-auto grid max-w-3xl grid-cols-2 gap-4 sm:grid-cols-4 sm:gap-6">
           {platforms.map((platform) => (
             <PlatformLink key={platform.id} platform={platform} />
           ))}

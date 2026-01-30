@@ -2,18 +2,18 @@ import { type ButtonHTMLAttributes, type ReactNode } from 'react';
 import { cva, type VariantProps } from 'class-variance-authority';
 
 const buttonVariants = cva(
-  'inline-flex items-center justify-center gap-2 rounded-lg font-medium transition-colors focus:outline-none focus:ring-2 focus:ring-brand focus:ring-offset-2 focus:ring-offset-background disabled:pointer-events-none disabled:opacity-50',
+  'inline-flex items-center justify-center gap-2 rounded-lg font-display font-semibold transition-all duration-200 focus:outline-none focus:ring-2 focus:ring-brand focus:ring-offset-2 focus:ring-offset-background disabled:pointer-events-none disabled:opacity-50',
   {
     variants: {
       variant: {
-        primary: 'bg-brand text-white hover:bg-brand-hover',
-        secondary: 'border border-border bg-surface text-text-primary hover:bg-border',
-        ghost: 'text-text-secondary hover:text-text-primary hover:bg-surface',
+        primary: 'bg-brand text-white hover:bg-brand-hover hover:shadow-lg hover:shadow-brand/20 hover:-translate-y-0.5',
+        secondary: 'border border-border bg-surface text-text-primary hover:border-brand hover:text-brand hover:-translate-y-0.5',
+        ghost: 'text-text-secondary hover:text-brand',
       },
       size: {
-        sm: 'h-9 px-3 text-sm',
-        md: 'h-11 px-5 text-base',
-        lg: 'h-13 px-7 text-lg',
+        sm: 'h-10 px-4 text-sm',
+        md: 'h-12 px-6 text-base',
+        lg: 'h-14 px-8 text-lg',
       },
     },
     defaultVariants: {
