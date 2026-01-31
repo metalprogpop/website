@@ -1,11 +1,10 @@
-import { Twitter, Instagram, Youtube } from 'lucide-react';
+import { Twitter, Instagram } from 'lucide-react';
 import { Container } from '../layout/Container';
 import { Logo } from '../ui/Logo';
 
 const socialLinks = [
-  { name: 'Twitter', url: 'https://twitter.com/metalprogpopcast', Icon: Twitter },
-  { name: 'Instagram', url: 'https://instagram.com/metalprogpopcast', Icon: Instagram },
-  { name: 'YouTube', url: 'https://youtube.com/@metalprogpopcast', Icon: Youtube },
+  { name: 'Twitter', url: 'https://x.com/metalprogpop', Icon: Twitter },
+  { name: 'Instagram', url: 'https://instagram.com/metalprogpop', Icon: Instagram },
 ];
 
 export function Footer() {

@@ -13,11 +13,11 @@ export function HeroSection() {
 
           <h1 className="animate-on-load animate-fade-up delay-200 mb-6 font-display text-4xl font-bold tracking-tight text-text-primary sm:text-5xl md:text-6xl">
             Aguante escuchar{' '}
-            <span className="text-brand">música.</span>
+            <span className="text-brand">música</span>
           </h1>
 
           <p className="animate-on-load animate-fade-up delay-300 mx-auto mb-10 max-w-2xl text-lg text-text-secondary sm:text-xl leading-relaxed">
-            Un podcast explorando las conexiones inesperadas entre el metal progresivo, el art rock y la música pop.
+            Tres fanáticos de mundos musicales opuestos frente a un micrófono. Cada episodio analizamos un disco icónico, su historia, sus anécdotas y discutimos sin filtros, sin diplomacia, sin cuartel.
           </p>
 
           <div className="animate-on-load animate-fade-up delay-400 flex flex-col items-center justify-center gap-4 sm:flex-row">
