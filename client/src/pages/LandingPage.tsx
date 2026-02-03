@@ -3,7 +3,6 @@ import { HeroSection } from '../components/landing/HeroSection';
 import { LatestEpisodes } from '../components/landing/LatestEpisodes';
 import { PlatformsSection } from '../components/landing/PlatformsSection';
 import { Footer } from '../components/landing/Footer';
-import { mockEpisodes } from '../data/mockEpisodes';
 
 export function LandingPage() {
   return (
@@ -11,7 +10,7 @@ export function LandingPage() {
       <Header />
       <main>
         <HeroSection />
-        <LatestEpisodes episodes={mockEpisodes} />
+        <LatestEpisodes />
         <PlatformsSection />
       </main>
       <Footer />

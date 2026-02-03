@@ -21,13 +21,15 @@ export function EpisodeCard({ episode }: EpisodeCardProps) {
       <div className="relative aspect-square overflow-hidden">
         <img
           src={episode.artworkUrl}
-          alt={`Episodio ${episode.episodeNumber}`}
+          alt={episode.episodeNumber ? `Episodio ${episode.episodeNumber}` : episode.title}
           className="h-full w-full object-cover transition-transform duration-500 group-hover:scale-110"
         />
         <div className="absolute inset-0 bg-gradient-to-t from-black/50 via-transparent to-transparent opacity-0 transition-opacity duration-300 group-hover:opacity-100" />
-        <span className="absolute left-3 top-3 rounded-full bg-brand px-3 py-1 font-display text-xs font-bold text-white shadow-lg">
-          EP {episode.episodeNumber}
-        </span>
+        {episode.episodeNumber && (
+          <span className="absolute left-3 top-3 rounded-full bg-brand px-3 py-1 font-display text-xs font-bold text-white shadow-lg">
+            EP {episode.episodeNumber}
+          </span>
+        )}
       </div>
 
       <div className="p-5">
