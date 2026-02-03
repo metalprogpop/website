@@ -1,3 +1,4 @@
+import { Link } from 'react-router-dom';
 import { Section } from '../layout/Section';
 import { Container } from '../layout/Container';
 import { EpisodeCard } from './EpisodeCard';
@@ -38,8 +39,8 @@ export function LatestEpisodes() {
               ))}
             </div>
 
-            {hasMore && (
-              <div className="mt-10 text-center">
+            <div className="mt-10 flex flex-col items-center gap-4">
+              {hasMore && (
                 <button
                   onClick={loadMore}
                   className="group inline-flex items-center gap-2 rounded-lg bg-brand px-6 py-3 font-display text-sm font-semibold text-white transition-all hover:bg-brand-dark"
@@ -59,8 +60,22 @@ export function LatestEpisodes() {
                     />
                   </svg>
                 </button>
-              </div>
-            )}
+              )}
+              <Link
+                to="/episodes"
+                className="group inline-flex items-center gap-2 font-display text-sm font-semibold text-text-secondary transition-colors hover:text-brand"
+              >
+                Ver todos los episodios
+                <svg
+                  className="h-4 w-4 transition-transform group-hover:translate-x-1"
+                  fill="none"
+                  stroke="currentColor"
+                  viewBox="0 0 24 24"
+                >
+                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M17 8l4 4m0 0l-4 4m4-4H3" />
+                </svg>
+              </Link>
+            </div>
           </>
         )}
       </Container>

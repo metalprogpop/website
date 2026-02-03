@@ -1,3 +1,4 @@
+import { Link } from 'react-router-dom';
 import { Logo } from '../ui/Logo';
 import { Button } from '../ui/Button';
 import { Container } from '../layout/Container';
@@ -7,15 +8,17 @@ export function Header() {
     <header className="sticky top-0 z-50 border-b border-border bg-background/90 backdrop-blur-lg">
       <Container>
         <div className="flex h-16 items-center justify-between">
-          <Logo size="sm" />
+          <Link to="/">
+            <Logo size="sm" />
+          </Link>
 
           <nav className="hidden items-center gap-8 md:flex">
-            <a
-              href="#episodes"
+            <Link
+              to="/episodes"
               className="font-display text-sm font-medium text-text-secondary transition-colors hover:text-brand"
             >
               Episodios
-            </a>
+            </Link>
             <a
               href="#listen"
               className="font-display text-sm font-medium text-text-secondary transition-colors hover:text-brand"
