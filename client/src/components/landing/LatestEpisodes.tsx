@@ -4,8 +4,11 @@ import { Container } from '../layout/Container';
 import { EpisodeCard } from './EpisodeCard';
 import { useEpisodes } from '../../hooks/useEpisodes';
 
+const HOMEPAGE_EPISODE_LIMIT = 9;
+
 export function LatestEpisodes() {
-  const { episodes, isLoading, isError, hasMore, loadMore } = useEpisodes();
+  const { episodes, isLoading, isError } = useEpisodes();
+  const displayedEpisodes = episodes.slice(0, HOMEPAGE_EPISODE_LIMIT);
 
   return (
     <Section id="episodes">
@@ -34,36 +37,15 @@ export function LatestEpisodes() {
         {!isLoading && !isError && (
           <>
             <div className="grid grid-cols-1 gap-8 md:grid-cols-2 lg:grid-cols-3">
-              {episodes.map((episode) => (
+              {displayedEpisodes.map((episode) => (
                 <EpisodeCard key={episode.id} episode={episode} />
               ))}
             </div>
 
-            <div className="mt-10 flex flex-col items-center gap-4">
-              {hasMore && (
-                <button
-                  onClick={loadMore}
-                  className="group inline-flex items-center gap-2 rounded-lg bg-brand px-6 py-3 font-display text-sm font-semibold text-white transition-all hover:bg-brand-dark"
-                >
-                  Cargar más
-                  <svg
-                    className="h-4 w-4 transition-transform group-hover:translate-y-0.5"
-                    fill="none"
-                    stroke="currentColor"
-                    viewBox="0 0 24 24"
-                  >
-                    <path
-                      strokeLinecap="round"
-                      strokeLinejoin="round"
-                      strokeWidth={2}
-                      d="M19 14l-7 7m0 0l-7-7m7 7V3"
-                    />
-                  </svg>
-                </button>
-              )}
+            <div className="mt-10 text-center">
               <Link
                 to="/episodes"
-                className="group inline-flex items-center gap-2 font-display text-sm font-semibold text-text-secondary transition-colors hover:text-brand"
+                className="group inline-flex items-center gap-2 rounded-lg bg-brand px-6 py-3 font-display text-sm font-semibold text-white transition-all hover:bg-brand-dark"
               >
                 Ver todos los episodios
                 <svg
