@@ -6,7 +6,7 @@ const RSS_URL = 'https://audioboom.com/channels/4940203.rss';
 const CORS_PROXY = 'https://corsproxy.io/?';
 const PAGE_SIZE = 15;
 
-function parseRssToEpisodes(xml: string): Episode[] {
+export function parseRssToEpisodes(xml: string): Episode[] {
   const parser = new DOMParser();
   const doc = parser.parseFromString(xml, 'text/xml');
   const items = doc.querySelectorAll('item');
