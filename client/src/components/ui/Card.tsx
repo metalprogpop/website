@@ -1,4 +1,4 @@
-import { type ReactNode } from 'react';
+import type { ReactNode } from 'react';
 import { cva, type VariantProps } from 'class-variance-authority';
 
 const cardVariants = cva('rounded-2xl bg-surface border border-border overflow-hidden shadow-sm', {
