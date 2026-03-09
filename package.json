@@ -6,6 +6,7 @@
     "dev": "docker-compose up",
     "build": "pnpm -r build",
     "test": "pnpm --filter client test",
+    "test:e2e": "playwright test",
     "lint": "eslint .",
     "lint:fix": "eslint . --fix",
     "db:generate": "pnpm --filter server db:generate",
@@ -14,6 +15,7 @@
   },
   "devDependencies": {
     "@eslint/js": "9.39.2",
+    "@playwright/test": "1.58.2",
     "eslint": "9.39.2",
     "eslint-plugin-react": "7.37.5",
     "eslint-plugin-react-hooks": "7.0.1",

@@ -12,7 +12,8 @@ export default tseslint.config(
       '**/dist/**',
       '**/drizzle/**',
       '**/*.config.js',
-      '**/*.config.ts'
+      '**/*.config.ts',
+      'e2e/**'
     ]
   },
 
