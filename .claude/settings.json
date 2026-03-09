@@ -22,6 +22,17 @@
           }
         ]
       }
+    ],
+    "Stop": [
+      {
+        "hooks": [
+          {
+            "type": "agent",
+            "prompt": "Check if source files were modified in this session by running `git diff --name-only HEAD`. If no source files changed (only CLAUDE.md, docs, or config), return ok:true. Otherwise: 1) Run `pnpm --filter client exec tsc --noEmit` 2) Run `pnpm run lint` 3) Run `pnpm --filter client test`. If ALL pass, return ok:true. If any fail, fix the issues and re-run until they pass.",
+            "timeout": 180
+          }
+        ]
+      }
     ]
   }
 }
