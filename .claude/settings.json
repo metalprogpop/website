@@ -23,6 +23,17 @@
         ]
       }
     ],
+    "PreToolUse": [
+      {
+        "matcher": "Edit|Write",
+        "hooks": [
+          {
+            "type": "command",
+            "command": "\"$CLAUDE_PROJECT_DIR\"/.claude/hooks/protect-files.sh"
+          }
+        ]
+      }
+    ],
     "Stop": [
       {
         "hooks": [
@@ -30,6 +41,17 @@
             "type": "agent",
             "prompt": "Check if source files were modified in this session by running `git diff --name-only HEAD`. If no source files changed (only CLAUDE.md, docs, or config), return ok:true. Otherwise: 1) Run `pnpm --filter client exec tsc --noEmit` 2) Run `pnpm run lint` 3) Run `pnpm --filter client test`. If ALL pass, return ok:true. If any fail, fix the issues and re-run until they pass.",
             "timeout": 180
+          }
+        ]
+      }
+    ],
+    "SessionStart": [
+      {
+        "matcher": "compact",
+        "hooks": [
+          {
+            "type": "command",
+            "command": "echo 'REMINDER: Typecheck with pnpm --filter client exec tsc --noEmit. Lint with pnpm run lint. Test with pnpm --filter client test. E2E with npx playwright test. Pin all dependency versions (no ^ or ~).'"
           }
         ]
       }
