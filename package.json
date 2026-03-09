@@ -5,6 +5,7 @@
   "scripts": {
     "dev": "docker-compose up",
     "build": "pnpm -r build",
+    "test": "pnpm --filter client test",
     "lint": "eslint .",
     "lint:fix": "eslint . --fix",
     "db:generate": "pnpm --filter server db:generate",
