@@ -1,30 +1,37 @@
-import { useState, useMemo } from 'react';
-import { useQuery } from '@tanstack/react-query';
-import { Link } from 'react-router-dom';
-import type { Episode } from 'shared';
-import { Container } from '../components/layout/Container';
-import { EpisodeCard } from '../components/landing/EpisodeCard';
-import { Logo } from '../components/ui/Logo';
+import { useState, useMemo } from "react";
+import { useQuery } from "@tanstack/react-query";
+import { Link } from "react-router-dom";
+import type { Episode } from "shared";
+import { Container } from "../components/layout/Container";
+import { EpisodeCard } from "../components/landing/EpisodeCard";
+import { Logo } from "../components/ui/Logo";
 
-const RSS_URL = 'https://audioboom.com/channels/4940203.rss';
-const CORS_PROXY = 'https://corsproxy.io/?';
+const RSS_URL = "https://audioboom.com/channels/4940203.rss";
+const CORS_PROXY = "https://corsproxy.io/?";
 
 function parseRssToEpisodes(xml: string): Episode[] {
   const parser = new DOMParser();
-  const doc = parser.parseFromString(xml, 'text/xml');
-  const items = doc.querySelectorAll('item');
+  const doc = parser.parseFromString(xml, "text/xml");
+  const items = doc.querySelectorAll("item");
 
   return Array.from(items).map((item) => {
-    const title = item.querySelector('title')?.textContent ?? '';
-    const episodeNumber = item.getElementsByTagName('itunes:episode')[0]?.textContent;
-    const duration = item.getElementsByTagName('itunes:duration')[0]?.textContent;
-    const image = item.getElementsByTagName('itunes:image')[0]?.getAttribute('href');
-    const description = item.querySelector('description')?.textContent ?? '';
-    const pubDate = item.querySelector('pubDate')?.textContent ?? '';
-    const link = item.querySelector('link')?.textContent ?? '';
-    const guid = item.querySelector('guid')?.textContent ?? '';
+    const title = item.querySelector("title")?.textContent ?? "";
+    const episodeNumber = item
+      .getElementsByTagName("itunes:episode")
+      .item(0)?.textContent;
+    const duration = item
+      .getElementsByTagName("itunes:duration")
+      .item(0)?.textContent;
+    const image = item
+      .getElementsByTagName("itunes:image")
+      .item(0)
+      ?.getAttribute("href");
+    const description = item.querySelector("description")?.textContent ?? "";
+    const pubDate = item.querySelector("pubDate")?.textContent ?? "";
+    const link = item.querySelector("link")?.textContent ?? "";
+    const guid = item.querySelector("guid")?.textContent ?? "";
 
-    const cleanDescription = description.replace(/<[^>]*>/g, '').trim();
+    const cleanDescription = description.replace(/<[^>]*>/g, "").trim();
 
     return {
       id: guid || link,
@@ -32,9 +39,11 @@ function parseRssToEpisodes(xml: string): Episode[] {
       title,
       description: cleanDescription,
       episodeNumber: episodeNumber ? parseInt(episodeNumber, 10) : undefined,
-      publishedAt: pubDate ? new Date(pubDate).toISOString() : new Date().toISOString(),
+      publishedAt: pubDate
+        ? new Date(pubDate).toISOString()
+        : new Date().toISOString(),
       durationSeconds: duration ? parseInt(duration, 10) : 0,
-      artworkUrl: image ?? '',
+      artworkUrl: image ?? "",
       spotifyUrl: link,
     };
   });
@@ -44,7 +53,7 @@ async function fetchEpisodes(): Promise<Episode[]> {
   const response = await fetch(`${CORS_PROXY}${encodeURIComponent(RSS_URL)}`);
 
   if (!response.ok) {
-    throw new Error('Failed to fetch episodes');
+    throw new Error("Failed to fetch episodes");
   }
 
   const xml = await response.text();
@@ -52,21 +61,29 @@ async function fetchEpisodes(): Promise<Episode[]> {
 }
 
 export function EpisodesPage() {
-  const [search, setSearch] = useState('');
+  const [search, setSearch] = useState("");
 
-  const { data: episodes, isLoading, isError } = useQuery({
-    queryKey: ['episodes'],
+  const {
+    data: episodes,
+    isLoading,
+    isError,
+  } = useQuery({
+    queryKey: ["episodes"],
     queryFn: fetchEpisodes,
     staleTime: 5 * 60 * 1000,
   });
 
   const filteredEpisodes = useMemo(() => {
-    if (!episodes) return [];
-    if (!search.trim()) return episodes;
+    if (!episodes) {
+      return [];
+    }
+    if (!search.trim()) {
+      return episodes;
+    }
 
     const searchLower = search.toLowerCase();
     return episodes.filter((episode) =>
-      episode.title.toLowerCase().includes(searchLower)
+      episode.title.toLowerCase().includes(searchLower),
     );
   }, [episodes, search]);
 
@@ -111,7 +128,8 @@ export function EpisodesPage() {
 
           {isError && (
             <div className="py-12 text-center text-text-secondary">
-              Error al cargar los episodios. Por favor, intenta de nuevo más tarde.
+              Error al cargar los episodios. Por favor, intenta de nuevo más
+              tarde.
             </div>
           )}
 
@@ -119,7 +137,8 @@ export function EpisodesPage() {
             <>
               {filteredEpisodes.length === 0 ? (
                 <div className="py-12 text-center text-text-secondary">
-                  No se encontraron episodios que coincidan con "{search}"
+                  No se encontraron episodios que coincidan con &ldquo;{search}
+                  &rdquo;
                 </div>
               ) : (
                 <div className="grid grid-cols-1 gap-8 md:grid-cols-2 lg:grid-cols-3">
