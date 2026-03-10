@@ -1,10 +1,15 @@
-import { Router, type Request } from "express";
+import {
+  Router,
+  type Request,
+  type Response,
+  type NextFunction,
+} from "express";
 import crypto from "node:crypto";
 import { eq, and, lt } from "drizzle-orm";
 import { db } from "../db/index.js";
 import { users, magicTokens } from "../db/schema.js";
 import { magicLinkRequestSchema } from "shared";
-import { signToken } from "../lib/jwt.js";
+import { signToken, getJwtExpirationDays } from "../lib/jwt.js";
 import { sendMagicLinkEmail } from "../lib/email.js";
 import { requireAuth } from "../middleware/auth.js";
 
@@ -15,118 +20,125 @@ const getTokenExpirationMinutes = (): number => {
   return minutes ? parseInt(minutes, 10) : 10;
 };
 
-const getJwtExpirationDays = (): number => {
-  const days = process.env.JWT_EXPIRATION_DAYS;
-  return days ? parseInt(days, 10) : 90;
-};
+const asyncHandler =
+  (fn: (req: Request, res: Response, next: NextFunction) => Promise<void>) =>
+  (req: Request, res: Response, next: NextFunction) => {
+    fn(req, res, next).catch(next);
+  };
 
 const GENERIC_MESSAGE =
   "Si tu email está registrado, te enviamos un link de acceso.";
 
-// eslint-disable-next-line @typescript-eslint/no-misused-promises
-authRouter.post("/magic-link", async (req, res) => {
-  try {
-    const parsed = magicLinkRequestSchema.safeParse(req.body);
-    if (!parsed.success) {
-      res.status(400).json({ error: "Invalid email address" });
-      return;
-    }
-
-    const { email } = parsed.data;
-
-    const rows = await db
-      .select()
-      .from(users)
-      .where(eq(users.email, email))
-      .limit(1);
-
-    const user = rows.at(0);
-
-    if (!user) {
-      res.status(200).json({ message: GENERIC_MESSAGE });
-      return;
-    }
-
-    // Cleanup expired tokens for this user
-    await db
-      .delete(magicTokens)
-      .where(
-        and(
-          eq(magicTokens.userId, user.id),
-          lt(magicTokens.expiresAt, new Date()),
-        ),
-      );
-
-    const token = crypto.randomBytes(32).toString("hex");
-    const expirationMinutes = getTokenExpirationMinutes();
-    const expiresAt = new Date(Date.now() + expirationMinutes * 60 * 1000);
-
-    await db.insert(magicTokens).values({
-      userId: user.id,
-      token,
-      expiresAt,
-    });
-
-    await sendMagicLinkEmail(email, token);
-
-    res.status(200).json({ message: GENERIC_MESSAGE });
-  } catch (error) {
-    console.error("Magic link error:", error);
-    res.status(500).json({ error: "Internal server error" });
-  }
-});
-
-// eslint-disable-next-line @typescript-eslint/no-misused-promises
-authRouter.get("/verify", async (req, res) => {
-  try {
-    const { token } = req.query;
-
-    if (typeof token !== "string") {
-      res.redirect("/fan-clu?error=invalid");
-      return;
-    }
-
-    const results = await db
-      .select({
-        tokenId: magicTokens.id,
-        userId: users.id,
-        email: users.email,
-        expiresAt: magicTokens.expiresAt,
-      })
-      .from(magicTokens)
-      .innerJoin(users, eq(magicTokens.userId, users.id))
-      .where(eq(magicTokens.token, token))
-      .limit(1);
-
-    const result = results.at(0);
-
-    if (!result || result.expiresAt < new Date()) {
-      if (result) {
-        await db.delete(magicTokens).where(eq(magicTokens.id, result.tokenId));
+authRouter.post(
+  "/magic-link",
+  asyncHandler(async (req, res) => {
+    try {
+      const parsed = magicLinkRequestSchema.safeParse(req.body);
+      if (!parsed.success) {
+        res.status(400).json({ error: "Invalid email address" });
+        return;
       }
-      res.redirect("/fan-clu?error=invalid");
-      return;
+
+      const { email } = parsed.data;
+
+      const rows = await db
+        .select()
+        .from(users)
+        .where(eq(users.email, email))
+        .limit(1);
+
+      const user = rows.at(0);
+
+      if (!user) {
+        res.status(200).json({ message: GENERIC_MESSAGE });
+        return;
+      }
+
+      // Cleanup expired tokens for this user
+      await db
+        .delete(magicTokens)
+        .where(
+          and(
+            eq(magicTokens.userId, user.id),
+            lt(magicTokens.expiresAt, new Date()),
+          ),
+        );
+
+      const token = crypto.randomBytes(32).toString("hex");
+      const expirationMinutes = getTokenExpirationMinutes();
+      const expiresAt = new Date(Date.now() + expirationMinutes * 60 * 1000);
+
+      await db.insert(magicTokens).values({
+        userId: user.id,
+        token,
+        expiresAt,
+      });
+
+      await sendMagicLinkEmail(email, token);
+
+      res.status(200).json({ message: GENERIC_MESSAGE });
+    } catch (error) {
+      console.error("Magic link error:", error);
+      res.status(500).json({ error: "Internal server error" });
     }
+  }),
+);
 
-    await db.delete(magicTokens).where(eq(magicTokens.id, result.tokenId));
+authRouter.get(
+  "/verify",
+  asyncHandler(async (req, res) => {
+    try {
+      const { token } = req.query;
 
-    const jwt = signToken({ id: result.userId, email: result.email });
-    const maxAge = getJwtExpirationDays() * 24 * 60 * 60 * 1000;
+      if (typeof token !== "string") {
+        res.redirect("/fan-clu?error=invalid");
+        return;
+      }
 
-    res.cookie("auth_token", jwt, {
-      httpOnly: true,
-      secure: process.env.NODE_ENV === "production",
-      sameSite: "strict",
-      maxAge,
-      path: "/",
-    });
+      const results = await db
+        .select({
+          tokenId: magicTokens.id,
+          userId: users.id,
+          email: users.email,
+          expiresAt: magicTokens.expiresAt,
+        })
+        .from(magicTokens)
+        .innerJoin(users, eq(magicTokens.userId, users.id))
+        .where(eq(magicTokens.token, token))
+        .limit(1);
 
-    res.redirect("/fan-clu");
-  } catch (error) {
-    console.error("Verify error:", error);
-    res.redirect("/fan-clu?error=invalid");
-  }
-});
+      const result = results.at(0);
+
+      if (!result || result.expiresAt < new Date()) {
+        if (result) {
+          await db
+            .delete(magicTokens)
+            .where(eq(magicTokens.id, result.tokenId));
+        }
+        res.redirect("/fan-clu?error=invalid");
+        return;
+      }
+
+      await db.delete(magicTokens).where(eq(magicTokens.id, result.tokenId));
+
+      const jwt = signToken({ id: result.userId, email: result.email });
+      const maxAge = getJwtExpirationDays() * 24 * 60 * 60 * 1000;
+
+      res.cookie("auth_token", jwt, {
+        httpOnly: true,
+        secure: process.env.NODE_ENV === "production",
+        sameSite: "strict",
+        maxAge,
+        path: "/",
+      });
+
+      res.redirect("/fan-clu");
+    } catch (error) {
+      console.error("Verify error:", error);
+      res.redirect("/fan-clu?error=invalid");
+    }
+  }),
+);
 
 authRouter.get("/me", requireAuth, (req, res) => {
   const user = (req as Request & { user: { id: number; email: string } }).user;
