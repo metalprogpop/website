@@ -11,7 +11,11 @@ const getSecret = (): string => {
 
 export const getJwtExpirationDays = (): number => {
   const days = process.env.JWT_EXPIRATION_DAYS;
-  return days ? parseInt(days, 10) : 90;
+  if (!days) {
+    return 90;
+  }
+  const parsed = parseInt(days, 10);
+  return Number.isNaN(parsed) ? 90 : parsed;
 };
 
 export const signToken = (user: AuthUser): string => {

@@ -1,7 +1,6 @@
 import { useQuery, useQueryClient } from "@tanstack/react-query";
 import type { AuthUser } from "shared";
-
-const API_URL = (import.meta.env.VITE_API_URL as string | undefined) ?? "";
+import { API_URL } from "../lib/api";
 
 const fetchMe = async (): Promise<AuthUser | null> => {
   const res = await fetch(`${API_URL}/api/v1/auth/me`, {
