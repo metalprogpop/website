@@ -10,7 +10,9 @@
     "skipLibCheck": true,
     "esModuleInterop": true,
     "noUnusedLocals": true,
-    "noUnusedParameters": true
+    "noUnusedParameters": true,
+    "allowImportingTsExtensions": true,
+    "noEmit": true
   },
   "include": ["src"]
 }
