@@ -3,8 +3,7 @@ import { useSearchParams } from "react-router-dom";
 import { Header } from "../components/landing/Header";
 import { Footer } from "../components/landing/Footer";
 import { useAuth } from "../hooks/useAuth";
-
-const API_URL = (import.meta.env.VITE_API_URL as string | undefined) ?? "";
+import { API_URL } from "../lib/api";
 
 export function FanCluPage() {
   const { user, isLoading, isAuthenticated, logout } = useAuth();

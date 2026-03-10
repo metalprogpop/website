@@ -15,9 +15,16 @@ import { requireAuth } from "../middleware/auth.js";
 
 export const authRouter = Router();
 
+const getClientUrl = (): string =>
+  process.env.CLIENT_URL ?? "http://localhost:5173";
+
 const getTokenExpirationMinutes = (): number => {
   const minutes = process.env.MAGIC_LINK_TOKEN_EXPIRATION_MINUTES;
-  return minutes ? parseInt(minutes, 10) : 10;
+  if (!minutes) {
+    return 10;
+  }
+  const parsed = parseInt(minutes, 10);
+  return Number.isNaN(parsed) ? 10 : parsed;
 };
 
 const asyncHandler =
@@ -91,7 +98,7 @@ authRouter.get(
       const { token } = req.query;
 
       if (typeof token !== "string") {
-        res.redirect("/fan-clu?error=invalid");
+        res.redirect(`${getClientUrl()}/fan-clu?error=invalid`);
         return;
       }
 
@@ -115,7 +122,7 @@ authRouter.get(
             .delete(magicTokens)
             .where(eq(magicTokens.id, result.tokenId));
         }
-        res.redirect("/fan-clu?error=invalid");
+        res.redirect(`${getClientUrl()}/fan-clu?error=invalid`);
         return;
       }
 
@@ -132,10 +139,10 @@ authRouter.get(
         path: "/",
       });
 
-      res.redirect("/fan-clu");
+      res.redirect(`${getClientUrl()}/fan-clu`);
     } catch (error) {
       console.error("Verify error:", error);
-      res.redirect("/fan-clu?error=invalid");
+      res.redirect(`${getClientUrl()}/fan-clu?error=invalid`);
     }
   }),
 );
