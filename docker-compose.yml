@@ -17,9 +17,15 @@ services:
       - ./server/package.json:/app/package.json
       - pnpm-store:/root/.local/share/pnpm/store
     ports:
-      - "3001:3001"
+      - "13001:3001"
     environment:
       - DATABASE_URL=postgresql://dev:dev@db:5432/app
+      - JWT_SECRET=dev-secret-change-in-production
+      - JWT_EXPIRATION_DAYS=90
+      - RESEND_API_KEY=${RESEND_API_KEY:-}
+      - MAGIC_LINK_BASE_URL=http://localhost:13001
+      - MAGIC_LINK_TOKEN_EXPIRATION_MINUTES=10
+      - CLIENT_URL=http://localhost:9001
     depends_on:
       - db
     command: pnpm dev
@@ -31,9 +37,9 @@ services:
       - ./client/package.json:/app/package.json
       - pnpm-store:/root/.local/share/pnpm/store
     ports:
-      - "3000:5173"
+      - "9001:5173"
     environment:
-      - VITE_API_URL=http://localhost:3001
+      - VITE_API_URL=http://localhost:13001
     command: pnpm dev
 
 volumes:
