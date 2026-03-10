@@ -12,20 +12,28 @@ export function FanCluPage() {
   const [email, setEmail] = useState("");
   const [submitted, setSubmitted] = useState(false);
   const [submitting, setSubmitting] = useState(false);
+  const [submitError, setSubmitError] = useState(false);
   const error = searchParams.get("error");
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     setSubmitting(true);
+    setSubmitError(false);
 
     try {
-      await fetch(`${API_URL}/api/v1/auth/magic-link`, {
+      const res = await fetch(`${API_URL}/api/v1/auth/magic-link`, {
         method: "POST",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({ email }),
         credentials: "include",
       });
-      setSubmitted(true);
+      if (res.ok) {
+        setSubmitted(true);
+      } else {
+        setSubmitError(true);
+      }
+    } catch {
+      setSubmitError(true);
     } finally {
       setSubmitting(false);
     }
@@ -101,6 +109,12 @@ export function FanCluPage() {
               {error && (
                 <div className="bg-red-900/30 border border-red-800 rounded-lg p-4 mb-6 text-red-300 text-sm">
                   El link es inválido o expirado. Intentá de nuevo.
+                </div>
+              )}
+
+              {submitError && (
+                <div className="bg-red-900/30 border border-red-800 rounded-lg p-4 mb-6 text-red-300 text-sm">
+                  Hubo un error. Intentá de nuevo.
                 </div>
               )}
 
