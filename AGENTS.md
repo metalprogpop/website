@@ -119,9 +119,16 @@ Server and client run on different origins. Server redirects MUST use the `CLIEN
 - PR title: under 70 chars
 - PR description: Summary (bullet points) + Test Plan sections
 
-## Agentic Workflow Notes
+## Agentic Workflow
 
-Learnings from subagent-driven development on this codebase:
+- Use `subagent-driven-development` skill for executing task lists with review
+- Use `verification-before-completion` skill before claiming work is done
+- Use `test-driven-development` skill when implementing features or fixes
+- Use `finishing-a-development-branch` skill to create PRs
+- Use `dispatching-parallel-agents` skill for independent subtasks
+- Use subagents for code review (fresh context avoids author bias)
+
+### Learnings
 
 - **Convention-aware plans**: Code in plans must account for linter rules (curly braces, double quotes, import extensions). Include convention notes in prompts to subagents.
 - **Typecheck early**: Run typecheck on affected packages before starting implementation. Fix infrastructure issues as the first task.
