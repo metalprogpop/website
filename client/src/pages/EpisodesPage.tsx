@@ -4,7 +4,7 @@ import { Link } from "react-router-dom";
 import type { Episode } from "shared";
 import { Container } from "../components/layout/Container";
 import { EpisodeCard } from "../components/landing/EpisodeCard";
-import { Logo } from "../components/ui/Logo";
+import { Logo } from "../components/ui/brand/Logo";
 
 const RSS_URL = "https://audioboom.com/channels/4940203.rss";
 const CORS_PROXY = "https://corsproxy.io/?";

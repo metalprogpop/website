@@ -1,10 +1,14 @@
-import { Twitter, Instagram } from 'lucide-react';
-import { Container } from '../layout/Container';
-import { Logo } from '../ui/Logo';
+import { Twitter, Instagram } from "lucide-react";
+import { Container } from "../layout/Container";
+import { Logo } from "../ui/brand/Logo";
 
 const socialLinks = [
-  { name: 'Twitter', url: 'https://x.com/metalprogpop', Icon: Twitter },
-  { name: 'Instagram', url: 'https://instagram.com/metalprogpop', Icon: Instagram },
+  { name: "Twitter", url: "https://x.com/metalprogpop", Icon: Twitter },
+  {
+    name: "Instagram",
+    url: "https://instagram.com/metalprogpop",
+    Icon: Instagram,
+  },
 ];
 
 export function Footer() {
@@ -14,7 +18,10 @@ export function Footer() {
     <footer className="border-t border-border py-14">
       <Container>
         <div className="flex flex-col items-center gap-6">
-          <Logo size="md" className="opacity-70 transition-opacity hover:opacity-100" />
+          <Logo
+            size="md"
+            className="opacity-70 transition-opacity hover:opacity-100"
+          />
 
           <div className="flex items-center gap-4">
             {socialLinks.map(({ name, url, Icon }) => (
@@ -32,7 +39,8 @@ export function Footer() {
           </div>
 
           <p className="font-display text-xs tracking-wide text-text-muted">
-            &copy; {currentYear} MetalProgPop Cast. Todos los derechos reservados.
+            &copy; {currentYear} MetalProgPop Cast. Todos los derechos
+            reservados.
           </p>
         </div>
       </Container>
