@@ -147,3 +147,4 @@ Custom skills in `.agents/skills/` provide reusable patterns. Symlinked into eac
 | `vitest-react-testing`        | Writing integration tests with Vitest + RTL                 |
 | `frontend-design`             | Building web components, pages, or UI                       |
 | `vercel-react-best-practices` | React/Next.js performance optimization                      |
+| `docker-pnpm-monorepo`        | Writing Dockerfiles / compose for pnpm workspace services   |
