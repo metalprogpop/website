@@ -11,10 +11,12 @@ services:
       - pgdata:/var/lib/postgresql/data
 
   server:
-    build: ./server
+    build:
+      context: .
+      dockerfile: ./server/Dockerfile
     volumes:
-      - ./server/src:/app/src
-      - ./server/package.json:/app/package.json
+      - ./server/src:/app/server/src
+      - ./shared/src:/app/shared/src
       - pnpm-store:/root/.local/share/pnpm/store
     ports:
       - "13001:3001"
@@ -31,10 +33,12 @@ services:
     command: pnpm dev
 
   client:
-    build: ./client
+    build:
+      context: .
+      dockerfile: ./client/Dockerfile
     volumes:
-      - ./client/src:/app/src
-      - ./client/package.json:/app/package.json
+      - ./client/src:/app/client/src
+      - ./shared/src:/app/shared/src
       - pnpm-store:/root/.local/share/pnpm/store
     ports:
       - "9001:5173"

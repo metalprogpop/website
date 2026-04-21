@@ -12,7 +12,7 @@ This skill codifies the patterns and guardrails for Express + TypeScript API dev
 
 ## NodeNext Import Extensions
 
-TypeScript's `module: "NodeNext"` resolution requires explicit `.js` extensions on local imports even though the source files are `.ts`. The compiler resolves `.js` back to `.ts` at compile time.
+TypeScript's `module: "NodeNext"` resolution requires explicit extensions on local imports even though the source files are `.ts`. In this repo the conventions differ by package:
 
 **Server code** (`server/src/`): always use `.js` extensions for local imports.
 
@@ -21,10 +21,14 @@ TypeScript's `module: "NodeNext"` resolution requires explicit `.js` extensions 
 import { db } from "../db/index.js";
 import { verifyToken } from "./auth/verify.js";
 
-// Wrong — will fail at runtime under NodeNext
+// Wrong — tsx and tsc both reject extensionless specifiers under NodeNext
 import { db } from "../db/index";
 import { verifyToken } from "./auth/verify";
 ```
+
+How this works in practice: `server/tsconfig.json` sets `noEmit: true`, so `tsc` is used only for type-checking — it never produces `dist/`. The dev runtime is `node --watch --import tsx src/index.ts`, and `tsx` is what resolves `.js` specifiers to their `.ts` source files at load time. Node's built-in `--experimental-strip-types` does _not_ do this rewrite (it requires `.ts` specifiers), which is why `tsx` is wired into the dev script.
+
+The convention is kept as `.js` rather than switched to `.ts` for two reasons: (1) it matches the stated `module: NodeNext` in `server/tsconfig.json`, and (2) it leaves the door open for a future compiled prod path (flip `noEmit` off, `tsc` emit, `node dist/index.js`) with zero source-file edits.
 
 **Shared package** (`shared/src/`): uses `.ts` extensions in re-exports because `allowImportingTsExtensions: true` and `noEmit: true` are both set in its tsconfig. This is valid only when the package is never compiled to disk.
 
@@ -35,7 +39,7 @@ export { MagicLinkPayloadSchema } from "./schemas/auth.ts";
 
 **Client code** (`client/src/`): no extensions needed. Vite handles module resolution transparently.
 
-**Rule of thumb**: check the workspace's `tsconfig.json` for `module` and `allowImportingTsExtensions` to know which convention applies.
+**Rule of thumb**: check the workspace's `tsconfig.json` for `module` and `allowImportingTsExtensions` to know which convention applies. For the server specifically, remember that the `.js` convention only works at dev-time because `tsx` is loaded via `--import` — don't swap `tsx` for `--experimental-strip-types` without also converting every `.js` specifier to `.ts`.
 
 ## asyncHandler Wrapper
 
