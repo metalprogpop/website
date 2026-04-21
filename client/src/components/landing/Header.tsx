@@ -1,7 +1,7 @@
-import { Link } from 'react-router-dom';
-import { Logo } from '../ui/Logo';
-import { Button } from '../ui/Button';
-import { Container } from '../layout/Container';
+import { Link } from "react-router-dom";
+import { Logo } from "../ui/brand/Logo";
+import { Button } from "../ui/brand/Button";
+import { Container } from "../layout/Container";
 
 export function Header() {
   return (
