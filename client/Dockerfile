@@ -1,6 +1,9 @@
 FROM node:24-alpine
 RUN corepack enable && corepack prepare pnpm@latest --activate
 WORKDIR /app
-COPY package.json ./
-RUN pnpm install
-COPY . .
+COPY pnpm-workspace.yaml pnpm-lock.yaml package.json ./
+COPY shared/ ./shared/
+COPY client/package.json ./client/
+RUN pnpm install --filter client... --frozen-lockfile
+COPY client/ ./client/
+WORKDIR /app/client
