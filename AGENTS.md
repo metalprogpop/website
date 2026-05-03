@@ -43,8 +43,8 @@ pnpm monorepo with three workspace packages:
 The linter enforces these strictly — code that violates them will not pass:
 
 - **`curly`**: braces required on all `if`/`else`/`for`/`while` — no one-liner shorthand
-- **`@typescript-eslint/no-unnecessary-condition`**: can't check `undefined` on destructured array results — use `.at(0)` (see `drizzle-pnpm-monorepo` skill)
-- **`@typescript-eslint/no-misused-promises`**: async Express handlers trigger this — use `asyncHandler` wrapper (see `express-typescript-api` skill)
+- **`@typescript-eslint/no-unnecessary-condition`**: can't check `undefined` on destructured array results — use `.at(0)`
+- **`@typescript-eslint/no-misused-promises`**: async Express handlers trigger this — use `asyncHandler` wrapper
 - **`@typescript-eslint/no-unsafe-assignment`**: no `as` casts on untrusted data
 - **Quote style**: double quotes (auto-fixed)
 
@@ -94,14 +94,13 @@ Client:
 
 ### Cross-Origin Redirects
 
-Server and client run on different origins. Server redirects MUST use the `CLIENT_URL` env var, never relative paths or hardcoded URLs. See `express-typescript-api` skill for the pattern.
+Server and client run on different origins. Server redirects MUST use the `CLIENT_URL` env var, never relative paths or hardcoded URLs.
 
 ## Testing
 
 - **Integration tests**: Vitest + React Testing Library in `client/src/__tests__/`
 - **E2E smoke tests**: Playwright in `e2e/` — verify page structure, not visual appearance
 - Write tests for new features; update tests when modifying behavior
-- See `vitest-react-testing` skill for mocking patterns and test setup
 
 ## Commit Conventions
 
@@ -121,11 +120,6 @@ Server and client run on different origins. Server redirects MUST use the `CLIEN
 
 ## Agentic Workflow
 
-- Use `subagent-driven-development` skill for executing task lists with review
-- Use `verification-before-completion` skill before claiming work is done
-- Use `test-driven-development` skill when implementing features or fixes
-- Use `finishing-a-development-branch` skill to create PRs
-- Use `dispatching-parallel-agents` skill for independent subtasks
 - Use subagents for code review (fresh context avoids author bias)
 
 ### Learnings
@@ -135,16 +129,3 @@ Server and client run on different origins. Server redirects MUST use the `CLIEN
 - **Two-stage review**: Spec compliance first (does it match requirements?), then code quality (is it well-built?). No point reviewing quality if spec isn't met.
 - **Full file context**: Provide full file contents to subagents, not just diffs. They work better with complete context.
 - **Review scaling**: Mechanical tasks (schemas, deps, config) can skip full review cycles. Complex tasks (routes, pages, components) benefit from both review stages.
-
-## Skills Reference
-
-Custom skills in `.agents/skills/` provide reusable patterns. Symlinked into each agent harness's skills directory.
-
-| Skill                         | When to Use                                                 |
-| ----------------------------- | ----------------------------------------------------------- |
-| `express-typescript-api`      | Building or modifying Express.js API routes with TypeScript |
-| `drizzle-pnpm-monorepo`       | Working with Drizzle ORM in this pnpm workspace monorepo    |
-| `vitest-react-testing`        | Writing integration tests with Vitest + RTL                 |
-| `frontend-design`             | Building web components, pages, or UI                       |
-| `vercel-react-best-practices` | React/Next.js performance optimization                      |
-| `docker-pnpm-monorepo`        | Writing Dockerfiles / compose for pnpm workspace services   |
