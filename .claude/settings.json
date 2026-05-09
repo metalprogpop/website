@@ -1,16 +1,4 @@
 {
-  "enabledPlugins": {
-    "superpowers@claude-plugins-official": true,
-    "example-skills@anthropic-agent-skills": true
-  },
-  "extraKnownMarketplaces": {
-    "anthropic-agent-skills": {
-      "source": {
-        "source": "git",
-        "url": "https://github.com/anthropics/skills.git"
-      }
-    }
-  },
   "hooks": {
     "PostToolUse": [
       {
@@ -56,5 +44,14 @@
         ]
       }
     ]
+  },
+  "enabledPlugins": {},
+  "extraKnownMarketplaces": {
+    "anthropic-agent-skills": {
+      "source": {
+        "source": "git",
+        "url": "https://github.com/anthropics/skills.git"
+      }
+    }
   }
 }
