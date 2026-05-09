@@ -2,6 +2,7 @@
   "name": "website",
   "private": true,
   "type": "module",
+  "packageManager": "pnpm@11.0.9",
   "scripts": {
     "dev": "docker-compose up",
     "build": "pnpm -r build",
