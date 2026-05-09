@@ -1,5 +1,5 @@
 import jwt from "jsonwebtoken";
-import type { AuthUser } from "shared";
+import { authUserSchema, type AuthUser } from "shared";
 
 const getSecret = (): string => {
   const secret = process.env.JWT_SECRET;
@@ -18,24 +18,16 @@ export const getJwtExpirationDays = (): number => {
   return Number.isNaN(parsed) ? 90 : parsed;
 };
 
-export const signToken = (user: AuthUser): string => {
-  return jwt.sign({ userId: user.id, email: user.email }, getSecret(), {
-    expiresIn: `${getJwtExpirationDays()}d`,
+export const signToken = (user: AuthUser): string =>
+  jwt.sign({ id: user.id, email: user.email }, getSecret(), {
+    expiresIn: getJwtExpirationDays() * 24 * 60 * 60,
   });
-};
 
-export const verifyToken = (
-  token: string,
-): { userId: number; email: string } => {
+export const verifyToken = (token: string): AuthUser => {
   const payload = jwt.verify(token, getSecret());
-  if (
-    typeof payload === "object" &&
-    "userId" in payload &&
-    "email" in payload &&
-    typeof payload.userId === "number" &&
-    typeof payload.email === "string"
-  ) {
-    return { userId: payload.userId, email: payload.email };
+  const result = authUserSchema.safeParse(payload);
+  if (!result.success) {
+    throw new Error("Invalid token payload");
   }
-  throw new Error("Invalid token payload");
+  return result.data;
 };
