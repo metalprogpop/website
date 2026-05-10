@@ -26,8 +26,8 @@ export const sendMagicLinkEmail = async (
   const resend = new Resend(apiKey);
   const magicLink = buildMagicLinkUrl(token);
 
-  await resend.emails.send({
-    from: "Metal Prog Pop <noreply@metalprogpop.com>",
+  const { error } = await resend.emails.send({
+    from: "Metal Prog Pop <onboarding@resend.dev>",
     to: email,
     subject: "Tu link de acceso al Fan Clú",
     html: `
@@ -38,4 +38,7 @@ export const sendMagicLinkEmail = async (
       <p>Si no solicitaste este acceso, ignorá este email.</p>
     `,
   });
+  if (error) {
+    throw new Error(`Resend rejected the magic link email: ${error.message}`);
+  }
 };
