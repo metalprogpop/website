@@ -1,41 +1,72 @@
 import { useState } from "react";
+import { useQueryClient } from "@tanstack/react-query";
 import { useSearchParams } from "react-router-dom";
 import { Header } from "../components/landing/Header";
 import { Footer } from "../components/landing/Footer";
 import { useAuth } from "../hooks/useAuth";
 import { API_URL } from "../lib/api";
+import {
+  isTestUsersEnabled,
+  isDevShowMagicLink,
+  TEST_USER_EMAIL,
+} from "../lib/devFlags";
+
+type MagicLinkResponse = {
+  message?: string;
+  magicLink?: string;
+  authenticated?: boolean;
+};
 
 export function FanCluPage() {
+  const queryClient = useQueryClient();
   const { user, isLoading, isAuthenticated, logout } = useAuth();
   const [searchParams] = useSearchParams();
   const [email, setEmail] = useState("");
   const [submitted, setSubmitted] = useState(false);
   const [submitting, setSubmitting] = useState(false);
   const [submitError, setSubmitError] = useState(false);
+  const [magicLink, setMagicLink] = useState<string | null>(null);
   const error = searchParams.get("error");
 
-  const handleSubmit = async (e: React.FormEvent) => {
-    e.preventDefault();
+  const submitEmail = async (emailToSubmit: string): Promise<void> => {
     setSubmitting(true);
     setSubmitError(false);
+    setMagicLink(null);
 
     try {
       const res = await fetch(`${API_URL}/api/v1/auth/magic-link`, {
         method: "POST",
         headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ email }),
+        body: JSON.stringify({ email: emailToSubmit }),
         credentials: "include",
       });
-      if (res.ok) {
-        setSubmitted(true);
-      } else {
+      if (!res.ok) {
         setSubmitError(true);
+        return;
       }
+      const body = (await res.json()) as MagicLinkResponse;
+      if (body.authenticated === true) {
+        await queryClient.invalidateQueries({ queryKey: ["auth", "me"] });
+        return;
+      }
+      if (isDevShowMagicLink() && typeof body.magicLink === "string") {
+        setMagicLink(body.magicLink);
+      }
+      setSubmitted(true);
     } catch {
       setSubmitError(true);
     } finally {
       setSubmitting(false);
     }
+  };
+
+  const handleSubmit = async (e: React.FormEvent) => {
+    e.preventDefault();
+    await submitEmail(email);
+  };
+
+  const handleTestLogin = async () => {
+    await submitEmail(TEST_USER_EMAIL);
   };
 
   if (isLoading) {
@@ -125,6 +156,20 @@ export function FanCluPage() {
                   <p className="text-zinc-500 text-sm mt-4">
                     Revisá tu bandeja de entrada.
                   </p>
+                  {isDevShowMagicLink() && magicLink !== null && (
+                    <div className="mt-6 border-t border-zinc-800 pt-6 text-left">
+                      <p className="text-amber-400 text-xs uppercase tracking-wide mb-2">
+                        Dev: magic link (no email sent)
+                      </p>
+                      <a
+                        data-testid="dev-magic-link"
+                        href={magicLink}
+                        className="text-[var(--color-pop-red)] underline break-all text-sm"
+                      >
+                        {magicLink}
+                      </a>
+                    </div>
+                  )}
                 </div>
               ) : (
                 <>
@@ -148,6 +193,17 @@ export function FanCluPage() {
                       {submitting ? "Enviando..." : "Enviar magic link"}
                     </button>
                   </form>
+                  {isTestUsersEnabled() && (
+                    <button
+                      type="button"
+                      onClick={handleTestLogin}
+                      disabled={submitting}
+                      data-testid="dev-test-login"
+                      className="w-full mt-3 bg-zinc-800 hover:bg-zinc-700 border border-amber-700/40 text-amber-300 font-medium rounded-lg px-4 py-3 transition-colors disabled:opacity-50 cursor-pointer text-sm"
+                    >
+                      Dev: ingresar como {TEST_USER_EMAIL}
+                    </button>
+                  )}
                 </>
               )}
             </div>
