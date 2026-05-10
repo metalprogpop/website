@@ -1,13 +1,5 @@
 import { Resend } from "resend";
 
-const getResend = (): Resend => {
-  const apiKey = process.env.RESEND_API_KEY;
-  if (!apiKey) {
-    throw new Error("RESEND_API_KEY environment variable is required");
-  }
-  return new Resend(apiKey);
-};
-
 const getBaseUrl = (): string => {
   const baseUrl = process.env.MAGIC_LINK_BASE_URL;
   if (!baseUrl) {
@@ -16,13 +8,23 @@ const getBaseUrl = (): string => {
   return baseUrl;
 };
 
+export const buildMagicLinkUrl = (token: string): string =>
+  `${getBaseUrl()}/api/v1/auth/verify?token=${token}`;
+
 export const sendMagicLinkEmail = async (
   email: string,
   token: string,
 ): Promise<void> => {
-  const resend = getResend();
-  const baseUrl = getBaseUrl();
-  const magicLink = `${baseUrl}/api/v1/auth/verify?token=${token}`;
+  const apiKey = process.env.RESEND_API_KEY;
+  if (!apiKey) {
+    console.warn(
+      "[email] RESEND_API_KEY not set — magic link email NOT sent. " +
+        "Set DEV_SHOW_MAGIC_LINK=true to view the link in the UI instead.",
+    );
+    return;
+  }
+  const resend = new Resend(apiKey);
+  const magicLink = buildMagicLinkUrl(token);
 
   await resend.emails.send({
     from: "Metal Prog Pop <noreply@metalprogpop.com>",

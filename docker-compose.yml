@@ -28,6 +28,9 @@ services:
       - MAGIC_LINK_BASE_URL=http://localhost:13001
       - MAGIC_LINK_TOKEN_EXPIRATION_MINUTES=10
       - CLIENT_URL=http://localhost:9001
+      - TEST_USERS_ENABLED=${TEST_USERS_ENABLED:-false}
+      - TEST_USER_EMAILS=${TEST_USER_EMAILS:-}
+      - DEV_SHOW_MAGIC_LINK=${DEV_SHOW_MAGIC_LINK:-false}
     depends_on:
       - db
     command: pnpm dev
@@ -44,6 +47,8 @@ services:
       - "9001:5173"
     environment:
       - VITE_API_URL=http://localhost:13001
+      - VITE_TEST_USERS_ENABLED=${VITE_TEST_USERS_ENABLED:-false}
+      - VITE_DEV_SHOW_MAGIC_LINK=${VITE_DEV_SHOW_MAGIC_LINK:-false}
     command: pnpm dev
 
 volumes:

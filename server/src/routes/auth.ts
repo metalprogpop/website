@@ -11,7 +11,7 @@ import { db } from "../db/index.js";
 import { users, magicTokens } from "../db/schema.js";
 import { magicLinkRequestSchema } from "shared";
 import { signToken, getJwtExpirationDays } from "../lib/jwt.js";
-import { sendMagicLinkEmail } from "../lib/email.js";
+import { sendMagicLinkEmail, buildMagicLinkUrl } from "../lib/email.js";
 import { requireAuth } from "../middleware/auth.js";
 
 export const authRouter = Router();
@@ -26,6 +26,24 @@ const getTokenExpirationMinutes = (): number => {
   }
   const parsed = parseInt(minutes, 10);
   return Number.isNaN(parsed) ? 10 : parsed;
+};
+
+const isFlagEnabled = (val: string | undefined): boolean =>
+  val === "true" || val === "1";
+
+const getTestUserEmails = (): readonly string[] => {
+  const raw = process.env.TEST_USER_EMAILS ?? "";
+  return raw
+    .split(",")
+    .map((s) => s.trim().toLowerCase())
+    .filter((s) => s.length > 0);
+};
+
+const isTestUser = (email: string): boolean => {
+  if (!isFlagEnabled(process.env.TEST_USERS_ENABLED)) {
+    return false;
+  }
+  return getTestUserEmails().includes(email.toLowerCase());
 };
 
 const asyncHandler =
@@ -66,7 +84,43 @@ const magicLinkEmailLimiter = rateLimit({
   handler: genericSuccess,
 });
 
-const issueMagicLinkIfRegistered = async (email: string): Promise<void> => {
+const setAuthCookie = (res: Response, jwt: string): void => {
+  const maxAge = getJwtExpirationDays() * 24 * 60 * 60 * 1000;
+  res.cookie("auth_token", jwt, {
+    httpOnly: true,
+    secure: process.env.NODE_ENV === "production",
+    sameSite: "strict",
+    maxAge,
+    path: "/",
+  });
+};
+
+const upsertTestUser = async (
+  email: string,
+): Promise<{ id: number; email: string }> => {
+  const existing = await db
+    .select({ id: users.id, email: users.email })
+    .from(users)
+    .where(eq(users.email, email))
+    .limit(1);
+  const found = existing.at(0);
+  if (found) {
+    return found;
+  }
+  const inserted = await db
+    .insert(users)
+    .values({ email })
+    .returning({ id: users.id, email: users.email });
+  const created = inserted.at(0);
+  if (!created) {
+    throw new Error("Failed to upsert test user");
+  }
+  return created;
+};
+
+const issueMagicLinkIfRegistered = async (
+  email: string,
+): Promise<{ token: string } | null> => {
   const rows = await db
     .select()
     .from(users)
@@ -75,7 +129,7 @@ const issueMagicLinkIfRegistered = async (email: string): Promise<void> => {
 
   const user = rows.at(0);
   if (!user) {
-    return;
+    return null;
   }
 
   await db
@@ -97,30 +151,51 @@ const issueMagicLinkIfRegistered = async (email: string): Promise<void> => {
     expiresAt,
   });
 
-  try {
-    await sendMagicLinkEmail(email, token);
-  } catch (err) {
-    console.error("Magic link email send failed", err);
-  }
+  return { token };
 };
 
 authRouter.post(
   "/magic-link",
   magicLinkIpLimiter,
   magicLinkEmailLimiter,
-  (req, res) => {
+  asyncHandler(async (req, res) => {
     const parsed = magicLinkRequestSchema.safeParse(req.body);
     if (!parsed.success) {
       res.status(400).json({ error: "Invalid email address" });
       return;
     }
 
-    issueMagicLinkIfRegistered(parsed.data.email).catch((err: unknown) => {
-      console.error("Magic link issue failed", err);
-    });
+    const email = parsed.data.email.toLowerCase();
+
+    if (isTestUser(email)) {
+      const user = await upsertTestUser(email);
+      const jwt = signToken({ id: user.id, email: user.email });
+      setAuthCookie(res, jwt);
+      res.status(200).json({ authenticated: true, message: GENERIC_MESSAGE });
+      return;
+    }
+
+    const issued = await issueMagicLinkIfRegistered(email);
+    const showLink = isFlagEnabled(process.env.DEV_SHOW_MAGIC_LINK);
+
+    if (issued && showLink) {
+      res.status(200).json({
+        message: GENERIC_MESSAGE,
+        magicLink: buildMagicLinkUrl(issued.token),
+      });
+      return;
+    }
+
+    if (issued) {
+      try {
+        await sendMagicLinkEmail(email, issued.token);
+      } catch (err) {
+        console.error("Magic link email send failed", err);
+      }
+    }
 
     res.status(200).json({ message: GENERIC_MESSAGE });
-  },
+  }),
 );
 
 authRouter.get(
@@ -161,15 +236,7 @@ authRouter.get(
       await db.delete(magicTokens).where(eq(magicTokens.id, result.tokenId));
 
       const jwt = signToken({ id: result.userId, email: result.email });
-      const maxAge = getJwtExpirationDays() * 24 * 60 * 60 * 1000;
-
-      res.cookie("auth_token", jwt, {
-        httpOnly: true,
-        secure: process.env.NODE_ENV === "production",
-        sameSite: "strict",
-        maxAge,
-        path: "/",
-      });
+      setAuthCookie(res, jwt);
 
       res.redirect(`${getClientUrl()}/fan-clu`);
     } catch (error) {
