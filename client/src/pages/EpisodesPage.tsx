@@ -1,10 +1,11 @@
 import { useState, useMemo } from "react";
 import { useQuery } from "@tanstack/react-query";
-import { Link } from "react-router-dom";
 import type { Episode } from "shared";
 import { Container } from "../components/layout/Container";
+import { Section } from "../components/layout/Section";
 import { EpisodeCard } from "../components/landing/EpisodeCard";
-import { Logo } from "../components/ui/brand/Logo";
+import { Header } from "../components/landing/Header";
+import { Footer } from "../components/landing/Footer";
 
 const RSS_URL = "https://audioboom.com/channels/4940203.rss";
 const CORS_PROXY = "https://corsproxy.io/?";
@@ -89,68 +90,67 @@ export function EpisodesPage() {
 
   return (
     <div className="min-h-screen bg-background">
-      <header className="sticky top-0 z-50 border-b border-border bg-background/90 backdrop-blur-lg">
-        <Container>
-          <div className="flex h-16 items-center justify-between">
-            <Link to="/">
-              <Logo size="sm" />
-            </Link>
-          </div>
-        </Container>
-      </header>
+      <Header />
 
-      <main className="py-12">
-        <Container>
-          <div className="mb-8">
-            <h1 className="mb-2 font-display text-3xl font-bold text-text-primary sm:text-4xl">
-              Todos los Episodios
-            </h1>
-            <p className="text-text-secondary">
-              {episodes?.length ?? 0} episodios disponibles
-            </p>
-          </div>
-
-          <div className="mb-8">
-            <input
-              type="text"
-              placeholder="Buscar episodios..."
-              value={search}
-              onChange={(e) => setSearch(e.target.value)}
-              className="w-full rounded-lg border border-border bg-surface px-4 py-3 font-display text-text-primary placeholder:text-text-muted focus:border-brand focus:outline-none focus:ring-2 focus:ring-brand/20 sm:max-w-md"
-            />
-          </div>
-
-          {isLoading && (
-            <div className="flex justify-center py-12">
-              <div className="h-8 w-8 animate-spin rounded-full border-4 border-brand border-t-transparent" />
+      <main>
+        <Section>
+          <Container>
+            <div className="mb-12 text-center">
+              <span className="mb-3 inline-block font-display text-sm font-semibold uppercase tracking-widest text-brand">
+                Catálogo
+              </span>
+              <h1 className="mb-3 font-display text-3xl font-bold tracking-tight text-text-primary sm:text-4xl">
+                Todos los Episodios
+              </h1>
+              <p className="text-text-secondary">
+                {episodes?.length ?? 0} episodios disponibles
+              </p>
             </div>
-          )}
 
-          {isError && (
-            <div className="py-12 text-center text-text-secondary">
-              Error al cargar los episodios. Por favor, intenta de nuevo más
-              tarde.
+            <div className="mb-10 flex justify-center">
+              <input
+                type="text"
+                placeholder="Buscar episodios..."
+                value={search}
+                onChange={(e) => setSearch(e.target.value)}
+                className="w-full max-w-md rounded-lg border border-border bg-surface px-4 py-3 font-display text-text-primary placeholder:text-text-muted focus:border-brand focus:outline-none focus:ring-2 focus:ring-brand/20"
+              />
             </div>
-          )}
 
-          {!isLoading && !isError && (
-            <>
-              {filteredEpisodes.length === 0 ? (
-                <div className="py-12 text-center text-text-secondary">
-                  No se encontraron episodios que coincidan con &ldquo;{search}
-                  &rdquo;
-                </div>
-              ) : (
-                <div className="grid grid-cols-1 gap-8 md:grid-cols-2 lg:grid-cols-3">
-                  {filteredEpisodes.map((episode) => (
-                    <EpisodeCard key={episode.id} episode={episode} />
-                  ))}
-                </div>
-              )}
-            </>
-          )}
-        </Container>
+            {isLoading && (
+              <div className="flex justify-center py-12">
+                <div className="h-8 w-8 animate-spin rounded-full border-4 border-brand border-t-transparent" />
+              </div>
+            )}
+
+            {isError && (
+              <div className="py-12 text-center text-text-secondary">
+                Error al cargar los episodios. Por favor, intenta de nuevo más
+                tarde.
+              </div>
+            )}
+
+            {!isLoading && !isError && (
+              <>
+                {filteredEpisodes.length === 0 ? (
+                  <div className="py-12 text-center text-text-secondary">
+                    No se encontraron episodios que coincidan con &ldquo;
+                    {search}&rdquo;
+                  </div>
+                ) : (
+                  <div className="grid grid-cols-1 gap-8 md:grid-cols-2 lg:grid-cols-3">
+                    {filteredEpisodes.map((episode) => (
+                      <EpisodeCard key={episode.id} episode={episode} />
+                    ))}
+                  </div>
+                )}
+              </>
+            )}
+          </Container>
+        </Section>
       </main>
+
+      <Footer />
     </div>
   );
 }
