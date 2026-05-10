@@ -222,7 +222,7 @@ export function FanCluPage() {
                         disabled={submitting}
                         className="w-full"
                       >
-                        {submitting ? "Enviando..." : "Enviar magic link"}
+                        {submitting ? "Enviando..." : "Enviar link de acceso"}
                       </Button>
                     </form>
                     {isTestUsersEnabled() && (
