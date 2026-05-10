@@ -3,6 +3,10 @@ import { useQueryClient } from "@tanstack/react-query";
 import { useSearchParams } from "react-router-dom";
 import { Header } from "../components/landing/Header";
 import { Footer } from "../components/landing/Footer";
+import { Container } from "../components/layout/Container";
+import { Section } from "../components/layout/Section";
+import { Card } from "../components/ui/brand/Card";
+import { Button } from "../components/ui/brand/Button";
 import { useAuth } from "../hooks/useAuth";
 import { API_URL } from "../lib/api";
 import {
@@ -71,10 +75,10 @@ export function FanCluPage() {
 
   if (isLoading) {
     return (
-      <div className="min-h-screen">
+      <div className="min-h-screen bg-background">
         <Header />
-        <main className="flex items-center justify-center min-h-[60vh]">
-          <div className="animate-spin h-8 w-8 border-2 border-[var(--color-pop-red)] border-t-transparent rounded-full" />
+        <main className="flex min-h-[60vh] items-center justify-center">
+          <div className="h-8 w-8 animate-spin rounded-full border-4 border-brand border-t-transparent" />
         </main>
         <Footer />
       </div>
@@ -83,24 +87,37 @@ export function FanCluPage() {
 
   if (isAuthenticated) {
     return (
-      <div className="min-h-screen">
+      <div className="min-h-screen bg-background">
         <Header />
-        <main className="max-w-4xl mx-auto px-6 py-20">
-          <h1 className="text-4xl font-bold font-display text-white mb-6">
-            Fan Clú
-          </h1>
-          <p className="text-zinc-300 text-lg mb-8">
-            ¡Bienvenido/a, {user?.email}!
-          </p>
-          <p className="text-zinc-400 mb-8">
-            Contenido exclusivo próximamente.
-          </p>
-          <button
-            onClick={logout}
-            className="text-sm text-zinc-500 hover:text-zinc-300 transition-colors cursor-pointer"
-          >
-            Cerrar sesión
-          </button>
+        <main>
+          <Section>
+            <Container>
+              <div className="mx-auto max-w-2xl text-center">
+                <span className="mb-3 inline-block font-display text-sm font-semibold uppercase tracking-widest text-brand">
+                  Fan Clú
+                </span>
+                <h1 className="mb-6 font-display text-4xl font-bold tracking-tight text-text-primary sm:text-5xl">
+                  ¡Bienvenido/a!
+                </h1>
+                <p className="mb-3 text-lg text-text-secondary">
+                  Iniciaste sesión como{" "}
+                  <span className="text-text-primary">{user?.email}</span>.
+                </p>
+                <p className="mb-10 text-text-muted">
+                  Contenido exclusivo próximamente.
+                </p>
+                <Button
+                  variant="secondary"
+                  size="md"
+                  onClick={() => {
+                    void logout();
+                  }}
+                >
+                  Cerrar sesión
+                </Button>
+              </div>
+            </Container>
+          </Section>
         </main>
         <Footer />
       </div>
@@ -108,107 +125,127 @@ export function FanCluPage() {
   }
 
   return (
-    <div className="min-h-screen">
+    <div className="min-h-screen bg-background">
       <Header />
-      <main className="max-w-5xl mx-auto px-6 py-20">
-        <div className="flex flex-col md:flex-row gap-12 md:gap-16 items-start">
-          {/* Left: Teaser */}
-          <div className="flex-1">
-            <h1 className="text-4xl font-bold font-display text-white mb-4">
-              Fan Clú
-            </h1>
-            <p className="text-zinc-300 text-lg mb-8">
-              El rincón exclusivo para los verdaderos fans de Metal Prog Pop.
-            </p>
-            <div className="flex flex-wrap gap-3">
-              <span className="bg-zinc-800 border border-zinc-700 rounded-lg px-4 py-2 text-sm text-zinc-300">
-                Bonus content
+      <main>
+        <Section>
+          <Container>
+            <div className="mb-12 text-center">
+              <span className="mb-3 inline-block font-display text-sm font-semibold uppercase tracking-widest text-brand">
+                Acceso exclusivo
               </span>
-              <span className="bg-zinc-800 border border-zinc-700 rounded-lg px-4 py-2 text-sm text-zinc-300">
-                Behind the scenes
-              </span>
-              <span className="bg-zinc-800 border border-zinc-700 rounded-lg px-4 py-2 text-sm text-zinc-300">
-                Notas exclusivas
-              </span>
+              <h1 className="font-display text-3xl font-bold tracking-tight text-text-primary sm:text-4xl">
+                Fan Clú
+              </h1>
             </div>
-          </div>
 
-          {/* Right: Login form */}
-          <div className="flex-1 w-full">
-            <div className="bg-zinc-900 border border-zinc-800 rounded-xl p-8">
-              {error && (
-                <div className="bg-red-900/30 border border-red-800 rounded-lg p-4 mb-6 text-red-300 text-sm">
-                  El link es inválido o expirado. Intentá de nuevo.
-                </div>
-              )}
+            <div className="grid gap-12 md:grid-cols-2 md:gap-16">
+              <div>
+                <p className="mb-8 text-lg leading-relaxed text-text-secondary">
+                  El rincón exclusivo para los verdaderos fans de Metal Prog
+                  Pop.
+                </p>
+                <ul className="space-y-3">
+                  {[
+                    "Bonus content",
+                    "Behind the scenes",
+                    "Notas exclusivas",
+                  ].map((item) => (
+                    <li
+                      key={item}
+                      className="flex items-center gap-3 text-text-secondary"
+                    >
+                      <span className="h-1.5 w-1.5 rounded-full bg-brand" />
+                      <span className="font-display text-sm font-medium">
+                        {item}
+                      </span>
+                    </li>
+                  ))}
+                </ul>
+              </div>
 
-              {submitError && (
-                <div className="bg-red-900/30 border border-red-800 rounded-lg p-4 mb-6 text-red-300 text-sm">
-                  Hubo un error. Intentá de nuevo.
-                </div>
-              )}
+              <Card padding="md" className="p-8">
+                {error && (
+                  <div className="mb-6 rounded-lg border border-destructive/30 bg-destructive/10 p-4 text-sm text-destructive">
+                    El link es inválido o expirado. Intentá de nuevo.
+                  </div>
+                )}
 
-              {submitted ? (
-                <div className="text-center py-4">
-                  <p className="text-zinc-300 text-lg">
-                    Si tu email está registrado, te enviamos un link de acceso.
-                  </p>
-                  <p className="text-zinc-500 text-sm mt-4">
-                    Revisá tu bandeja de entrada.
-                  </p>
-                  {isDevShowMagicLink() && magicLink !== null && (
-                    <div className="mt-6 border-t border-zinc-800 pt-6 text-left">
-                      <p className="text-amber-400 text-xs uppercase tracking-wide mb-2">
-                        Dev: magic link (no email sent)
-                      </p>
-                      <a
-                        data-testid="dev-magic-link"
-                        href={magicLink}
-                        className="text-[var(--color-pop-red)] underline break-all text-sm"
+                {submitError && (
+                  <div className="mb-6 rounded-lg border border-destructive/30 bg-destructive/10 p-4 text-sm text-destructive">
+                    Hubo un error. Intentá de nuevo.
+                  </div>
+                )}
+
+                {submitted ? (
+                  <div className="py-4 text-center">
+                    <p className="text-lg text-text-primary">
+                      Si tu email está registrado, te enviamos un link de
+                      acceso.
+                    </p>
+                    <p className="mt-4 text-sm text-text-muted">
+                      Revisá tu bandeja de entrada.
+                    </p>
+                    {isDevShowMagicLink() && magicLink !== null && (
+                      <div className="mt-6 border-t border-border pt-6 text-left">
+                        <p className="mb-2 font-display text-xs uppercase tracking-widest text-brand">
+                          Dev: magic link (no email sent)
+                        </p>
+                        <a
+                          data-testid="dev-magic-link"
+                          href={magicLink}
+                          className="break-all text-sm text-brand underline hover:text-brand-hover"
+                        >
+                          {magicLink}
+                        </a>
+                      </div>
+                    )}
+                  </div>
+                ) : (
+                  <>
+                    <h2 className="mb-6 font-display text-xl font-semibold text-text-primary">
+                      Ingresá con tu email
+                    </h2>
+                    <form onSubmit={handleSubmit} className="space-y-4">
+                      <input
+                        type="email"
+                        placeholder="tu@email.com"
+                        value={email}
+                        onChange={(e) => setEmail(e.target.value)}
+                        required
+                        className="w-full rounded-lg border border-border bg-surface px-4 py-3 font-display text-text-primary placeholder:text-text-muted focus:border-brand focus:outline-none focus:ring-2 focus:ring-brand/20"
+                      />
+                      <Button
+                        type="submit"
+                        variant="primary"
+                        size="md"
+                        disabled={submitting}
+                        className="w-full"
                       >
-                        {magicLink}
-                      </a>
-                    </div>
-                  )}
-                </div>
-              ) : (
-                <>
-                  <h2 className="text-xl font-semibold text-white mb-6">
-                    Ingresá con tu email
-                  </h2>
-                  <form onSubmit={handleSubmit}>
-                    <input
-                      type="email"
-                      placeholder="tu@email.com"
-                      value={email}
-                      onChange={(e) => setEmail(e.target.value)}
-                      required
-                      className="w-full bg-zinc-800 border border-zinc-700 rounded-lg px-4 py-3 text-white placeholder-zinc-500 mb-4 focus:outline-none focus:border-[var(--color-pop-red)] transition-colors"
-                    />
-                    <button
-                      type="submit"
-                      disabled={submitting}
-                      className="w-full bg-[var(--color-pop-red)] hover:bg-[var(--color-pop-red)]/90 text-white font-semibold rounded-lg px-4 py-3 transition-colors disabled:opacity-50 cursor-pointer"
-                    >
-                      {submitting ? "Enviando..." : "Enviar magic link"}
-                    </button>
-                  </form>
-                  {isTestUsersEnabled() && (
-                    <button
-                      type="button"
-                      onClick={handleTestLogin}
-                      disabled={submitting}
-                      data-testid="dev-test-login"
-                      className="w-full mt-3 bg-zinc-800 hover:bg-zinc-700 border border-amber-700/40 text-amber-300 font-medium rounded-lg px-4 py-3 transition-colors disabled:opacity-50 cursor-pointer text-sm"
-                    >
-                      Dev: ingresar como {TEST_USER_EMAIL}
-                    </button>
-                  )}
-                </>
-              )}
+                        {submitting ? "Enviando..." : "Enviar magic link"}
+                      </Button>
+                    </form>
+                    {isTestUsersEnabled() && (
+                      <Button
+                        type="button"
+                        variant="secondary"
+                        size="md"
+                        onClick={() => {
+                          void handleTestLogin();
+                        }}
+                        disabled={submitting}
+                        data-testid="dev-test-login"
+                        className="mt-3 w-full"
+                      >
+                        Dev: ingresar como {TEST_USER_EMAIL}
+                      </Button>
+                    )}
+                  </>
+                )}
+              </Card>
             </div>
-          </div>
-        </div>
+          </Container>
+        </Section>
       </main>
       <Footer />
     </div>
