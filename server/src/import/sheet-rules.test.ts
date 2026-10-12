@@ -56,6 +56,17 @@ describe("parsePlan", () => {
     });
   });
 
+  it("treats a dot before three digits as a thousands separator", () => {
+    expect(parsePlan("mpp1.000", "mercadopago")).toEqual({
+      amount: "1000.00",
+      currency: "ARS",
+    });
+    expect(parsePlan("mpp15.000", "mercadopago")).toEqual({
+      amount: "15000.00",
+      currency: "ARS",
+    });
+  });
+
   it("returns nulls for an empty plan", () => {
     expect(parsePlan(null, "mercadopago")).toEqual({
       amount: null,
@@ -197,16 +208,18 @@ describe("buildImport", () => {
     ]);
   });
 
-  it("skips rows without email or with an unknown status", () => {
+  it("skips rows without a valid email or with an unknown status", () => {
     const result = buildImport([
       ...header,
       [null, "Sin", "Mail", "activa"],
       ["b@example.com", "B", null, "???"],
+      ["not-an-email", "C", null, "activa"],
     ]);
     expect(result.subscribers).toEqual([]);
     expect(result.warnings).toEqual([
       "Fila 3: sin email, no se importa.",
       "Fila 4 (b@example.com): estado desconocido, no se importa.",
+      "Fila 5 (not-an-email): email inválido, no se importa.",
     ]);
   });
 });

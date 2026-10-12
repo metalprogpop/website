@@ -1,3 +1,5 @@
+import { z } from "zod";
+
 // Pure rules that turn the legacy subscriber spreadsheet into subscriber and
 // subscription rows. No I/O here so the rules can be unit-tested.
 //
@@ -56,6 +58,8 @@ const COLUMN = {
 
 const HEADER_ROWS = 2;
 
+const emailFormat = z.string().email();
+
 const text = (value: unknown): string | null => {
   if (value === null || value === undefined) {
     return null;
@@ -102,10 +106,11 @@ export const parsePlan = (
   if (!raw) {
     return { amount: null, currency: null };
   }
-  const match = /(\d+(?:[.,]\d+)?)/.exec(raw);
-  const amount = match?.[1]
-    ? Number(match[1].replace(",", ".")).toFixed(2)
-    : null;
+  // Dots followed by exactly three digits are thousands separators
+  // ("mpp1.000"); a comma is the decimal mark ("mpp4,5").
+  const normalized = raw.replace(/\.(?=\d{3}(?!\d))/g, "").replace(",", ".");
+  const match = /(\d+(?:\.\d+)?)/.exec(normalized);
+  const amount = match?.[1] ? Number(match[1]).toFixed(2) : null;
 
   let currency: string | null = null;
   if (raw.includes("euro")) {
@@ -189,6 +194,12 @@ export const buildImport = (rows: readonly (readonly unknown[])[]) => {
     const email = normalizeEmail(cell(COLUMN.email));
     if (!email) {
       warnings.push(`Fila ${rowNumber}: sin email, no se importa.`);
+      return;
+    }
+    if (!emailFormat.safeParse(email).success) {
+      warnings.push(
+        `Fila ${rowNumber} (${email}): email inválido, no se importa.`,
+      );
       return;
     }
 
