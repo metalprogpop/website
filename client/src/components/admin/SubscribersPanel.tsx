@@ -41,6 +41,12 @@ export function SubscribersPanel() {
     ? Math.max(1, Math.ceil(list.data.total / PAGE_SIZE))
     : 1;
 
+  // Deleting the last row of the last page would otherwise leave an empty
+  // page on screen.
+  if (list.data && page > totalPages) {
+    setPage(totalPages);
+  }
+
   return (
     <div className="flex flex-col gap-6">
       <SubscribersToolbar
