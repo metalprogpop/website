@@ -236,13 +236,27 @@ authRouter.get(
   }),
 );
 
-authRouter.get("/me", requireAuth, (req, res) => {
-  if (!req.user) {
-    res.status(401).json({ error: "Authentication required" });
-    return;
-  }
-  res.json(req.user);
-});
+authRouter.get(
+  "/me",
+  requireAuth,
+  asyncHandler(async (req, res) => {
+    if (!req.user) {
+      res.status(401).json({ error: "Authentication required" });
+      return;
+    }
+    const rows = await db
+      .select({ id: users.id, email: users.email, role: users.role })
+      .from(users)
+      .where(eq(users.id, req.user.id))
+      .limit(1);
+    const me = rows.at(0);
+    if (!me) {
+      res.status(401).json({ error: "Authentication required" });
+      return;
+    }
+    res.json(me);
+  }),
+);
 
 authRouter.post("/logout", (_req, res) => {
   res.clearCookie("auth_token", {
