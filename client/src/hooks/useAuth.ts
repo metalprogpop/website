@@ -1,8 +1,8 @@
 import { useQuery, useQueryClient } from "@tanstack/react-query";
-import type { AuthUser } from "shared";
+import { meResponseSchema, type MeResponse } from "shared";
 import { API_URL } from "../lib/api";
 
-const fetchMe = async (): Promise<AuthUser | null> => {
+const fetchMe = async (): Promise<MeResponse | null> => {
   const res = await fetch(`${API_URL}/api/v1/auth/me`, {
     credentials: "include",
   });
@@ -14,7 +14,7 @@ const fetchMe = async (): Promise<AuthUser | null> => {
     throw new Error("Failed to fetch auth status");
   }
 
-  return (await res.json()) as AuthUser;
+  return meResponseSchema.parse(await res.json());
 };
 
 export const useAuth = () => {
@@ -41,6 +41,7 @@ export const useAuth = () => {
     user,
     isLoading,
     isAuthenticated: user !== null,
+    isStaff: user?.role === "staff",
     logout,
   };
 };

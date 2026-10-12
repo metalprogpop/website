@@ -50,10 +50,13 @@ describe("FanCluPage", () => {
 
   it("renders welcome message when authenticated", async () => {
     vi.spyOn(globalThis, "fetch").mockResolvedValueOnce(
-      new Response(JSON.stringify({ id: 1, email: "fan@example.com" }), {
-        status: 200,
-        headers: { "Content-Type": "application/json" },
-      }),
+      new Response(
+        JSON.stringify({ id: 1, email: "fan@example.com", role: "fan" }),
+        {
+          status: 200,
+          headers: { "Content-Type": "application/json" },
+        },
+      ),
     );
 
     renderPage();
@@ -137,10 +140,13 @@ describe("FanCluPage", () => {
         }),
       )
       .mockResolvedValueOnce(
-        new Response(JSON.stringify({ id: 1, email: "test@example.com" }), {
-          status: 200,
-          headers: { "Content-Type": "application/json" },
-        }),
+        new Response(
+          JSON.stringify({ id: 1, email: "test@example.com", role: "fan" }),
+          {
+            status: 200,
+            headers: { "Content-Type": "application/json" },
+          },
+        ),
       );
 
     renderPage();
