@@ -54,6 +54,10 @@ export const subscriptionSchema = z.object({
 });
 export type Subscription = z.infer<typeof subscriptionSchema>;
 
+export const subscriptionListSchema = z.array(subscriptionSchema);
+
+export const apiErrorSchema = z.object({ error: z.string() });
+
 export const subscriberSchema = z.object({
   id: z.number(),
   email: z.string(),
