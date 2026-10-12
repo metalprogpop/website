@@ -54,8 +54,10 @@ export function EditableTextCell({
       onChange={(event) => {
         setDraft(event.target.value);
       }}
-      onBlur={() => {
-        if (!cancelled.current && draft !== current) {
+      onBlur={(event) => {
+        // A half-typed date reads as "": never let that erase a stored date.
+        const incomplete = event.currentTarget.validity.badInput;
+        if (!cancelled.current && !incomplete && draft !== current) {
           onCommit(draft);
         }
         setEditing(false);
