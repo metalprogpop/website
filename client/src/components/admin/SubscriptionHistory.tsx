@@ -21,6 +21,14 @@ import {
   subscriptionFields,
 } from "./SubscriptionFieldCell";
 
+// Local calendar date, so a new subscription becomes the latest one.
+const todayIso = (): string => {
+  const now = new Date();
+  const month = String(now.getMonth() + 1).padStart(2, "0");
+  const day = String(now.getDate()).padStart(2, "0");
+  return `${now.getFullYear()}-${month}-${day}`;
+};
+
 type SubscriptionHistoryProps = {
   subscriber: SubscriberRow;
 };
@@ -42,7 +50,10 @@ export function SubscriptionHistory({ subscriber }: SubscriptionHistoryProps) {
           size="sm"
           disabled={create.isPending}
           onClick={() => {
-            create.mutate({ subscriberId: subscriber.id, data: {} });
+            create.mutate({
+              subscriberId: subscriber.id,
+              data: { startedOn: todayIso() },
+            });
           }}
         >
           <PlusIcon className="size-4" />
