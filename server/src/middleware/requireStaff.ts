@@ -1,8 +1,11 @@
 import type { NextFunction, Request, Response } from "express";
 import { eq } from "drizzle-orm";
+import { z } from "zod";
 import { db } from "../db/index.js";
 import { users } from "../db/schema.js";
 import { verifyToken } from "../lib/jwt.js";
+
+const cookiesSchema = z.object({ auth_token: z.string().min(1) });
 
 const notFound = (res: Response): void => {
   res.status(404).json({ error: "Not found" });
@@ -16,12 +19,12 @@ export const requireStaff = (
   res: Response,
   next: NextFunction,
 ): void => {
-  const cookies = req.cookies as Record<string, string> | undefined;
-  const token = cookies?.auth_token;
-  if (!token) {
+  const cookies = cookiesSchema.safeParse(req.cookies);
+  if (!cookies.success) {
     notFound(res);
     return;
   }
+  const token = cookies.data.auth_token;
 
   let userId: number;
   try {
