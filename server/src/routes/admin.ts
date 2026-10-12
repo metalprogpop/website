@@ -40,6 +40,11 @@ const isUniqueViolation = (err: unknown): boolean =>
     ? err.code === "23505"
     : false;
 
+const isCheckViolation = (err: unknown): boolean =>
+  typeof err === "object" && err !== null && "code" in err
+    ? err.code === "23514"
+    : false;
+
 const EMAIL_TAKEN = "Ya hay un suscriptor con ese email";
 
 const findLiveSubscriber = async (id: number) =>
@@ -234,11 +239,22 @@ adminRouter.patch(
       badRequest(res, body.error);
       return;
     }
-    const updated = await db
-      .update(subscriptions)
-      .set({ ...body.data, updatedAt: new Date() })
-      .where(liveSubscriptionOf(id.data))
-      .returning();
+    let updated;
+    try {
+      updated = await db
+        .update(subscriptions)
+        .set({ ...body.data, updatedAt: new Date() })
+        .where(liveSubscriptionOf(id.data))
+        .returning();
+    } catch (err) {
+      if (isCheckViolation(err)) {
+        res
+          .status(400)
+          .json({ error: "La baja no puede ser anterior al alta" });
+        return;
+      }
+      throw err;
+    }
     const row = updated.at(0);
     if (!row) {
       notFound(res);
