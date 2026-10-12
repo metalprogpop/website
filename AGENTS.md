@@ -36,6 +36,10 @@ pnpm monorepo with three workspace packages:
 - Apply migration: `pnpm run db:migrate`
 - Open Drizzle Studio: `pnpm run db:studio`
 
+### Access
+
+- Grant or revoke admin access (creates the user if needed): `docker compose exec server pnpm set-role <email> <staff|fan>`. There is deliberately no UI for this.
+
 ## Code Conventions
 
 ### ESLint Rules
