@@ -1,9 +1,4 @@
-import {
-  Router,
-  type Request,
-  type Response,
-  type NextFunction,
-} from "express";
+import { Router, type Request, type Response } from "express";
 import rateLimit, { ipKeyGenerator } from "express-rate-limit";
 import crypto from "node:crypto";
 import { eq, and, lt } from "drizzle-orm";
@@ -12,6 +7,7 @@ import { users, magicTokens } from "../db/schema.js";
 import { magicLinkRequestSchema } from "shared";
 import { signToken, getJwtExpirationDays } from "../lib/jwt.js";
 import { sendMagicLinkEmail, buildMagicLinkUrl } from "../lib/email.js";
+import { asyncHandler } from "../lib/asyncHandler.js";
 import { requireAuth } from "../middleware/auth.js";
 
 export const authRouter = Router();
@@ -45,12 +41,6 @@ const isTestUser = (email: string): boolean => {
   }
   return getTestUserEmails().includes(email.toLowerCase());
 };
-
-const asyncHandler =
-  (fn: (req: Request, res: Response, next: NextFunction) => Promise<void>) =>
-  (req: Request, res: Response, next: NextFunction) => {
-    fn(req, res, next).catch(next);
-  };
 
 const GENERIC_MESSAGE =
   "Si tu email está registrado, te enviamos un link de acceso.";
