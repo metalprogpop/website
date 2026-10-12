@@ -134,7 +134,7 @@ adminRouter.delete(
     }
     const deleted = await db
       .update(subscribers)
-      .set({ deletedAt: new Date() })
+      .set({ deletedAt: new Date(), updatedAt: new Date() })
       .where(and(eq(subscribers.id, id.data), isNull(subscribers.deletedAt)))
       .returning({ id: subscribers.id });
     if (deleted.length === 0) {
@@ -214,13 +214,12 @@ adminRouter.post(
   }),
 );
 
-// Only subscriptions whose subscriber is live can be changed.
+// Subscriptions can only be changed (or restored) while their subscriber is
+// live; a deleted subscriber's history comes back with the subscriber.
+const parentIsLive = sql`exists (select 1 from ${subscribers} where ${subscribers.id} = ${subscriptions.subscriberId} and ${subscribers.deletedAt} is null)`;
+
 const liveSubscriptionOf = (id: number) =>
-  and(
-    eq(subscriptions.id, id),
-    isNull(subscriptions.deletedAt),
-    sql`exists (select 1 from ${subscribers} where ${subscribers.id} = ${subscriptions.subscriberId} and ${subscribers.deletedAt} is null)`,
-  );
+  and(eq(subscriptions.id, id), isNull(subscriptions.deletedAt), parentIsLive);
 
 adminRouter.patch(
   "/subscriptions/:id",
@@ -259,7 +258,7 @@ adminRouter.delete(
     }
     const deleted = await db
       .update(subscriptions)
-      .set({ deletedAt: new Date() })
+      .set({ deletedAt: new Date(), updatedAt: new Date() })
       .where(liveSubscriptionOf(id.data))
       .returning({ id: subscriptions.id });
     if (deleted.length === 0) {
@@ -282,7 +281,11 @@ adminRouter.post(
       .update(subscriptions)
       .set({ deletedAt: null, updatedAt: new Date() })
       .where(
-        and(eq(subscriptions.id, id.data), isNotNull(subscriptions.deletedAt)),
+        and(
+          eq(subscriptions.id, id.data),
+          isNotNull(subscriptions.deletedAt),
+          parentIsLive,
+        ),
       )
       .returning();
     const row = restored.at(0);
