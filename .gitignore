@@ -13,3 +13,7 @@ playwright/.cache/
 .playwright-mcp/
 .superpowers/
 .vscode/
+
+# Data exports (may contain personal data)
+*.xlsx
+*.csv
