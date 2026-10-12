@@ -10,9 +10,25 @@ export const subscriptionStatusSchema = z.enum([
 ]);
 export type SubscriptionStatus = z.infer<typeof subscriptionStatusSchema>;
 
+const isRealDate = (value: string): boolean => {
+  const date = new Date(`${value}T00:00:00.000Z`);
+  return (
+    !Number.isNaN(date.getTime()) && date.toISOString().slice(0, 10) === value
+  );
+};
+
 const isoDateSchema = z
   .string()
-  .regex(/^\d{4}-\d{2}-\d{2}$/, "Usá el formato AAAA-MM-DD");
+  .regex(/^\d{4}-\d{2}-\d{2}$/, "Usá el formato AAAA-MM-DD")
+  .refine(isRealDate, "Esa fecha no existe");
+
+const datesInOrder = (value: {
+  startedOn?: string | null;
+  endedOn?: string | null;
+}): boolean =>
+  !value.startedOn || !value.endedOn || value.endedOn >= value.startedOn;
+
+const DATES_OUT_OF_ORDER = "La baja no puede ser anterior al alta";
 
 // Empty strings coming from inline edits mean "clear this field".
 const optionalTextSchema = z
@@ -160,10 +176,14 @@ const subscriptionFieldsSchema = z.object({
 
 export const subscriptionCreateSchema = subscriptionFieldsSchema
   .partial()
-  .extend({ status: subscriptionStatusSchema.default("active") });
+  .extend({ status: subscriptionStatusSchema.default("active") })
+  .refine(datesInOrder, DATES_OUT_OF_ORDER);
 export type SubscriptionCreate = z.input<typeof subscriptionCreateSchema>;
 
+// A patch with only one date is checked against the stored one by a
+// database constraint.
 export const subscriptionUpdateSchema = subscriptionFieldsSchema
   .partial()
-  .refine((value) => Object.keys(value).length > 0, "Nada para actualizar");
+  .refine((value) => Object.keys(value).length > 0, "Nada para actualizar")
+  .refine(datesInOrder, DATES_OUT_OF_ORDER);
 export type SubscriptionUpdate = z.input<typeof subscriptionUpdateSchema>;
