@@ -30,10 +30,13 @@ afterEach(() => {
 describe("useAuth", () => {
   it("returns authenticated user when /me succeeds", async () => {
     vi.spyOn(globalThis, "fetch").mockResolvedValueOnce(
-      new Response(JSON.stringify({ id: 1, email: "fan@example.com" }), {
-        status: 200,
-        headers: { "Content-Type": "application/json" },
-      }),
+      new Response(
+        JSON.stringify({ id: 1, email: "fan@example.com", role: "fan" }),
+        {
+          status: 200,
+          headers: { "Content-Type": "application/json" },
+        },
+      ),
     );
 
     const { result } = renderHook(() => useAuth(), {
@@ -43,7 +46,11 @@ describe("useAuth", () => {
     await waitFor(() => expect(result.current.isLoading).toBe(false));
 
     expect(result.current.isAuthenticated).toBe(true);
-    expect(result.current.user).toEqual({ id: 1, email: "fan@example.com" });
+    expect(result.current.user).toEqual({
+      id: 1,
+      email: "fan@example.com",
+      role: "fan",
+    });
   });
 
   it("returns unauthenticated when /me returns 401", async () => {
