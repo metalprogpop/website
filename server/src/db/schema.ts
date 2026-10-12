@@ -1,9 +1,19 @@
-import { pgTable, serial, text, timestamp, integer } from "drizzle-orm/pg-core";
+import {
+  pgEnum,
+  pgTable,
+  serial,
+  text,
+  timestamp,
+  integer,
+} from "drizzle-orm/pg-core";
+
+export const userRole = pgEnum("user_role", ["fan", "staff"]);
 
 export const users = pgTable("users", {
   id: serial("id").primaryKey(),
   email: text("email").notNull().unique(),
   name: text("name"),
+  role: userRole("role").notNull().default("fan"),
   createdAt: timestamp("created_at").defaultNow().notNull(),
 });
 
