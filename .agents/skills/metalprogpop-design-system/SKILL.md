@@ -128,7 +128,13 @@ Match the `EpisodesPage` search input and `FanCluPage` email input:
 
 ## Loading & Error States
 
-Spinner (matches `LatestEpisodes`):
+Lists and grids whose shape is known (episodes, tables) show a skeleton of
+the final layout instead of a spinner, so the page never looks empty: see
+`EpisodeGridSkeleton` (cards) and the admin grid (shadcn `Skeleton`).
+Episode artwork loads progressively through `EpisodeArtwork` (blurred tiny
+copy, then the sized image); never point an `<img>` at a raw Audioboom upload.
+
+Spinner, for anything without a known shape:
 
 ```tsx
 <div className="h-8 w-8 animate-spin rounded-full border-4 border-brand border-t-transparent" />

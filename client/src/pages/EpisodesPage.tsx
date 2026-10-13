@@ -3,6 +3,7 @@ import { useQuery } from "@tanstack/react-query";
 import { Container } from "../components/layout/Container";
 import { Section } from "../components/layout/Section";
 import { EpisodeCard } from "../components/landing/EpisodeCard";
+import { EpisodeGridSkeleton } from "../components/landing/EpisodeCardSkeleton";
 import { Header } from "../components/landing/Header";
 import { Footer } from "../components/landing/Footer";
 import { episodesQueryOptions } from "../hooks/useEpisodes";
@@ -61,11 +62,7 @@ export function EpisodesPage() {
               />
             </div>
 
-            {isLoading && (
-              <div className="flex justify-center py-12">
-                <div className="h-8 w-8 animate-spin rounded-full border-4 border-brand border-t-transparent" />
-              </div>
-            )}
+            {isLoading && <EpisodeGridSkeleton count={6} />}
 
             {isError && (
               <div className="py-12 text-center text-text-secondary">
@@ -83,8 +80,12 @@ export function EpisodesPage() {
                   </div>
                 ) : (
                   <div className="grid grid-cols-1 gap-8 md:grid-cols-2 lg:grid-cols-3">
-                    {filteredEpisodes.map((episode) => (
-                      <EpisodeCard key={episode.id} episode={episode} />
+                    {filteredEpisodes.map((episode, index) => (
+                      <EpisodeCard
+                        key={episode.id}
+                        episode={episode}
+                        eager={index < 3}
+                      />
                     ))}
                   </div>
                 )}
