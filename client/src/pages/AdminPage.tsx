@@ -5,8 +5,6 @@ import { Section } from "../components/layout/Section";
 import { Card } from "../components/ui/brand/Card";
 import { NewSubscriberDialog } from "../components/admin/NewSubscriberDialog";
 import { SubscribersPanel } from "../components/admin/SubscribersPanel";
-import { TrashView } from "../components/admin/TrashView";
-import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { Toaster } from "@/components/ui/sonner";
 import { useAuth } from "../hooks/useAuth";
 
@@ -65,27 +63,9 @@ export function AdminPage() {
             </div>
             <NewSubscriberDialog />
           </div>
-          <Tabs defaultValue="subscribers">
-            <TabsList>
-              <TabsTrigger value="subscribers">Suscriptores</TabsTrigger>
-              <TabsTrigger value="trash">Papelera</TabsTrigger>
-            </TabsList>
-            {/* Stay mounted so search, filters and page survive tab switches. */}
-            <TabsContent
-              value="subscribers"
-              forceMount
-              className="data-[state=inactive]:hidden"
-            >
-              <Card padding="md">
-                <SubscribersPanel />
-              </Card>
-            </TabsContent>
-            <TabsContent value="trash">
-              <Card padding="md">
-                <TrashView />
-              </Card>
-            </TabsContent>
-          </Tabs>
+          <Card padding="md">
+            <SubscribersPanel />
+          </Card>
         </Container>
       </Section>
       <Toaster richColors position="bottom-right" />
