@@ -1,21 +1,20 @@
 import type { ColumnDef } from "@tanstack/react-table";
 import { ChevronRightIcon } from "lucide-react";
-import type { SubscriberRow } from "shared";
+import type { SubscriberRow, SubscriptionStatus } from "shared";
+import { Badge } from "@/components/ui/badge";
 import { cn } from "@/lib/utils";
 import { useDeleteSubscriber } from "@/hooks/useAdminMutations";
 import { ConfirmDeleteButton } from "./ConfirmDeleteButton";
+import { formatAmount, formatIsoDate } from "./format";
+import { platformLabels, statusLabels } from "./labels";
 import {
-  SubscriberFlagCell,
   SubscriberTextCell,
-  type SubscriberFlagField,
   type SubscriberTextField,
 } from "./SubscriberFieldCell";
-import {
-  SubscriptionFieldCell,
-  subscriptionFields,
-} from "./SubscriptionFieldCell";
 
-const textColumn = (
+// Only names are edited in the grid; everything else is read-only here and
+// notes live in the expanded row.
+const editableColumn = (
   field: SubscriberTextField,
   header: string,
 ): ColumnDef<SubscriberRow> => ({
@@ -30,20 +29,29 @@ const textColumn = (
   ),
 });
 
-const flagColumn = (
-  field: SubscriberFlagField,
+const readOnlyColumn = (
+  id: string,
   header: string,
+  render: (row: SubscriberRow) => React.ReactNode,
+  className?: string,
 ): ColumnDef<SubscriberRow> => ({
-  id: field,
+  id,
   header,
   cell: ({ row }) => (
-    <SubscriberFlagCell
-      subscriber={row.original}
-      field={field}
-      label={header}
-    />
+    <span className={cn("block px-2 text-sm text-text-primary", className)}>
+      {render(row.original)}
+    </span>
   ),
 });
+
+const statusBadgeVariant: Record<
+  SubscriptionStatus,
+  "default" | "secondary" | "outline"
+> = {
+  active: "default",
+  paused: "secondary",
+  cancelled: "outline",
+};
 
 function DeleteSubscriberCell({ subscriber }: { subscriber: SubscriberRow }) {
   const remove = useDeleteSubscriber();
@@ -62,12 +70,12 @@ function DeleteSubscriberCell({ subscriber }: { subscriber: SubscriberRow }) {
 export const subscriberColumns: ColumnDef<SubscriberRow>[] = [
   {
     id: "expand",
-    header: () => <span className="sr-only">Historial</span>,
+    header: () => <span className="sr-only">Detalle</span>,
     cell: ({ row }) => (
       <button
         type="button"
         aria-expanded={row.getIsExpanded()}
-        aria-label={`Historial de ${row.original.email} (${row.original.subscriptionCount})`}
+        aria-label={`Detalle de ${row.original.email}`}
         onClick={row.getToggleExpandedHandler()}
         className="inline-flex size-8 items-center justify-center gap-0.5 rounded-md text-text-muted hover:text-brand focus:outline-none focus:ring-2 focus:ring-brand/20"
       >
@@ -83,33 +91,45 @@ export const subscriberColumns: ColumnDef<SubscriberRow>[] = [
       </button>
     ),
   },
-  textColumn("email", "Email"),
-  textColumn("firstName", "Nombre"),
-  textColumn("lastName", "Apellido"),
-  textColumn("fanName", "Fan name"),
-  ...subscriptionFields.map(
-    (field): ColumnDef<SubscriberRow> => ({
-      id: field.key,
-      header: field.header,
-      cell: ({ row }) => {
-        const latest = row.original.latestSubscription;
-        return latest ? (
-          <SubscriptionFieldCell
-            subscription={latest}
-            field={field.key}
-            owner={row.original.email}
-          />
-        ) : (
-          <span className="px-2 text-text-muted">—</span>
-        );
-      },
-    }),
+  readOnlyColumn("email", "Email", (row) => row.email),
+  editableColumn("firstName", "Nombre"),
+  editableColumn("lastName", "Apellido"),
+  editableColumn("fanName", "Fan name"),
+  {
+    id: "status",
+    header: "Estado",
+    cell: ({ row }) => {
+      const latest = row.original.latestSubscription;
+      return latest ? (
+        <Badge variant={statusBadgeVariant[latest.status]}>
+          {statusLabels[latest.status]}
+        </Badge>
+      ) : (
+        <span className="px-2 text-text-muted">—</span>
+      );
+    },
+  },
+  readOnlyColumn("platform", "Plataforma", (row) => {
+    const platform = row.latestSubscription?.platform;
+    return platform ? platformLabels[platform] : "—";
+  }),
+  readOnlyColumn(
+    "amount",
+    "Monto",
+    (row) => formatAmount(row.latestSubscription?.amount ?? null),
+    "text-right tabular-nums",
   ),
-  flagColumn("inHallOfFame", "HoF"),
-  flagColumn("fanSpotlight", "Spotlight"),
-  flagColumn("contacted", "Contactadx"),
-  flagColumn("replied", "Contestó"),
-  textColumn("notes", "Notas"),
+  readOnlyColumn(
+    "currency",
+    "Moneda",
+    (row) => row.latestSubscription?.currency ?? "—",
+  ),
+  readOnlyColumn(
+    "startedOn",
+    "Alta",
+    (row) => formatIsoDate(row.latestSubscription?.startedOn ?? null),
+    "tabular-nums",
+  ),
   {
     id: "actions",
     header: () => <span className="sr-only">Acciones</span>,

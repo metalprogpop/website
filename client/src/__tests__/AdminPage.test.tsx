@@ -121,9 +121,16 @@ describe("AdminPage", () => {
     });
     expect(firstName).toHaveValue("Ana");
     expect(screen.getByText("1 activas")).toBeInTheDocument();
+    // Only names are editable; the rest of the row is read-only text.
     expect(
-      screen.getByRole("checkbox", { name: "HoF: ana@example.com" }),
-    ).toBeChecked();
+      screen.queryByRole("textbox", { name: /email de ana@example.com/i }),
+    ).not.toBeInTheDocument();
+    expect(screen.getByText("ana@example.com")).toBeInTheDocument();
+    expect(screen.getByText("Activa")).toBeInTheDocument();
+    expect(screen.queryByRole("checkbox")).not.toBeInTheDocument();
+    expect(
+      screen.queryByRole("columnheader", { name: "Baja" }),
+    ).not.toBeInTheDocument();
   });
 
   it("saves an edited cell with a PATCH of that field only", async () => {

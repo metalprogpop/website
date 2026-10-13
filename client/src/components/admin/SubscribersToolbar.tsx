@@ -15,16 +15,9 @@ export type Filters = {
   q: string;
   status: string;
   platform: string;
-  hallOfFame: string;
-  spotlight: string;
 };
 
 export const ALL = "all";
-
-const yesNo = [
-  { value: "true", label: "Sí" },
-  { value: "false", label: "No" },
-];
 
 type FilterSelectProps = {
   label: string;
@@ -97,18 +90,6 @@ export function SubscribersToolbar({
           value={filters.platform}
           options={platformOptions}
           onChange={set("platform")}
-        />
-        <FilterSelect
-          label="HoF"
-          value={filters.hallOfFame}
-          options={yesNo}
-          onChange={set("hallOfFame")}
-        />
-        <FilterSelect
-          label="Spotlight"
-          value={filters.spotlight}
-          options={yesNo}
-          onChange={set("spotlight")}
         />
       </div>
       <div className="flex flex-wrap items-center gap-2 text-sm text-text-secondary">
