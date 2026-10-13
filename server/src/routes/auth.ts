@@ -51,11 +51,19 @@ const genericSuccess = (_req: Request, res: Response): void => {
   res.status(200).json({ message: GENERIC_MESSAGE });
 };
 
+// Test users (dev only) log in without a link, so limiting them protects
+// nothing and only makes repeated e2e runs fail.
+const isTestUserRequest = (req: Request): boolean => {
+  const body = req.body as { email?: unknown } | undefined;
+  return typeof body?.email === "string" && isTestUser(body.email);
+};
+
 const magicLinkIpLimiter = rateLimit({
   windowMs: RATE_LIMIT_WINDOW_MS,
   max: 30,
   standardHeaders: true,
   legacyHeaders: false,
+  skip: isTestUserRequest,
   handler: genericSuccess,
 });
 
@@ -71,6 +79,7 @@ const magicLinkEmailLimiter = rateLimit({
     }
     return ipKeyGenerator(req.ip ?? "unknown");
   },
+  skip: isTestUserRequest,
   handler: genericSuccess,
 });
 
