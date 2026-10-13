@@ -3,7 +3,6 @@ import { Footer } from "../components/landing/Footer";
 import { Container } from "../components/layout/Container";
 import { Section } from "../components/layout/Section";
 import { Card } from "../components/ui/brand/Card";
-import { NewSubscriberDialog } from "../components/admin/NewSubscriberDialog";
 import { SubscribersPanel } from "../components/admin/SubscribersPanel";
 import { Toaster } from "@/components/ui/sonner";
 import { useAuth } from "../hooks/useAuth";
@@ -61,7 +60,6 @@ export function AdminPage() {
                 Suscriptores
               </h1>
             </div>
-            <NewSubscriberDialog />
           </div>
           <Card padding="md">
             <SubscribersPanel />
