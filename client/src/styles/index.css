@@ -43,6 +43,9 @@
   --input: #e5e5e5;
   --ring: #ff0017;
   --radius: 0.5rem;
+  /* Status colors. Green passes WCAG AA with white text at badge size. */
+  --success: #15803d;
+  --success-foreground: #ffffff;
 }
 
 @theme inline {
@@ -65,6 +68,8 @@
   --color-border: var(--border);
   --color-input: var(--input);
   --color-ring: var(--ring);
+  --color-success: var(--success);
+  --color-success-foreground: var(--success-foreground);
   --radius-sm: calc(var(--radius) - 4px);
   --radius-md: calc(var(--radius) - 2px);
   --radius-lg: var(--radius);
