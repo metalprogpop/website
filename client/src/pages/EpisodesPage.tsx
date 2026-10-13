@@ -1,65 +1,11 @@
 import { useState, useMemo } from "react";
 import { useQuery } from "@tanstack/react-query";
-import type { Episode } from "shared";
 import { Container } from "../components/layout/Container";
 import { Section } from "../components/layout/Section";
 import { EpisodeCard } from "../components/landing/EpisodeCard";
 import { Header } from "../components/landing/Header";
 import { Footer } from "../components/landing/Footer";
-
-const RSS_URL = "https://audioboom.com/channels/4940203.rss";
-const CORS_PROXY = "https://corsproxy.io/?";
-
-function parseRssToEpisodes(xml: string): Episode[] {
-  const parser = new DOMParser();
-  const doc = parser.parseFromString(xml, "text/xml");
-  const items = doc.querySelectorAll("item");
-
-  return Array.from(items).map((item) => {
-    const title = item.querySelector("title")?.textContent ?? "";
-    const episodeNumber = item
-      .getElementsByTagName("itunes:episode")
-      .item(0)?.textContent;
-    const duration = item
-      .getElementsByTagName("itunes:duration")
-      .item(0)?.textContent;
-    const image = item
-      .getElementsByTagName("itunes:image")
-      .item(0)
-      ?.getAttribute("href");
-    const description = item.querySelector("description")?.textContent ?? "";
-    const pubDate = item.querySelector("pubDate")?.textContent ?? "";
-    const link = item.querySelector("link")?.textContent ?? "";
-    const guid = item.querySelector("guid")?.textContent ?? "";
-
-    const cleanDescription = description.replace(/<[^>]*>/g, "").trim();
-
-    return {
-      id: guid || link,
-      spotifyEpisodeId: undefined,
-      title,
-      description: cleanDescription,
-      episodeNumber: episodeNumber ? parseInt(episodeNumber, 10) : undefined,
-      publishedAt: pubDate
-        ? new Date(pubDate).toISOString()
-        : new Date().toISOString(),
-      durationSeconds: duration ? parseInt(duration, 10) : 0,
-      artworkUrl: image ?? "",
-      spotifyUrl: link,
-    };
-  });
-}
-
-async function fetchEpisodes(): Promise<Episode[]> {
-  const response = await fetch(`${CORS_PROXY}${encodeURIComponent(RSS_URL)}`);
-
-  if (!response.ok) {
-    throw new Error("Failed to fetch episodes");
-  }
-
-  const xml = await response.text();
-  return parseRssToEpisodes(xml);
-}
+import { episodesQueryOptions } from "../hooks/useEpisodes";
 
 export function EpisodesPage() {
   const [search, setSearch] = useState("");
@@ -68,11 +14,7 @@ export function EpisodesPage() {
     data: episodes,
     isLoading,
     isError,
-  } = useQuery({
-    queryKey: ["episodes"],
-    queryFn: fetchEpisodes,
-    staleTime: 5 * 60 * 1000,
-  });
+  } = useQuery(episodesQueryOptions);
 
   const filteredEpisodes = useMemo(() => {
     if (!episodes) {
@@ -102,9 +44,11 @@ export function EpisodesPage() {
               <h1 className="mb-3 font-display text-3xl font-bold tracking-tight text-text-primary sm:text-4xl">
                 Todos los Episodios
               </h1>
-              <p className="text-text-secondary">
-                {episodes?.length ?? 0} episodios disponibles
-              </p>
+              {!isLoading && !isError && (
+                <p className="text-text-secondary">
+                  {episodes?.length ?? 0} episodios disponibles
+                </p>
+              )}
             </div>
 
             <div className="mb-10 flex justify-center">

@@ -1,9 +1,11 @@
-import { useQuery } from "@tanstack/react-query";
+import { queryOptions, useQuery } from "@tanstack/react-query";
 import { useState, useMemo } from "react";
 import type { Episode } from "shared";
+import { API_URL } from "../lib/api";
 
-const RSS_URL = "https://audioboom.com/channels/4940203.rss";
-const CORS_PROXY = "https://corsproxy.io/?";
+// Our server relays the Audioboom feed, which browsers cannot read
+// directly (no CORS headers).
+const FEED_URL = `${API_URL}/api/v1/episodes/feed`;
 const PAGE_SIZE = 15;
 
 export function parseRssToEpisodes(xml: string): Episode[] {
@@ -48,7 +50,7 @@ export function parseRssToEpisodes(xml: string): Episode[] {
 }
 
 async function fetchEpisodes(): Promise<Episode[]> {
-  const response = await fetch(`${CORS_PROXY}${encodeURIComponent(RSS_URL)}`);
+  const response = await fetch(FEED_URL);
 
   if (!response.ok) {
     throw new Error("Failed to fetch episodes");
@@ -58,14 +60,17 @@ async function fetchEpisodes(): Promise<Episode[]> {
   return parseRssToEpisodes(xml);
 }
 
+// Shared by every view that lists episodes, so they hit one cache entry.
+export const episodesQueryOptions = queryOptions({
+  queryKey: ["episodes"],
+  queryFn: fetchEpisodes,
+  staleTime: 5 * 60 * 1000,
+});
+
 export function useEpisodes() {
   const [displayCount, setDisplayCount] = useState(PAGE_SIZE);
 
-  const query = useQuery({
-    queryKey: ["episodes"],
-    queryFn: fetchEpisodes,
-    staleTime: 5 * 60 * 1000, // 5 minutes
-  });
+  const query = useQuery(episodesQueryOptions);
 
   const episodes = useMemo(
     () => query.data?.slice(0, displayCount) ?? [],
