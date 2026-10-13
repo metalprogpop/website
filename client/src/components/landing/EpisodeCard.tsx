@@ -1,8 +1,11 @@
 import type { Episode } from "shared";
 import { Card } from "../ui/brand/Card";
+import { EpisodeArtwork } from "./EpisodeArtwork";
 
 type EpisodeCardProps = {
   episode: Episode;
+  // Load the artwork right away (cards visible without scrolling).
+  eager?: boolean;
 };
 
 function formatDuration(seconds: number): string {
@@ -19,18 +22,18 @@ function formatDate(dateString: string): string {
   });
 }
 
-export function EpisodeCard({ episode }: EpisodeCardProps) {
+export function EpisodeCard({ episode, eager = false }: EpisodeCardProps) {
   return (
     <Card variant="interactive" className="group">
       <div className="relative aspect-square overflow-hidden">
-        <img
-          src={episode.artworkUrl}
+        <EpisodeArtwork
+          url={episode.artworkUrl}
           alt={
             episode.episodeNumber
               ? `Episodio ${episode.episodeNumber}`
               : episode.title
           }
-          className="h-full w-full object-cover transition-transform duration-500 group-hover:scale-110"
+          eager={eager}
         />
         <div className="absolute inset-0 bg-gradient-to-t from-black/50 via-transparent to-transparent opacity-0 transition-opacity duration-300 group-hover:opacity-100" />
         {episode.episodeNumber && (
