@@ -15,7 +15,7 @@ import {
   TableRow,
 } from "@/components/ui/table";
 import { subscriberColumns } from "./subscriberColumns";
-import { SubscriptionHistory } from "./SubscriptionHistory";
+import { SubscriberDetail } from "./SubscriberDetail";
 
 type SubscribersGridProps = {
   rows: SubscriberRow[];
@@ -72,7 +72,7 @@ export function SubscribersGrid({ rows }: SubscribersGridProps) {
                   colSpan={row.getVisibleCells().length}
                   className="bg-background p-3"
                 >
-                  <SubscriptionHistory subscriber={row.original} />
+                  <SubscriberDetail subscriber={row.original} />
                 </TableCell>
               </TableRow>
             ) : null}

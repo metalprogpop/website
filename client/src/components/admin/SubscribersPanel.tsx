@@ -14,19 +14,12 @@ const initialFilters: Filters = {
   q: "",
   status: ALL,
   platform: ALL,
-  hallOfFame: ALL,
-  spotlight: ALL,
 };
-
-const toFlag = (value: string): boolean | undefined =>
-  value === ALL ? undefined : value === "true";
 
 const toParams = (filters: Filters, page: number): SubscriberListParams => ({
   q: filters.q.trim() || undefined,
   status: isStatus(filters.status) ? filters.status : undefined,
   platform: isPlatform(filters.platform) ? filters.platform : undefined,
-  hallOfFame: toFlag(filters.hallOfFame),
-  spotlight: toFlag(filters.spotlight),
   page,
   pageSize: PAGE_SIZE,
 });
