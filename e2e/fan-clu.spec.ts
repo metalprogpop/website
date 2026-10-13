@@ -1,4 +1,5 @@
 import { test, expect } from "@playwright/test";
+import { E2E_MAGIC_LINK_EMAIL } from "./global-setup";
 
 const TEST_EMAIL = "test@example.com";
 const SERVER_URL =
@@ -38,7 +39,8 @@ test.describe("fan-clu real-flow auth", () => {
     await page.getByRole("button", { name: /cerrar sesión/i }).click();
 
     await expect(page.getByPlaceholder(/email/i)).toBeVisible();
-    await page.getByPlaceholder(/email/i).fill(TEST_EMAIL);
+    // A test user would log in without a link; use a regular one.
+    await page.getByPlaceholder(/email/i).fill(E2E_MAGIC_LINK_EMAIL);
     await page.getByRole("button", { name: /enviar/i }).click();
 
     const link = page.getByTestId("dev-magic-link");
@@ -51,7 +53,7 @@ test.describe("fan-clu real-flow auth", () => {
 
     await page.goto(href);
     await expect(page.getByText(/bienvenid/i)).toBeVisible();
-    await expect(page.getByText(TEST_EMAIL)).toBeVisible();
+    await expect(page.getByText(E2E_MAGIC_LINK_EMAIL)).toBeVisible();
   });
 
   test("invalid token query param shows error banner", async ({ page }) => {
