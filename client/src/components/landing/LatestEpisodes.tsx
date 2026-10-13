@@ -2,6 +2,7 @@ import { Link } from 'react-router-dom';
 import { Section } from '../layout/Section';
 import { Container } from '../layout/Container';
 import { EpisodeCard } from './EpisodeCard';
+import { EpisodeGridSkeleton } from './EpisodeCardSkeleton';
 import { useEpisodes } from '../../hooks/useEpisodes';
 
 const HOMEPAGE_EPISODE_LIMIT = 9;
@@ -23,9 +24,7 @@ export function LatestEpisodes() {
         </div>
 
         {isLoading && (
-          <div className="flex justify-center py-12">
-            <div className="h-8 w-8 animate-spin rounded-full border-4 border-brand border-t-transparent" />
-          </div>
+          <EpisodeGridSkeleton count={HOMEPAGE_EPISODE_LIMIT} />
         )}
 
         {isError && (
@@ -37,8 +36,8 @@ export function LatestEpisodes() {
         {!isLoading && !isError && (
           <>
             <div className="grid grid-cols-1 gap-8 md:grid-cols-2 lg:grid-cols-3">
-              {displayedEpisodes.map((episode) => (
-                <EpisodeCard key={episode.id} episode={episode} />
+              {displayedEpisodes.map((episode, index) => (
+                <EpisodeCard key={episode.id} episode={episode} eager={index < 3} />
               ))}
             </div>
 
