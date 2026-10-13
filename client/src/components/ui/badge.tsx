@@ -13,6 +13,10 @@ const badgeVariants = cva(
           "bg-secondary text-secondary-foreground [a&]:hover:bg-secondary/90",
         destructive:
           "bg-destructive text-white focus-visible:ring-destructive/20 dark:bg-destructive/60 dark:focus-visible:ring-destructive/40 [a&]:hover:bg-destructive/90",
+        // Status badges. "danger" uses the darker brand red so white text
+        // stays readable at badge size (plain brand red is below WCAG AA).
+        success: "bg-success text-success-foreground",
+        danger: "bg-brand-hover text-white",
         outline:
           "border-border text-foreground [a&]:hover:bg-accent [a&]:hover:text-accent-foreground",
         ghost: "[a&]:hover:bg-accent [a&]:hover:text-accent-foreground",
