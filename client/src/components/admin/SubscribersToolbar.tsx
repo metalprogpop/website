@@ -95,9 +95,9 @@ export function SubscribersToolbar({
       <div className="flex flex-wrap items-center gap-2 text-sm text-text-secondary">
         {counts ? (
           <>
-            <Badge>{counts.active} activas</Badge>
-            <Badge variant="secondary">{counts.paused} pausadas</Badge>
-            <Badge variant="outline">{counts.cancelled} canceladas</Badge>
+            <Badge variant="success">{counts.active} activas</Badge>
+            <Badge variant="outline">{counts.paused} pausadas</Badge>
+            <Badge variant="danger">{counts.cancelled} canceladas</Badge>
           </>
         ) : null}
         {total === undefined ? null : (

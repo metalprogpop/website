@@ -5,8 +5,8 @@ import { Badge } from "@/components/ui/badge";
 import { cn } from "@/lib/utils";
 import { useDeleteSubscriber } from "@/hooks/useAdminMutations";
 import { ConfirmDeleteButton } from "./ConfirmDeleteButton";
-import { formatAmount, formatIsoDate } from "./format";
-import { platformLabels, statusLabels } from "./labels";
+import { formatIsoDate } from "./format";
+import { statusLabels } from "./labels";
 import {
   SubscriberTextCell,
   type SubscriberTextField,
@@ -46,11 +46,11 @@ const readOnlyColumn = (
 
 const statusBadgeVariant: Record<
   SubscriptionStatus,
-  "default" | "secondary" | "outline"
+  "success" | "outline" | "danger"
 > = {
-  active: "default",
-  paused: "secondary",
-  cancelled: "outline",
+  active: "success",
+  paused: "outline",
+  cancelled: "danger",
 };
 
 function DeleteSubscriberCell({ subscriber }: { subscriber: SubscriberRow }) {
@@ -109,21 +109,6 @@ export const subscriberColumns: ColumnDef<SubscriberRow>[] = [
       );
     },
   },
-  readOnlyColumn("platform", "Plataforma", (row) => {
-    const platform = row.latestSubscription?.platform;
-    return platform ? platformLabels[platform] : "—";
-  }),
-  readOnlyColumn(
-    "amount",
-    "Monto",
-    (row) => formatAmount(row.latestSubscription?.amount ?? null),
-    "text-right tabular-nums",
-  ),
-  readOnlyColumn(
-    "currency",
-    "Moneda",
-    (row) => row.latestSubscription?.currency ?? "—",
-  ),
   readOnlyColumn(
     "startedOn",
     "Alta",
