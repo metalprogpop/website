@@ -10,26 +10,6 @@ export const subscriptionStatusSchema = z.enum([
 ]);
 export type SubscriptionStatus = z.infer<typeof subscriptionStatusSchema>;
 
-const isRealDate = (value: string): boolean => {
-  const date = new Date(`${value}T00:00:00.000Z`);
-  return (
-    !Number.isNaN(date.getTime()) && date.toISOString().slice(0, 10) === value
-  );
-};
-
-const isoDateSchema = z
-  .string()
-  .regex(/^\d{4}-\d{2}-\d{2}$/, "Usá el formato AAAA-MM-DD")
-  .refine(isRealDate, "Esa fecha no existe");
-
-const datesInOrder = (value: {
-  startedOn?: string | null;
-  endedOn?: string | null;
-}): boolean =>
-  !value.startedOn || !value.endedOn || value.endedOn >= value.startedOn;
-
-const DATES_OUT_OF_ORDER = "La baja no puede ser anterior al alta";
-
 // Empty strings coming from inline edits mean "clear this field".
 const optionalTextSchema = z
   .string()
@@ -37,19 +17,6 @@ const optionalTextSchema = z
   .max(2000)
   .transform((value) => (value === "" ? null : value))
   .nullable();
-
-const amountSchema = z
-  .string()
-  .trim()
-  .regex(/^\d{1,10}(\.\d{1,2})?$/, "Monto inválido");
-
-const currencySchema = z
-  .string()
-  .trim()
-  .toUpperCase()
-  .regex(/^[A-Z]{3}$/, "Usá un código de moneda de 3 letras");
-
-const emailSchema = z.string().trim().toLowerCase().email("Email inválido");
 
 // --- Records as returned by the API (timestamps serialized as ISO strings) ---
 
@@ -115,75 +82,32 @@ export type SubscriberListResponse = z.infer<
   typeof subscriberListResponseSchema
 >;
 
-export const trashResponseSchema = z.object({
-  subscribers: z.array(subscriberSchema),
-  subscriptions: z.array(
-    subscriptionSchema.extend({ subscriberEmail: z.string() }),
-  ),
-});
-export type TrashResponse = z.infer<typeof trashResponseSchema>;
-
 // --- Requests ---
-
-const booleanQuerySchema = z
-  .enum(["true", "false"])
-  .transform((value) => value === "true");
 
 export const subscriberListQuerySchema = z.object({
   q: z.string().trim().max(200).optional(),
   status: subscriptionStatusSchema.optional(),
   platform: platformSchema.optional(),
-  hallOfFame: booleanQuerySchema.optional(),
-  spotlight: booleanQuerySchema.optional(),
   page: z.coerce.number().int().min(1).default(1),
   pageSize: z.coerce.number().int().min(1).max(100).default(50),
 });
 export type SubscriberListQuery = z.input<typeof subscriberListQuerySchema>;
 
-export const subscriberCreateSchema = z.object({
-  email: emailSchema,
-  firstName: optionalTextSchema.optional(),
-  lastName: optionalTextSchema.optional(),
-  fanName: optionalTextSchema.optional(),
-});
-export type SubscriberCreate = z.input<typeof subscriberCreateSchema>;
-
+// Staff edits only what the payment platforms do not provide: names and
+// notes. Unknown keys are rejected, not silently dropped.
 export const subscriberUpdateSchema = z
   .object({
-    email: emailSchema,
     firstName: optionalTextSchema,
     lastName: optionalTextSchema,
     fanName: optionalTextSchema,
-    inHallOfFame: z.boolean(),
-    fanSpotlight: z.boolean(),
-    contacted: z.boolean(),
-    replied: z.boolean(),
     notes: optionalTextSchema,
   })
   .partial()
+  .strict()
   .refine((value) => Object.keys(value).length > 0, "Nada para actualizar");
 export type SubscriberUpdate = z.input<typeof subscriberUpdateSchema>;
 
-const subscriptionFieldsSchema = z.object({
-  platform: platformSchema.nullable(),
-  amount: amountSchema.nullable(),
-  currency: currencySchema.nullable(),
-  status: subscriptionStatusSchema,
-  startedOn: isoDateSchema.nullable(),
-  endedOn: isoDateSchema.nullable(),
-  notes: optionalTextSchema,
-});
-
-export const subscriptionCreateSchema = subscriptionFieldsSchema
-  .partial()
-  .extend({ status: subscriptionStatusSchema.default("active") })
-  .refine(datesInOrder, DATES_OUT_OF_ORDER);
-export type SubscriptionCreate = z.input<typeof subscriptionCreateSchema>;
-
-// A patch with only one date is checked against the stored one by a
-// database constraint.
-export const subscriptionUpdateSchema = subscriptionFieldsSchema
-  .partial()
-  .refine((value) => Object.keys(value).length > 0, "Nada para actualizar")
-  .refine(datesInOrder, DATES_OUT_OF_ORDER);
+export const subscriptionUpdateSchema = z
+  .object({ notes: optionalTextSchema })
+  .strict();
 export type SubscriptionUpdate = z.input<typeof subscriptionUpdateSchema>;

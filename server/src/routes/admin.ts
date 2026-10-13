@@ -1,11 +1,9 @@
 import { Router, type Response } from "express";
-import { and, eq, isNotNull, isNull, sql } from "drizzle-orm";
+import { and, eq, isNull, sql } from "drizzle-orm";
 import { z } from "zod";
 import {
-  subscriberCreateSchema,
   subscriberListQuerySchema,
   subscriberUpdateSchema,
-  subscriptionCreateSchema,
   subscriptionUpdateSchema,
 } from "shared";
 import { db } from "../db/index.js";
@@ -15,11 +13,12 @@ import { requireStaff } from "../middleware/requireStaff.js";
 import {
   listSubscribers,
   listSubscriptionsFor,
-  listTrash,
 } from "../services/subscribers.js";
 
-// Staff-only subscriber admin. Nothing is ever hard-deleted: DELETE sets
-// deleted_at and /restore clears it.
+// Staff-only subscriber admin. Subscribers, subscriptions and their status
+// come from the payment platforms (today, the spreadsheet import), so staff
+// can only read them and edit names and notes. Nothing is created or deleted
+// here.
 export const adminRouter = Router();
 adminRouter.use(requireStaff);
 
@@ -34,18 +33,6 @@ const badRequest = (res: Response, error: z.ZodError): void => {
 const notFound = (res: Response): void => {
   res.status(404).json({ error: "Not found" });
 };
-
-const isUniqueViolation = (err: unknown): boolean =>
-  typeof err === "object" && err !== null && "code" in err
-    ? err.code === "23505"
-    : false;
-
-const isCheckViolation = (err: unknown): boolean =>
-  typeof err === "object" && err !== null && "code" in err
-    ? err.code === "23514"
-    : false;
-
-const EMAIL_TAKEN = "Ya hay un suscriptor con ese email";
 
 const findLiveSubscriber = async (id: number) =>
   (
@@ -70,30 +57,6 @@ adminRouter.get(
   }),
 );
 
-adminRouter.post(
-  "/subscribers",
-  asyncHandler(async (req, res) => {
-    const body = subscriberCreateSchema.safeParse(req.body);
-    if (!body.success) {
-      badRequest(res, body.error);
-      return;
-    }
-    try {
-      const created = await db
-        .insert(subscribers)
-        .values(body.data)
-        .returning();
-      res.status(201).json(created.at(0));
-    } catch (err) {
-      if (isUniqueViolation(err)) {
-        res.status(409).json({ error: EMAIL_TAKEN });
-        return;
-      }
-      throw err;
-    }
-  }),
-);
-
 adminRouter.patch(
   "/subscribers/:id",
   asyncHandler(async (req, res) => {
@@ -107,80 +70,17 @@ adminRouter.patch(
       badRequest(res, body.error);
       return;
     }
-    try {
-      const updated = await db
-        .update(subscribers)
-        .set({ ...body.data, updatedAt: new Date() })
-        .where(and(eq(subscribers.id, id.data), isNull(subscribers.deletedAt)))
-        .returning();
-      const row = updated.at(0);
-      if (!row) {
-        notFound(res);
-        return;
-      }
-      res.json(row);
-    } catch (err) {
-      if (isUniqueViolation(err)) {
-        res.status(409).json({ error: EMAIL_TAKEN });
-        return;
-      }
-      throw err;
-    }
-  }),
-);
-
-adminRouter.delete(
-  "/subscribers/:id",
-  asyncHandler(async (req, res) => {
-    const id = idSchema.safeParse(req.params.id);
-    if (!id.success) {
-      notFound(res);
-      return;
-    }
-    const deleted = await db
+    const updated = await db
       .update(subscribers)
-      .set({ deletedAt: new Date(), updatedAt: new Date() })
+      .set({ ...body.data, updatedAt: new Date() })
       .where(and(eq(subscribers.id, id.data), isNull(subscribers.deletedAt)))
-      .returning({ id: subscribers.id });
-    if (deleted.length === 0) {
+      .returning();
+    const row = updated.at(0);
+    if (!row) {
       notFound(res);
       return;
     }
-    res.status(204).end();
-  }),
-);
-
-adminRouter.post(
-  "/subscribers/:id/restore",
-  asyncHandler(async (req, res) => {
-    const id = idSchema.safeParse(req.params.id);
-    if (!id.success) {
-      notFound(res);
-      return;
-    }
-    try {
-      const restored = await db
-        .update(subscribers)
-        .set({ deletedAt: null, updatedAt: new Date() })
-        .where(
-          and(eq(subscribers.id, id.data), isNotNull(subscribers.deletedAt)),
-        )
-        .returning();
-      const row = restored.at(0);
-      if (!row) {
-        notFound(res);
-        return;
-      }
-      res.json(row);
-    } catch (err) {
-      if (isUniqueViolation(err)) {
-        res.status(409).json({
-          error: "No se puede restaurar: ya hay otro suscriptor con ese email",
-        });
-        return;
-      }
-      throw err;
-    }
+    res.json(row);
   }),
 );
 
@@ -198,29 +98,7 @@ adminRouter.get(
   }),
 );
 
-adminRouter.post(
-  "/subscribers/:id/subscriptions",
-  asyncHandler(async (req, res) => {
-    const id = idSchema.safeParse(req.params.id);
-    if (!id.success || !(await findLiveSubscriber(id.data))) {
-      notFound(res);
-      return;
-    }
-    const body = subscriptionCreateSchema.safeParse(req.body);
-    if (!body.success) {
-      badRequest(res, body.error);
-      return;
-    }
-    const created = await db
-      .insert(subscriptions)
-      .values({ ...body.data, subscriberId: id.data })
-      .returning();
-    res.status(201).json(created.at(0));
-  }),
-);
-
-// Subscriptions can only be changed (or restored) while their subscriber is
-// live; a deleted subscriber's history comes back with the subscriber.
+// A subscription can only be changed while its subscriber is live.
 const parentIsLive = sql`exists (select 1 from ${subscribers} where ${subscribers.id} = ${subscriptions.subscriberId} and ${subscribers.deletedAt} is null)`;
 
 const liveSubscriptionOf = (id: number) =>
@@ -239,85 +117,16 @@ adminRouter.patch(
       badRequest(res, body.error);
       return;
     }
-    let updated;
-    try {
-      updated = await db
-        .update(subscriptions)
-        .set({ ...body.data, updatedAt: new Date() })
-        .where(liveSubscriptionOf(id.data))
-        .returning();
-    } catch (err) {
-      if (isCheckViolation(err)) {
-        res
-          .status(400)
-          .json({ error: "La baja no puede ser anterior al alta" });
-        return;
-      }
-      throw err;
-    }
+    const updated = await db
+      .update(subscriptions)
+      .set({ ...body.data, updatedAt: new Date() })
+      .where(liveSubscriptionOf(id.data))
+      .returning();
     const row = updated.at(0);
     if (!row) {
       notFound(res);
       return;
     }
     res.json(row);
-  }),
-);
-
-adminRouter.delete(
-  "/subscriptions/:id",
-  asyncHandler(async (req, res) => {
-    const id = idSchema.safeParse(req.params.id);
-    if (!id.success) {
-      notFound(res);
-      return;
-    }
-    const deleted = await db
-      .update(subscriptions)
-      .set({ deletedAt: new Date(), updatedAt: new Date() })
-      .where(liveSubscriptionOf(id.data))
-      .returning({ id: subscriptions.id });
-    if (deleted.length === 0) {
-      notFound(res);
-      return;
-    }
-    res.status(204).end();
-  }),
-);
-
-adminRouter.post(
-  "/subscriptions/:id/restore",
-  asyncHandler(async (req, res) => {
-    const id = idSchema.safeParse(req.params.id);
-    if (!id.success) {
-      notFound(res);
-      return;
-    }
-    const restored = await db
-      .update(subscriptions)
-      .set({ deletedAt: null, updatedAt: new Date() })
-      .where(
-        and(
-          eq(subscriptions.id, id.data),
-          isNotNull(subscriptions.deletedAt),
-          parentIsLive,
-        ),
-      )
-      .returning();
-    const row = restored.at(0);
-    if (!row) {
-      notFound(res);
-      return;
-    }
-    res.json(row);
-  }),
-);
-
-// --- Trash ---
-
-adminRouter.get(
-  "/trash",
-  asyncHandler(async (_req, res) => {
-    res.json(await listTrash());
   }),
 );

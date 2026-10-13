@@ -106,22 +106,3 @@ export const useUpdateSubscription = () => {
     onSettled: () => queryClient.invalidateQueries({ queryKey: adminKeys.all }),
   });
 };
-
-// Creating a subscriber refreshes every admin view.
-const useAdminAction = <TVars>(
-  action: (vars: TVars) => Promise<unknown>,
-  successMessage: string,
-) => {
-  const queryClient = useQueryClient();
-  return useMutation({
-    mutationFn: action,
-    onSuccess: () => {
-      toast.success(successMessage);
-    },
-    onError: showError,
-    onSettled: () => queryClient.invalidateQueries({ queryKey: adminKeys.all }),
-  });
-};
-
-export const useCreateSubscriber = () =>
-  useAdminAction(adminApi.createSubscriber, "Suscriptor creado");

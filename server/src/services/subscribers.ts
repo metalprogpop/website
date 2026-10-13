@@ -6,7 +6,6 @@ import {
   eq,
   ilike,
   inArray,
-  isNotNull,
   isNull,
   or,
   sql,
@@ -63,12 +62,6 @@ const buildFilters = (query: ListQuery): SQL[] => {
   }
   if (query.platform) {
     filters.push(eq(latestSubscription.platform, query.platform));
-  }
-  if (query.hallOfFame !== undefined) {
-    filters.push(eq(subscribers.inHallOfFame, query.hallOfFame));
-  }
-  if (query.spotlight !== undefined) {
-    filters.push(eq(subscribers.fanSpotlight, query.spotlight));
   }
   return filters;
 };
@@ -202,30 +195,3 @@ export const listSubscriptionsFor = (subscriberId: number) =>
       sql`${subscriptions.startedOn} DESC NULLS LAST`,
       desc(subscriptions.id),
     );
-
-export const listTrash = async () => {
-  const deletedSubscribers = await db
-    .select()
-    .from(subscribers)
-    .where(isNotNull(subscribers.deletedAt))
-    .orderBy(desc(subscribers.deletedAt));
-
-  // Subscriptions deleted on their own; those of a deleted subscriber come
-  // back when the subscriber is restored.
-  const deletedSubscriptions = await db
-    .select({ subscription: subscriptions, subscriberEmail: subscribers.email })
-    .from(subscriptions)
-    .innerJoin(subscribers, eq(subscribers.id, subscriptions.subscriberId))
-    .where(
-      and(isNotNull(subscriptions.deletedAt), isNull(subscribers.deletedAt)),
-    )
-    .orderBy(desc(subscriptions.deletedAt));
-
-  return {
-    subscribers: deletedSubscribers,
-    subscriptions: deletedSubscriptions.map((row) => ({
-      ...row.subscription,
-      subscriberEmail: row.subscriberEmail,
-    })),
-  };
-};

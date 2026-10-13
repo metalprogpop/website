@@ -4,11 +4,8 @@ import {
   subscriberSchema,
   subscriptionListSchema,
   subscriptionSchema,
-  trashResponseSchema,
   type Platform,
-  type SubscriberCreate,
   type SubscriberUpdate,
-  type SubscriptionCreate,
   type SubscriptionStatus,
   type SubscriptionUpdate,
 } from "shared";
@@ -58,8 +55,6 @@ export type SubscriberListParams = {
   q?: string;
   status?: SubscriptionStatus;
   platform?: Platform;
-  hallOfFame?: boolean;
-  spotlight?: boolean;
   page: number;
   pageSize: number;
 };
@@ -81,40 +76,16 @@ export const adminApi = {
     subscriberListResponseSchema.parse(
       await request(`/subscribers?${toSearchParams(query)}`),
     ),
-  createSubscriber: async (data: SubscriberCreate) =>
-    subscriberSchema.parse(await request("/subscribers", json("POST", data))),
   updateSubscriber: async (id: number, data: SubscriberUpdate) =>
     subscriberSchema.parse(
       await request(`/subscribers/${id}`, json("PATCH", data)),
-    ),
-  deleteSubscriber: async (id: number) => {
-    await request(`/subscribers/${id}`, { method: "DELETE" });
-  },
-  restoreSubscriber: async (id: number) =>
-    subscriberSchema.parse(
-      await request(`/subscribers/${id}/restore`, { method: "POST" }),
     ),
   listSubscriptions: async (subscriberId: number) =>
     subscriptionListSchema.parse(
       await request(`/subscribers/${subscriberId}/subscriptions`),
     ),
-  createSubscription: async (subscriberId: number, data: SubscriptionCreate) =>
-    subscriptionSchema.parse(
-      await request(
-        `/subscribers/${subscriberId}/subscriptions`,
-        json("POST", data),
-      ),
-    ),
   updateSubscription: async (id: number, data: SubscriptionUpdate) =>
     subscriptionSchema.parse(
       await request(`/subscriptions/${id}`, json("PATCH", data)),
     ),
-  deleteSubscription: async (id: number) => {
-    await request(`/subscriptions/${id}`, { method: "DELETE" });
-  },
-  restoreSubscription: async (id: number) =>
-    subscriptionSchema.parse(
-      await request(`/subscriptions/${id}/restore`, { method: "POST" }),
-    ),
-  trash: async () => trashResponseSchema.parse(await request("/trash")),
 };
