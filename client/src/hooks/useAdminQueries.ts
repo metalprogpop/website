@@ -24,9 +24,3 @@ export const useSubscriptionHistory = (subscriberId: number) =>
     queryKey: adminKeys.history(subscriberId),
     queryFn: () => adminApi.listSubscriptions(subscriberId),
   });
-
-export const useTrash = () =>
-  useQuery({
-    queryKey: adminKeys.trash,
-    queryFn: adminApi.trash,
-  });

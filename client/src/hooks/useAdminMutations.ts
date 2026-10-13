@@ -107,7 +107,7 @@ export const useUpdateSubscription = () => {
   });
 };
 
-// Structural changes (create, delete, restore) refresh every admin view.
+// Creating a subscriber refreshes every admin view.
 const useAdminAction = <TVars>(
   action: (vars: TVars) => Promise<unknown>,
   successMessage: string,
@@ -122,15 +122,6 @@ const useAdminAction = <TVars>(
     onSettled: () => queryClient.invalidateQueries({ queryKey: adminKeys.all }),
   });
 };
-
-export const useDeleteSubscriber = () =>
-  useAdminAction(adminApi.deleteSubscriber, "Suscriptor enviado a la papelera");
-
-export const useRestoreSubscriber = () =>
-  useAdminAction(adminApi.restoreSubscriber, "Suscriptor restaurado");
-
-export const useRestoreSubscription = () =>
-  useAdminAction(adminApi.restoreSubscription, "Suscripción restaurada");
 
 export const useCreateSubscriber = () =>
   useAdminAction(adminApi.createSubscriber, "Suscriptor creado");

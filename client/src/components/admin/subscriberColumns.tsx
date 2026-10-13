@@ -3,8 +3,6 @@ import { ChevronRightIcon } from "lucide-react";
 import type { SubscriberRow } from "shared";
 import { Badge } from "@/components/ui/badge";
 import { cn } from "@/lib/utils";
-import { useDeleteSubscriber } from "@/hooks/useAdminMutations";
-import { ConfirmDeleteButton } from "./ConfirmDeleteButton";
 import { formatIsoDate } from "./format";
 import { statusBadgeVariant, statusLabels } from "./labels";
 import {
@@ -43,20 +41,6 @@ const readOnlyColumn = (
     </span>
   ),
 });
-
-function DeleteSubscriberCell({ subscriber }: { subscriber: SubscriberRow }) {
-  const remove = useDeleteSubscriber();
-  return (
-    <ConfirmDeleteButton
-      label={`Borrar a ${subscriber.email}`}
-      title={`¿Mandar a ${subscriber.email} a la papelera?`}
-      description="Sus suscripciones quedan guardadas y vuelven si lo restaurás desde la papelera."
-      onConfirm={() => {
-        remove.mutate(subscriber.id);
-      }}
-    />
-  );
-}
 
 export const subscriberColumns: ColumnDef<SubscriberRow>[] = [
   {
@@ -106,9 +90,4 @@ export const subscriberColumns: ColumnDef<SubscriberRow>[] = [
     (row) => formatIsoDate(row.latestSubscription?.startedOn ?? null),
     "tabular-nums",
   ),
-  {
-    id: "actions",
-    header: () => <span className="sr-only">Acciones</span>,
-    cell: ({ row }) => <DeleteSubscriberCell subscriber={row.original} />,
-  },
 ];
