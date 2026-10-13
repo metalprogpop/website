@@ -9,7 +9,6 @@ import type {
   Subscription,
   SubscriberListResponse,
   SubscriberUpdate,
-  SubscriptionCreate,
   SubscriptionUpdate,
 } from "shared";
 import { adminApi } from "../lib/adminApi";
@@ -129,24 +128,6 @@ export const useDeleteSubscriber = () =>
 
 export const useRestoreSubscriber = () =>
   useAdminAction(adminApi.restoreSubscriber, "Suscriptor restaurado");
-
-export const useCreateSubscription = () =>
-  useAdminAction(
-    ({
-      subscriberId,
-      data,
-    }: {
-      subscriberId: number;
-      data: SubscriptionCreate;
-    }) => adminApi.createSubscription(subscriberId, data),
-    "Suscripción agregada",
-  );
-
-export const useDeleteSubscription = () =>
-  useAdminAction(
-    adminApi.deleteSubscription,
-    "Suscripción enviada a la papelera",
-  );
 
 export const useRestoreSubscription = () =>
   useAdminAction(adminApi.restoreSubscription, "Suscripción restaurada");

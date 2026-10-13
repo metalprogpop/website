@@ -6,6 +6,15 @@ export const statusLabels: Record<SubscriptionStatus, string> = {
   cancelled: "Cancelada",
 };
 
+export const statusBadgeVariant: Record<
+  SubscriptionStatus,
+  "success" | "outline" | "danger"
+> = {
+  active: "success",
+  paused: "outline",
+  cancelled: "danger",
+};
+
 export const platformLabels: Record<Platform, string> = {
   mercadopago: "MercadoPago",
   patreon: "Patreon",

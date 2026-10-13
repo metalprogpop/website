@@ -12,6 +12,7 @@ type EditableTextCellProps = {
   onCommit: (next: string) => void;
   type?: "text" | "email" | "date";
   inputMode?: HTMLAttributes<HTMLInputElement>["inputMode"];
+  placeholder?: string;
   className?: string;
 };
 
@@ -23,6 +24,7 @@ export function EditableTextCell({
   onCommit,
   type = "text",
   inputMode,
+  placeholder,
   className,
 }: EditableTextCellProps) {
   const current = value ?? "";
@@ -45,6 +47,7 @@ export function EditableTextCell({
       type={type}
       inputMode={inputMode}
       aria-label={label}
+      placeholder={placeholder}
       value={editing ? draft : current}
       onFocus={() => {
         cancelled.current = false;
@@ -64,7 +67,7 @@ export function EditableTextCell({
       }}
       onKeyDown={handleKeyDown}
       className={cn(
-        "w-full min-w-24 rounded-md border border-transparent bg-transparent px-2 py-1 text-sm text-text-primary hover:border-border focus:border-brand focus:bg-surface focus:outline-none focus:ring-2 focus:ring-brand/20",
+        "w-full min-w-24 rounded-md border border-transparent bg-transparent px-2 py-1 text-sm text-text-primary placeholder:text-text-muted hover:border-border focus:border-brand focus:bg-surface focus:outline-none focus:ring-2 focus:ring-brand/20",
         className,
       )}
     />
