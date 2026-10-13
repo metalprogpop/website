@@ -120,6 +120,38 @@ body {
   }
 }
 
+/* Loading shimmer: a lighter band sweeps across neutral blocks. The
+   gradient is pinned to the viewport (twice its width), so every skeleton
+   on screen shares one band moving at one speed. */
+@keyframes shimmer {
+  from {
+    background-position: 100% 0;
+  }
+  to {
+    background-position: -100% 0;
+  }
+}
+
+.animate-shimmer {
+  background-image: linear-gradient(
+    90deg,
+    var(--border) 0%,
+    var(--border) 38%,
+    var(--color-surface) 50%,
+    var(--border) 62%,
+    var(--border) 100%
+  );
+  background-size: 200vw 100%;
+  background-attachment: fixed;
+  animation: shimmer 1.6s linear infinite;
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .animate-shimmer {
+    animation: none;
+  }
+}
+
 .animate-fade-up {
   animation: fade-up 0.6s ease-out forwards;
 }
