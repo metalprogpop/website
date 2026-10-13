@@ -1,5 +1,5 @@
-import { PlusIcon } from "lucide-react";
-import type { SubscriberRow } from "shared";
+import type { Subscription, SubscriberRow } from "shared";
+import { Badge } from "@/components/ui/badge";
 import { Skeleton } from "@/components/ui/skeleton";
 import {
   Table,
@@ -9,57 +9,49 @@ import {
   TableHeader,
   TableRow,
 } from "@/components/ui/table";
-import {
-  useCreateSubscription,
-  useDeleteSubscription,
-} from "@/hooks/useAdminMutations";
+import { useUpdateSubscription } from "@/hooks/useAdminMutations";
 import { useSubscriptionHistory } from "@/hooks/useAdminQueries";
-import { Button } from "../ui/brand/Button";
-import { ConfirmDeleteButton } from "./ConfirmDeleteButton";
-import {
-  SubscriptionFieldCell,
-  subscriptionFields,
-} from "./SubscriptionFieldCell";
+import { EditableTextCell } from "./EditableTextCell";
+import { formatAmount, formatIsoDate } from "./format";
+import { platformLabels, statusBadgeVariant, statusLabels } from "./labels";
 
-// Local calendar date, so a new subscription becomes the latest one.
-const todayIso = (): string => {
-  const now = new Date();
-  const month = String(now.getMonth() + 1).padStart(2, "0");
-  const day = String(now.getDate()).padStart(2, "0");
-  return `${now.getFullYear()}-${month}-${day}`;
-};
+function NotesCell({
+  subscription,
+  owner,
+}: {
+  subscription: Subscription;
+  owner: string;
+}) {
+  const update = useUpdateSubscription();
+  return (
+    <EditableTextCell
+      label={`Notas de la suscripción de ${owner}`}
+      value={subscription.notes}
+      className="min-w-56"
+      onCommit={(next) => {
+        update.mutate({ id: subscription.id, data: { notes: next } });
+      }}
+    />
+  );
+}
 
 type SubscriptionHistoryProps = {
   subscriber: SubscriberRow;
 };
 
-// Expanded row: every live subscription of one subscriber, editable in place.
+// Read-only history; only each subscription's notes can be edited. The end
+// date column appears only when some subscription has one.
 export function SubscriptionHistory({ subscriber }: SubscriptionHistoryProps) {
   const history = useSubscriptionHistory(subscriber.id);
-  const create = useCreateSubscription();
-  const remove = useDeleteSubscription();
+  const showEndDate =
+    history.data?.some((subscription) => subscription.endedOn !== null) ??
+    false;
 
   return (
     <div className="flex flex-col gap-3 rounded-lg border border-border bg-surface p-4">
-      <div className="flex items-center justify-between gap-4">
-        <h3 className="font-display text-sm font-semibold uppercase tracking-widest text-brand">
-          Historial de suscripciones
-        </h3>
-        <Button
-          variant="secondary"
-          size="sm"
-          disabled={create.isPending}
-          onClick={() => {
-            create.mutate({
-              subscriberId: subscriber.id,
-              data: { startedOn: todayIso() },
-            });
-          }}
-        >
-          <PlusIcon className="size-4" />
-          Agregar suscripción
-        </Button>
-      </div>
+      <h3 className="font-display text-sm font-semibold uppercase tracking-widest text-brand">
+        Historial de suscripciones
+      </h3>
       {history.isPending ? (
         <Skeleton className="h-16 w-full" />
       ) : history.isError ? (
@@ -72,46 +64,50 @@ export function SubscriptionHistory({ subscriber }: SubscriptionHistoryProps) {
         <Table>
           <TableHeader>
             <TableRow>
-              {subscriptionFields.map((field) => (
-                <TableHead key={field.key}>{field.header}</TableHead>
-              ))}
-              <TableHead>Notas</TableHead>
+              <TableHead>Estado</TableHead>
+              <TableHead>Plataforma</TableHead>
+              <TableHead className="text-right">Monto</TableHead>
+              <TableHead>Moneda</TableHead>
+              <TableHead>Alta</TableHead>
+              {showEndDate ? <TableHead>Baja</TableHead> : null}
               <TableHead>Plan original</TableHead>
-              <TableHead>
-                <span className="sr-only">Acciones</span>
-              </TableHead>
+              <TableHead>Notas</TableHead>
             </TableRow>
           </TableHeader>
           <TableBody>
             {history.data.map((subscription) => (
               <TableRow key={subscription.id}>
-                {subscriptionFields.map((field) => (
-                  <TableCell key={field.key}>
-                    <SubscriptionFieldCell
-                      subscription={subscription}
-                      field={field.key}
-                      owner={subscriber.email}
-                    />
-                  </TableCell>
-                ))}
                 <TableCell>
-                  <SubscriptionFieldCell
-                    subscription={subscription}
-                    field="notes"
-                    owner={subscriber.email}
-                  />
+                  <Badge variant={statusBadgeVariant[subscription.status]}>
+                    {statusLabels[subscription.status]}
+                  </Badge>
                 </TableCell>
+                <TableCell>
+                  {subscription.platform
+                    ? platformLabels[subscription.platform]
+                    : "—"}
+                </TableCell>
+                <TableCell className="text-right tabular-nums">
+                  {formatAmount(subscription.amount)}
+                </TableCell>
+                <TableCell>{subscription.currency ?? "—"}</TableCell>
+                <TableCell className="tabular-nums">
+                  {formatIsoDate(subscription.startedOn)}
+                </TableCell>
+                {showEndDate ? (
+                  <TableCell className="tabular-nums">
+                    {subscription.endedOn
+                      ? formatIsoDate(subscription.endedOn)
+                      : ""}
+                  </TableCell>
+                ) : null}
                 <TableCell className="text-text-muted">
                   {subscription.planOriginal ?? "—"}
                 </TableCell>
                 <TableCell>
-                  <ConfirmDeleteButton
-                    label={`Borrar suscripción de ${subscriber.email}`}
-                    title="¿Mandar esta suscripción a la papelera?"
-                    description="Se puede restaurar desde la papelera."
-                    onConfirm={() => {
-                      remove.mutate(subscription.id);
-                    }}
+                  <NotesCell
+                    subscription={subscription}
+                    owner={subscriber.email}
                   />
                 </TableCell>
               </TableRow>

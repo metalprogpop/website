@@ -1,12 +1,12 @@
 import type { ColumnDef } from "@tanstack/react-table";
 import { ChevronRightIcon } from "lucide-react";
-import type { SubscriberRow, SubscriptionStatus } from "shared";
+import type { SubscriberRow } from "shared";
 import { Badge } from "@/components/ui/badge";
 import { cn } from "@/lib/utils";
 import { useDeleteSubscriber } from "@/hooks/useAdminMutations";
 import { ConfirmDeleteButton } from "./ConfirmDeleteButton";
 import { formatIsoDate } from "./format";
-import { statusLabels } from "./labels";
+import { statusBadgeVariant, statusLabels } from "./labels";
 import {
   SubscriberTextCell,
   type SubscriberTextField,
@@ -43,15 +43,6 @@ const readOnlyColumn = (
     </span>
   ),
 });
-
-const statusBadgeVariant: Record<
-  SubscriptionStatus,
-  "success" | "outline" | "danger"
-> = {
-  active: "success",
-  paused: "outline",
-  cancelled: "danger",
-};
 
 function DeleteSubscriberCell({ subscriber }: { subscriber: SubscriberRow }) {
   const remove = useDeleteSubscriber();
