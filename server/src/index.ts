@@ -5,6 +5,7 @@ import { authRouter } from "./routes/auth.js";
 import { adminRouter } from "./routes/admin.js";
 import { episodesRouter } from "./routes/episodes.js";
 import { startHourlySync } from "./episodes/catalog.js";
+import { serveClient } from "./web/serveClient.js";
 
 const app = express();
 app.disable("x-powered-by");
@@ -26,6 +27,17 @@ app.get("/api/v1/health", (_req, res) => {
 app.use("/api/v1/auth", authRouter);
 app.use("/api/v1/admin", adminRouter);
 app.use("/api/v1/episodes", episodesRouter);
+
+// Production: serve the built client from the same origin (see Dockerfile).
+const clientDistDir = process.env.CLIENT_DIST_DIR;
+if (clientDistDir) {
+  app.use(
+    serveClient(
+      clientDistDir,
+      process.env.CLIENT_URL ?? `http://localhost:${String(port)}`,
+    ),
+  );
+}
 
 startHourlySync();
 

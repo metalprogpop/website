@@ -11,6 +11,7 @@ From the repo root, on the host:
 - Tests: `pnpm --filter client test` and `pnpm --filter server test`
 - Dev stack: `pnpm run dev` (docker compose). Client on `http://localhost:9001`, server on `http://localhost:13001`, Postgres on `localhost:5432`
 - E2E: `npx playwright test` (the dev stack must be up)
+- Production image: `docker build -t metalprogpop .` (root `Dockerfile`; its header lists the env vars and how to migrate). Express serves the built client and injects per-episode link-preview tags
 
 Inside the server container, because they need env that only compose injects:
 
