@@ -1,10 +1,10 @@
 ---
 name: drizzle-pnpm-monorepo
 description: >-
-  Use this skill when working with Drizzle ORM in a pnpm workspace
-  monorepo. Covers query patterns for strict TypeScript lint compliance,
-  schema conventions, migration workflows, cross-package import
-  extensions, and workspace dependency management.
+  Drizzle ORM patterns for this repo: lint-safe single-row queries,
+  foreign-key and schema conventions, and the migration workflow. Use when
+  writing queries, changing server/src/db/schema.ts, or generating and
+  applying migrations.
 license: MIT
 ---
 
@@ -50,47 +50,23 @@ In the db client file, import the entire schema namespace and pass it to the dri
 ```typescript
 import * as schema from "./schema.js";
 
-export const db = drizzle(pool, { schema });
+export const db = drizzle(client, { schema });
 ```
 
 New tables added to `schema.ts` are automatically available through `db.query.*` without modifying the client file.
 
 ## Migration Workflow
 
+drizzle-kit needs `DATABASE_URL`, which only exists inside the server container (see `monorepo-command-execution`):
+
 1. **Generate** after any schema change:
    ```bash
-   pnpm --filter server run db:generate
+   docker compose exec server pnpm db:generate
    ```
-2. **Check** the generated SQL in the migration files — review for correctness.
+2. **Check** the generated SQL in the migration files for correctness.
 3. **Apply** the migration:
    ```bash
-   pnpm --filter server run db:migrate
+   docker compose exec server pnpm db:migrate
    ```
 
 Never hand-edit generated migration files. If a migration is wrong, fix the schema and regenerate.
-
-## Cross-Package Import Extensions
-
-Each package's `tsconfig.json` determines the correct import extension. The rules differ across the monorepo:
-
-| Package    | `module` / `moduleResolution`         | Extension Rule   | Example                                      |
-| ---------- | ------------------------------------- | ---------------- | -------------------------------------------- |
-| **Server** | `NodeNext`                            | `.js` extensions | `import { db } from "../db/index.js"`        |
-| **Shared** | `allowImportingTsExtensions + noEmit` | `.ts` extensions | `export * from "./auth.ts"`                  |
-| **Client** | Vite (bundler)                        | No extensions    | `import { useAuth } from "../hooks/useAuth"` |
-
-When unsure, check the package's `tsconfig.json` for `module` and `moduleResolution` settings. Using the wrong extension style will cause build or type-check failures.
-
-## Workspace Dependencies
-
-Use `workspace:*` for references to other packages within the pnpm workspace:
-
-```json
-{
-  "dependencies": {
-    "@metalprogpop/shared": "workspace:*"
-  }
-}
-```
-
-This is the one exception to the "pin exact versions" rule. pnpm resolves `workspace:*` to the local package at install time, so version drift is not a concern.

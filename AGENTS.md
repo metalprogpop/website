@@ -1,136 +1,58 @@
 # AGENTS.md
 
-Project-specific conventions and commands for any agent or contributor working on this repo.
-
-## Overview
-
-pnpm monorepo with three workspace packages:
-
-| Package  | Role                         | Path      |
-| -------- | ---------------------------- | --------- |
-| `client` | React + Vite SPA             | `client/` |
-| `server` | Express + TypeScript API     | `server/` |
-| `shared` | Zod schemas and shared types | `shared/` |
+Website for the MetalProgPop podcast. pnpm monorepo: `client/` (React + Vite SPA), `server/` (Express API), `shared/` (Zod schemas and types used by both).
 
 ## Commands
 
-### Typecheck and Lint
+From the repo root, on the host:
 
-- Typecheck (client): `pnpm --filter client exec tsc --noEmit`
-- Lint: `pnpm run lint`
-- Lint with autofix: `pnpm run lint:fix`
+- Typecheck: `pnpm --filter client exec tsc --noEmit` and `pnpm --filter server exec tsc --noEmit`
+- Lint: `pnpm run lint` (autofix: `pnpm run lint:fix`)
+- Tests: `pnpm --filter client test` and `pnpm --filter server test`
+- Dev stack: `pnpm run dev` (docker compose). Client on `http://localhost:9001`, server on `http://localhost:13001`, Postgres on `localhost:5432`
+- E2E: `npx playwright test` (the dev stack must be up)
 
-### Tests
+Inside the server container, because they need env that only compose injects:
 
-- Integration tests: `pnpm --filter client test`
-- E2E smoke tests: `npx playwright test` (requires dev stack running)
-
-### Dev
-
-- Client only: `pnpm --filter client dev`
-- Full stack (docker-compose): `pnpm run dev`
-
-### Database
-
-- Generate migration: `pnpm run db:generate`
-- Apply migration: `pnpm run db:migrate`
-- Open Drizzle Studio: `pnpm run db:studio`
-
-### Access
-
+- Migrations: `docker compose exec server pnpm db:generate`, then `docker compose exec server pnpm db:migrate`
 - Grant or revoke admin access (creates the user if needed): `docker compose exec server pnpm set-role <email> <staff|fan>`. There is deliberately no UI for this.
 
-## Code Conventions
+Don't use the root `pnpm run db:*` aliases: they run drizzle-kit on the host, where `DATABASE_URL` isn't set. See the `monorepo-command-execution` skill.
 
-### ESLint Rules
+## Gotchas
 
-The linter enforces these strictly — code that violates them will not pass:
+- **Env**: one `.env` at the repo root, read only by docker compose. Apps read `process.env` and never import `dotenv`. A new var goes in `.env.example`, `.env`, and the service's `environment:` block in `docker-compose.yml`. See the `single-root-env-convention` skill.
+- **Import extensions differ per package**: server uses `.js` (NodeNext, even though files are `.ts`), shared uses `.ts`, client uses none.
+- **Separate origins**: server redirects to the client use `CLIENT_URL`, never relative paths or hardcoded URLs.
+- **Async Express handlers**: wrap every one in `asyncHandler` (`server/src/lib/asyncHandler.ts`). Never silence `no-misused-promises`.
+- **Single-row Drizzle queries**: use `.at(0)`, not `const [row] =`. `no-unnecessary-condition` rejects the undefined check after destructuring.
+- **`curly` is enforced**: braces on every `if`/`else`/`for`/`while`, including one-liners.
+- **Untrusted data** (request bodies, JWT payloads, third-party responses): parse with Zod, never `as`-cast.
 
-- **`curly`**: braces required on all `if`/`else`/`for`/`while` — no one-liner shorthand
-- **`@typescript-eslint/no-unnecessary-condition`**: can't check `undefined` on destructured array results — use `.at(0)`
-- **`@typescript-eslint/no-misused-promises`**: async Express handlers trigger this — use `asyncHandler` wrapper
-- **`@typescript-eslint/no-unsafe-assignment`**: no `as` casts on untrusted data
-- **Quote style**: double quotes (auto-fixed)
+## Code style
 
-### Code Style
-
-- Named exports only (no default exports)
-- React components under 150 lines; extract logic into hooks
-- Use React Query for server state management
-- Use Zod for validation; share types via the `shared` package
-- API routes follow `/api/v1/[resource]`
-- Wrap async route handlers with error middleware (`asyncHandler`)
-- User-facing copy is sentence case, never Title Case (proper nouns and feed content such as episode titles excepted); see the `metalprogpop-design-system` skill
-
-### Dependencies
-
-- Pin exact versions (no `^` or `~` prefixes)
-- Exception: `workspace:*` for workspace package references
-
-## Architecture
-
-### Docker-Compose Ports
-
-| Service | Internal | External | URL                                       |
-| ------- | -------- | -------- | ----------------------------------------- |
-| client  | 5173     | 9001     | `http://localhost:9001`                   |
-| server  | 3001     | 13001    | `http://localhost:13001`                  |
-| db      | 5432     | 5432     | `postgresql://dev:dev@localhost:5432/app` |
-
-### Environment Variables
-
-Server:
-
-| Variable                              | Purpose                        |
-| ------------------------------------- | ------------------------------ |
-| `DATABASE_URL`                        | PostgreSQL connection string   |
-| `JWT_SECRET`                          | JWT signing secret             |
-| `JWT_EXPIRATION_DAYS`                 | Token lifetime                 |
-| `RESEND_API_KEY`                      | Email delivery (Resend)        |
-| `MAGIC_LINK_BASE_URL`                 | Base URL for magic link emails |
-| `MAGIC_LINK_TOKEN_EXPIRATION_MINUTES` | Token TTL                      |
-| `CLIENT_URL`                          | Client origin for redirects    |
-
-Client:
-
-| Variable       | Purpose             |
-| -------------- | ------------------- |
-| `VITE_API_URL` | Server API base URL |
-
-### Cross-Origin Redirects
-
-Server and client run on different origins. Server redirects MUST use the `CLIENT_URL` env var, never relative paths or hardcoded URLs.
+- Named exports only.
+- React components under 150 lines; extract logic into hooks.
+- Server state in React Query. Validation in Zod, with types shared through `shared`.
+- API routes live under `/api/v1/<resource>`.
+- Pin exact dependency versions (no `^` or `~`), except `workspace:*` for workspace packages.
+- User-facing copy is Spanish and sentence case, never Title Case. Proper nouns and feed content (episode titles) are exempt. Page UI follows the `metalprogpop-design-system` skill.
 
 ## Testing
 
-- **Integration tests**: Vitest + React Testing Library in `client/src/__tests__/`
-- **E2E smoke tests**: Playwright in `e2e/` — verify page structure, not visual appearance
-- Write tests for new features; update tests when modifying behavior
+- Client integration tests: Vitest + React Testing Library in `client/src/__tests__/`.
+- E2E: Playwright in `e2e/`. Check page structure and flows, not visual appearance.
+- New features ship with tests; behavior changes update them.
 
-## Commit Conventions
+## Commits and PRs
 
-- Each commit is a single, small value increment (one concern only)
-- Commit history must be temporally coherent: infrastructure before tests, tests before features
-- Commit messages: imperative mood, max 72 chars subject, body explains _why_
-- Never bundle unrelated changes in one commit
-- Run typecheck and lint before every commit
-- Run relevant tests before committing code that affects them
+- Run typecheck, lint, and the affected tests before every commit. Nothing enforces this locally; CI only catches it after the push.
+- One concern per commit, in an order that keeps history coherent: infrastructure before tests, tests before features.
+- Subject in imperative mood, at most 72 chars; the body explains why.
+- Branches: `feat/<short-slug>`, `fix/<short-slug>`.
+- PR title under 70 chars; description has a Summary (bullets) and a Test plan.
 
-## Branching and PRs
+## Agent workflow
 
-- Feature branches: `feat/<short-slug>`
-- Fix branches: `fix/<short-slug>`
-- PR title: under 70 chars
-- PR description: Summary (bullet points) + Test Plan sections
-
-## Agentic Workflow
-
-- Use subagents for code review (fresh context avoids author bias)
-
-### Learnings
-
-- **Convention-aware plans**: Code in plans must account for linter rules (curly braces, double quotes, import extensions). Include convention notes in prompts to subagents.
-- **Typecheck early**: Run typecheck on affected packages before starting implementation. Fix infrastructure issues as the first task.
-- **Two-stage review**: Spec compliance first (does it match requirements?), then code quality (is it well-built?). No point reviewing quality if spec isn't met.
-- **Full file context**: Provide full file contents to subagents, not just diffs. They work better with complete context.
-- **Review scaling**: Mechanical tasks (schemas, deps, config) can skip full review cycles. Complex tasks (routes, pages, components) benefit from both review stages.
+- Review code with a subagent, so the reviewer isn't the author. Check spec compliance first, then quality. Mechanical changes (schemas, deps, config) can skip review.
+- Give subagents full files and the gotchas above, not just diffs.

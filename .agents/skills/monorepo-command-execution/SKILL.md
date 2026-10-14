@@ -1,11 +1,11 @@
 ---
 name: monorepo-command-execution
 description: >-
-  Use this skill when running pnpm scripts, drizzle-kit, migrations, or any
-  server-side tooling against this docker-compose monorepo. Covers when to
-  exec into a container vs run on the host, when `pnpm --filter <pkg>` is
-  needed and when it's redundant, and the standard invocations for db
-  migrations, generators, and ad-hoc package scripts.
+  Where and how to run commands in this docker-compose monorepo: container
+  vs host, when `pnpm --filter <pkg>` is needed, and the canonical
+  invocations for migrations, drizzle-kit, psql, and package scripts. Use
+  before running any pnpm script, migration, or server-side tool, or when a
+  command fails with missing env or `relation does not exist`.
 license: MIT
 ---
 
@@ -49,7 +49,7 @@ docker compose run --rm server pnpm db:migrate
 
 Inside the container, `DATABASE_URL` resolves to `postgresql://dev:dev@db:5432/app` (note the `db` hostname — Compose's internal DNS, not `localhost`).
 
-The root `package.json` aliases (`pnpm run db:migrate` from the host) are **misleading** — they invoke drizzle-kit on the host with no env loaded. Don't use them; go through `docker compose exec server` instead.
+The root `package.json` aliases (`pnpm run db:migrate` from the host) are **misleading**: they invoke drizzle-kit on the host with no env loaded. Don't use them; go through `docker compose exec server` instead. (CI does run `pnpm db:migrate` on the host, but only after exporting `DATABASE_URL=postgresql://dev:dev@localhost:5432/app` explicitly.)
 
 ### Direct DB access
 
@@ -81,13 +81,16 @@ pnpm --filter client <script>
 docker compose exec server pnpm <script>
 ```
 
-### Lint / typecheck (host is fine)
+### Lint / typecheck / tests (host is fine)
 
 These don't need env vars and run fastest on the host:
 
 ```bash
 pnpm run lint
 pnpm --filter client exec tsc --noEmit
+pnpm --filter server exec tsc --noEmit
+pnpm --filter client test
+pnpm --filter server test
 ```
 
 ## Why this matters
@@ -109,4 +112,5 @@ Two real failure modes this skill prevents:
 | Tail server logs                      | `docker compose logs server --tail=50 -f`      |
 | Restart server with new env           | `docker compose up -d --force-recreate server` |
 | Lint (host)                           | `pnpm run lint`                                |
-| Typecheck client (host)               | `pnpm --filter client exec tsc --noEmit`       |
+| Typecheck (host)                      | `pnpm --filter <pkg> exec tsc --noEmit`        |
+| Tests (host)                          | `pnpm --filter <pkg> test`                     |

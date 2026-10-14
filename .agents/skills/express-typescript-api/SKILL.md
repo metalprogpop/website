@@ -1,10 +1,11 @@
 ---
 name: express-typescript-api
 description: >-
-  Use this skill when building or modifying Express.js API routes with
-  TypeScript. Covers async handler wrapping, NodeNext import extensions,
-  runtime payload validation, security patterns for authentication
-  endpoints, and cross-origin redirect handling.
+  Express + TypeScript conventions for the server: NodeNext `.js` import
+  extensions, the asyncHandler wrapper, runtime payload validation with Zod,
+  user-enumeration-safe auth responses, and cross-origin redirects to the
+  client. Use when adding or changing routes, middleware, or auth code under
+  server/src.
 license: MIT
 ---
 
@@ -43,18 +44,12 @@ export { MagicLinkPayloadSchema } from "./schemas/auth.ts";
 
 ## asyncHandler Wrapper
 
-Express route handlers that return a `Promise` trigger `@typescript-eslint/no-misused-promises` because Express signatures expect `void`, not `Promise<void>`. The correct fix is a thin wrapper that catches rejected promises and forwards them to Express error middleware.
+Express route handlers that return a `Promise` trigger `@typescript-eslint/no-misused-promises` because Express signatures expect `void`, not `Promise<void>`. The fix is the thin wrapper in `server/src/lib/asyncHandler.ts`, which catches rejected promises and forwards them to Express error middleware. Import it; don't redefine it.
 
 **Never suppress this with `eslint-disable`.** The lint rule exists to prevent unhandled rejections that silently hang requests.
 
 ```typescript
-import { Request, Response, NextFunction } from "express";
-
-const asyncHandler =
-  (fn: (req: Request, res: Response, next: NextFunction) => Promise<void>) =>
-  (req: Request, res: Response, next: NextFunction) => {
-    fn(req, res, next).catch(next);
-  };
+import { asyncHandler } from "../lib/asyncHandler.js";
 ```
 
 Usage:
@@ -63,7 +58,7 @@ Usage:
 router.post(
   "/api/v1/auth/magic-link",
   asyncHandler(async (req, res) => {
-    const { email } = req.body;
+    const { email } = MagicLinkRequestSchema.parse(req.body);
     await sendMagicLink(email);
     res.json({ ok: true });
   }),
@@ -124,36 +119,15 @@ router.post(
     if (user) {
       await sendMagicLink(user);
     }
-    // Always return the same message
-    res.json({ message: "If an account exists, a login link has been sent." });
+    // Always return the same message (auth.ts uses a GENERIC_MESSAGE constant)
+    res.json({ message: GENERIC_MESSAGE });
   }),
 );
 ```
 
-### parseInt with NaN Guard
+### Env Vars
 
-Environment variables are strings. Parsing them to numbers can silently produce `NaN`, which propagates as a bug. Always guard with `Number.isNaN`:
-
-```typescript
-const port = parseInt(process.env.PORT ?? "3000", 10);
-if (Number.isNaN(port)) {
-  throw new Error("Invalid PORT environment variable");
-}
-```
-
-### Env Var Validation at Startup
-
-Validate all required environment variables at process start. Fail fast with a clear message rather than crashing mid-request.
-
-```typescript
-const requiredEnvVars = ["DATABASE_URL", "JWT_SECRET", "CLIENT_URL"] as const;
-
-for (const key of requiredEnvVars) {
-  if (!process.env[key]) {
-    throw new Error(`Missing required environment variable: ${key}`);
-  }
-}
-```
+Read and validate env vars as described in the `single-root-env-convention` skill: required vars throw at first use, numeric vars get a `Number.isNaN` guard.
 
 ## Separate-Origin Redirects
 

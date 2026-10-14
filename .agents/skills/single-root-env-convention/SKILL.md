@@ -1,11 +1,10 @@
 ---
 name: single-root-env-convention
 description: >-
-  Use this skill when touching environment variable loading or configuration
-  in this repo: adding a new env var, debugging "X is undefined" errors,
-  reviewing changes that import dotenv, or evaluating whether a config file
-  should read a `.env` file. Codifies the single-root `.env` design and the
-  rule that apps never read env files directly.
+  The repo's env design: a single root `.env` read only by docker compose,
+  apps reading `process.env` directly, and no `dotenv` anywhere. Use when
+  adding an env var, debugging an undefined env var, reviewing a change that
+  imports dotenv, or deciding whether a config file should read `.env`.
 license: MIT
 ---
 
@@ -58,10 +57,11 @@ For reference, these are the ones that bite people in this repo because they rea
 
 - `drizzle-kit` (migrate, generate, studio)
 - `tsx` and `node --watch` (when invoked outside Compose)
-- `vitest` (host-side test runs)
 - Any `pnpm` script that doesn't go through Compose
 
 For all of them, the answer is the same: run inside the container, where `docker-compose.yml` has already injected the env. See the companion `monorepo-command-execution` skill for the exact invocations.
+
+Vitest is the exception: the test suites run on the host and in CI without env. A test that needs an env var stubs it (`vi.stubEnv` on the client) rather than relying on `.env`.
 
 ## Validation Pattern
 
@@ -82,7 +82,9 @@ Numeric vars need `Number.isNaN` guards with a fallback (already a known convent
 ```typescript
 const getMinutes = (): number => {
   const raw = process.env.SOME_MINUTES;
-  if (!raw) return 10;
+  if (!raw) {
+    return 10;
+  }
   const parsed = parseInt(raw, 10);
   return Number.isNaN(parsed) ? 10 : parsed;
 };

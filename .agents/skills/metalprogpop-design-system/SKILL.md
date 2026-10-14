@@ -1,13 +1,12 @@
 ---
 name: metalprogpop-design-system
 description: >-
-  Use this skill whenever creating or editing a page or page-level UI in
-  client/ (any file under client/src/pages, or new top-level layouts and
-  sections), or when writing any user-facing copy (headings, buttons, labels,
-  nav). Codifies the project's design tokens, the mandatory page shell
-  (shared Header/Footer + Container/Section), the eyebrow + heading pattern,
-  the brand component library (Button, Card, Logo), and the sentence-case copy
-  rule. Prevents per-page style divergence from the homepage.
+  The site's design system and copy rules: design tokens, the mandatory page
+  shell (shared Header/Footer + Container/Section), the eyebrow + heading
+  pattern, the brand components (Button, Card, Logo), loading and error
+  states, and sentence-case copy. Use when creating or editing anything under
+  client/src/pages, a new top-level layout or section, or any user-facing text
+  (headings, buttons, labels, nav).
 license: MIT
 ---
 

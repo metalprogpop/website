@@ -1,12 +1,12 @@
 ---
 name: docker-pnpm-monorepo
 description: >-
-  Use this skill when writing, editing, or reviewing Dockerfiles and
-  docker-compose configuration for services in a pnpm workspace monorepo.
-  Covers per-service build encapsulation, partial-workspace installs,
-  build context and compose wiring, .dockerignore, volume mounts for
-  dev hot reload, and why per-package Dockerfiles cannot just COPY a
-  single package.json when a workspace dep exists.
+  Containerizes services in this pnpm workspace monorepo without breaking
+  per-service encapsulation: the Dockerfile template, partial-workspace
+  installs, repo-root build context and compose wiring, .dockerignore, and
+  dev hot-reload volume mounts. Use when writing, editing, or reviewing a
+  Dockerfile or docker-compose.yml, or when an isolated image build fails on a
+  workspace dependency.
 license: MIT
 ---
 
@@ -30,7 +30,7 @@ Build context = **repo root**, dockerfile path = `./<pkg>/Dockerfile`. Each serv
 
 ```dockerfile
 FROM node:24-alpine
-RUN corepack enable && corepack prepare pnpm@latest --activate
+RUN corepack enable && corepack prepare pnpm@<version> --activate  # same as packageManager in root package.json
 WORKDIR /app
 
 # Workspace infra (NOT sibling services)

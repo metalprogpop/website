@@ -1,10 +1,10 @@
 ---
 name: vitest-react-testing
 description: >-
-  Use this skill when writing integration tests with Vitest and React
-  Testing Library. Covers Vite env var mocking, fetch mocking patterns,
-  QueryClient test wrappers, cleanup without globals mode, async
-  assertions for state-dependent UI, and React hook testing.
+  Patterns for client tests with Vitest and React Testing Library: Vite env
+  stubbing, fetch mocking, QueryClient wrappers, explicit cleanup, sync vs
+  async queries, hook testing, and Playwright smoke-test conventions. Use when
+  writing or fixing tests in client/src/__tests__ or e2e/.
 license: MIT
 ---
 
@@ -171,4 +171,4 @@ await expect(page.getByRole("heading", { name: /fan clú/i })).toBeVisible();
 ```
 
 - Keep E2E tests focused on smoke-level checks: does the page load, are key elements present, do critical flows complete.
-- For comprehensive Playwright patterns (fixtures, POM, network interception), reference the community [`webapp-testing`](https://github.com/anthropics/agent-skills/tree/main/skills/webapp-testing) skill.
+- For comprehensive Playwright patterns (fixtures, POM, network interception), reference the community [`webapp-testing`](https://github.com/anthropics/skills/tree/main/skills/webapp-testing) skill.
