@@ -1,6 +1,6 @@
 import { describe, expect, it } from "vitest";
 import type { FeedEpisode } from "./feed.js";
-import { planSync } from "./sync.js";
+import { planSync, SyncRefusedError } from "./sync.js";
 
 const episode = (number: number): FeedEpisode => ({
   guid: `guid-${String(number)}`,
@@ -63,5 +63,28 @@ describe("planSync", () => {
     const stored = [{ number: 2, hidden: false }];
 
     expect(planSync(stored, feed(5, 4, 1), "recent").hide).toEqual([]);
+  });
+
+  it("refuses a full re-sync against an empty or truncated feed", () => {
+    const stored = Array.from({ length: 50 }, (_, i) => ({
+      number: 50 - i,
+      hidden: false,
+    }));
+
+    expect(() => planSync(stored, [], "full")).toThrow(SyncRefusedError);
+    expect(() =>
+      planSync(
+        stored,
+        feed(...Array.from({ length: 39 }, (_, i) => 50 - i)),
+        "full",
+      ),
+    ).toThrow(SyncRefusedError);
+    expect(
+      planSync(
+        stored,
+        feed(...Array.from({ length: 40 }, (_, i) => 50 - i)),
+        "full",
+      ).hide,
+    ).toHaveLength(10);
   });
 });

@@ -9,6 +9,7 @@ import {
 import { db } from "../db/index.js";
 import { subscribers, subscriptions } from "../db/schema.js";
 import { syncEpisodes } from "../episodes/catalog.js";
+import { SyncRefusedError } from "../episodes/sync.js";
 import { asyncHandler } from "../lib/asyncHandler.js";
 import { requireStaff } from "../middleware/requireStaff.js";
 import {
@@ -142,6 +143,10 @@ adminRouter.post(
     try {
       res.json(await syncEpisodes("full"));
     } catch (err) {
+      if (err instanceof SyncRefusedError) {
+        res.status(409).json({ error: err.message });
+        return;
+      }
       console.error("Episode re-sync failed:", err);
       res.status(502).json({
         error: "No se pudo leer el feed de Audioboom. Probá de nuevo.",
