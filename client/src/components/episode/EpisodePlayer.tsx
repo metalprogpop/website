@@ -6,6 +6,7 @@ import {
   usePlayerTime,
   type PlayerEpisode,
 } from "../../player/PlayerProvider";
+import { savedPosition } from "../../player/storage";
 
 const SKIP_SECONDS = 15;
 
@@ -22,7 +23,10 @@ export function EpisodePlayer({ episode }: EpisodePlayerProps) {
   const isPlaying = isCurrent && player.playing;
   const duration =
     isCurrent && time.duration > 0 ? time.duration : episode.durationSeconds;
-  const currentTime = isCurrent ? time.currentTime : 0;
+  // Not playing yet: show where this browser left the episode, if anywhere.
+  const currentTime = isCurrent
+    ? time.currentTime
+    : savedPosition(episode.number);
 
   return (
     <div className="rounded-2xl border border-border bg-surface p-5 shadow-sm sm:p-6">

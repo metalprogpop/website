@@ -124,7 +124,7 @@ describe("Episode page", () => {
       screen.getByText("Gentle Giant", { selector: "p" }),
     ).toBeInTheDocument();
     expect(
-      screen.getByRole("button", { name: /reproducir/i }),
+      screen.getByRole("button", { name: "Reproducir" }),
     ).toBeInTheDocument();
     expect(
       screen.getByText(/es el sexto álbum de Gentle Giant/),

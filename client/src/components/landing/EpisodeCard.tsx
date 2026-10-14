@@ -1,6 +1,7 @@
 import { Link } from "react-router-dom";
 import { episodePath, type EpisodeSummary } from "shared";
 import { formatDate, formatDuration } from "../../lib/format";
+import { CardPlayButton } from "../episode/CardPlayButton";
 import { GenreBadge } from "../episode/GenreBadge";
 import { Card } from "../ui/brand/Card";
 import { EpisodeArtwork } from "./EpisodeArtwork";
@@ -27,6 +28,7 @@ export function EpisodeCard({ episode, eager = false }: EpisodeCardProps) {
             <GenreBadge genre={episode.genre} />
           </span>
         )}
+        <CardPlayButton episode={episode} />
       </div>
 
       <div className="p-5">
