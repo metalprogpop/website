@@ -48,6 +48,14 @@ export const episodeListSchema = z.object({
 
 export type EpisodeList = z.infer<typeof episodeListSchema>;
 
+// Result of the staff-triggered full re-sync with the feed.
+export const episodeResyncResultSchema = z.object({
+  total: z.number().int().nonnegative(),
+  hidden: z.number().int().nonnegative(),
+});
+
+export type EpisodeResyncResult = z.infer<typeof episodeResyncResultSchema>;
+
 // The episode page URL: /episodes/<number>-<slug>.
 export const episodePath = (episode: { number: number; slug: string }) =>
   `/episodes/${String(episode.number)}-${episode.slug}`;
