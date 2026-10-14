@@ -19,7 +19,7 @@ export function LatestEpisodes() {
             Nuevos episodios
           </span>
           <h2 className="font-display text-3xl font-bold tracking-tight text-text-primary sm:text-4xl">
-            Últimos Lanzamientos
+            Últimos lanzamientos
           </h2>
         </div>
 
