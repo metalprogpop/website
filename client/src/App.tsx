@@ -7,6 +7,7 @@ import { LogoutPage } from "./pages/LogoutPage";
 import { AdminPage } from "./pages/AdminPage";
 import { ScrollToTop } from "./components/ScrollToTop";
 import { Toaster } from "./components/ui/sonner";
+import { MiniPlayer } from "./player/MiniPlayer";
 import { PlayerProvider } from "./player/PlayerProvider";
 
 export function AppRoutes() {
@@ -28,8 +29,10 @@ export function App() {
       <ScrollToTop />
       <PlayerProvider>
         <AppRoutes />
+        <MiniPlayer />
       </PlayerProvider>
-      <Toaster richColors position="bottom-right" />
+      {/* Top: the mini-player takes the bottom of the screen. */}
+      <Toaster richColors position="top-right" />
     </BrowserRouter>
   );
 }

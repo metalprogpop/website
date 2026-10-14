@@ -14,7 +14,7 @@ test("an episode card opens the episode page with its player", async ({
   expect(title).toContain(
     (await page.getByRole("heading", { level: 1 }).textContent()) ?? "",
   );
-  await expect(page.getByRole("button", { name: "Reproducir" })).toBeVisible();
+  await expect(page.getByRole("button", { name: "Reproducir", exact: true })).toBeVisible();
   await expect(
     page.getByRole("heading", { name: /si te gustó este episodio/i }),
   ).toBeVisible();
