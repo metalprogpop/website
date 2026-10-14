@@ -18,6 +18,10 @@ services:
       dockerfile: ./server/Dockerfile
     volumes:
       - ./server/src:/app/server/src
+      # Migrations live outside src: mounted so `pnpm db:generate` in the
+      # container writes them to the host and `pnpm db:migrate` applies the
+      # current set rather than the image's copy.
+      - ./server/drizzle:/app/server/drizzle
       - ./shared/src:/app/shared/src
       - pnpm-store:/root/.local/share/pnpm/store
     ports:
