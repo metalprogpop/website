@@ -127,6 +127,62 @@ body {
   color: var(--color-brand-hover);
 }
 
+/* Position slider (SeekSlider): a thin track filled up to the current time,
+   with a round handle. The fill is a background sized from the component. */
+.seek-slider {
+  -webkit-appearance: none;
+  appearance: none;
+  height: 4px;
+  border-radius: 9999px;
+  background: var(--border)
+    linear-gradient(var(--color-brand), var(--color-brand)) no-repeat;
+  cursor: pointer;
+  transition: height 150ms;
+}
+
+.seek-slider:hover:not(:disabled),
+.seek-slider:focus-visible {
+  height: 6px;
+}
+
+.seek-slider:focus-visible {
+  outline: 2px solid var(--color-brand);
+  outline-offset: 4px;
+}
+
+.seek-slider:disabled {
+  cursor: default;
+  opacity: 0.6;
+}
+
+.seek-slider::-webkit-slider-thumb {
+  -webkit-appearance: none;
+  appearance: none;
+  width: 14px;
+  height: 14px;
+  border: 0;
+  border-radius: 9999px;
+  background: var(--color-brand);
+  box-shadow: 0 1px 3px rgb(0 0 0 / 0.25);
+}
+
+.seek-slider::-moz-range-thumb {
+  width: 14px;
+  height: 14px;
+  border: 0;
+  border-radius: 9999px;
+  background: var(--color-brand);
+  box-shadow: 0 1px 3px rgb(0 0 0 / 0.25);
+}
+
+.seek-slider:disabled::-webkit-slider-thumb {
+  visibility: hidden;
+}
+
+.seek-slider:disabled::-moz-range-thumb {
+  visibility: hidden;
+}
+
 /* Animations */
 @keyframes fade-up {
   from {

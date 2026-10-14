@@ -1,9 +1,14 @@
 import { Pause, Play, RotateCcw, RotateCw, X } from "lucide-react";
 import { Link, useLocation } from "react-router-dom";
 import { episodeNumberFromPath, episodePath } from "shared";
+import { SeekSlider } from "../components/episode/SeekSlider";
 import { Container } from "../components/layout/Container";
-import { formatClock } from "../lib/format";
-import { PLAYBACK_RATES, usePlayer, usePlayerTime } from "./PlayerProvider";
+import {
+  PLAYBACK_RATES,
+  usePlayer,
+  usePlayerTime,
+  type PlayerEpisode,
+} from "./PlayerProvider";
 
 const SKIP_SECONDS = 15;
 
@@ -11,7 +16,8 @@ const iconButton =
   "flex h-11 w-11 shrink-0 items-center justify-center rounded-full text-text-secondary transition-colors hover:text-brand focus:outline-none focus-visible:ring-2 focus-visible:ring-brand";
 
 // Keeps playing while the listener browses the site. Hidden on the playing
-// episode's own page, which has the full player.
+// episode's own page, which has the full player. On small screens it skips
+// ±15s with buttons; on desktop it has a draggable position slider instead.
 export function MiniPlayer() {
   const player = usePlayer();
   const time = usePlayerTime();
@@ -35,38 +41,17 @@ export function MiniPlayer() {
         aria-label="Reproductor"
         className="fixed inset-x-0 bottom-0 z-40 border-t border-border bg-surface/95 shadow-lg backdrop-blur-lg"
       >
-        <ProgressBar
-          currentTime={time.currentTime}
-          duration={duration}
-          onSeek={player.seek}
-        />
+        <div className="md:hidden">
+          <ProgressBar
+            currentTime={time.currentTime}
+            duration={duration}
+            onSeek={player.seek}
+          />
+        </div>
 
         <Container>
-          <div className="flex h-16 items-center gap-3">
-            <Link
-              to={episodePath(episode)}
-              className="flex min-w-0 flex-1 items-center gap-3"
-            >
-              <img
-                src={episode.artworkUrl}
-                alt=""
-                width={44}
-                height={44}
-                className="h-11 w-11 shrink-0 rounded-lg object-cover"
-              />
-              <span className="min-w-0">
-                <span className="block truncate font-display text-sm font-semibold text-text-primary">
-                  {episode.album}
-                </span>
-                <span className="block truncate text-xs text-text-muted">
-                  {episode.band ?? "MetalProgPop Cast"}
-                </span>
-              </span>
-            </Link>
-
-            <span className="hidden font-display text-xs font-medium text-text-muted md:block">
-              {formatClock(time.currentTime)} / {formatClock(duration)}
-            </span>
+          <div className="flex h-16 items-center gap-3 md:gap-5">
+            <EpisodeLink episode={episode} />
 
             <button
               type="button"
@@ -74,7 +59,7 @@ export function MiniPlayer() {
               onClick={() => {
                 player.skip(-SKIP_SECONDS);
               }}
-              className={`${iconButton} hidden sm:flex`}
+              className={`${iconButton} md:hidden`}
             >
               <RotateCcw className="h-5 w-5" aria-hidden="true" />
             </button>
@@ -110,10 +95,19 @@ export function MiniPlayer() {
               onClick={() => {
                 player.skip(SKIP_SECONDS);
               }}
-              className={`${iconButton} hidden sm:flex`}
+              className={`${iconButton} md:hidden`}
             >
               <RotateCw className="h-5 w-5" aria-hidden="true" />
             </button>
+
+            <div className="hidden min-w-0 flex-1 md:block">
+              <SeekSlider
+                currentTime={time.currentTime}
+                duration={duration}
+                onSeek={player.seek}
+                times="inline"
+              />
+            </div>
 
             <select
               aria-label="Velocidad"
@@ -145,14 +139,41 @@ export function MiniPlayer() {
   );
 }
 
+// Artwork and title, linking to the episode's page. Takes the free space on
+// small screens; a fixed width on desktop, where the slider takes it.
+function EpisodeLink({ episode }: { episode: PlayerEpisode }) {
+  return (
+    <Link
+      to={episodePath(episode)}
+      className="flex min-w-0 flex-1 items-center gap-3 md:w-64 md:flex-none"
+    >
+      <img
+        src={episode.artworkUrl}
+        alt=""
+        width={44}
+        height={44}
+        className="h-11 w-11 shrink-0 rounded-lg object-cover"
+      />
+      <span className="min-w-0">
+        <span className="block truncate font-display text-sm font-semibold text-text-primary">
+          {episode.album}
+        </span>
+        <span className="block truncate text-xs text-text-muted">
+          {episode.band ?? "MetalProgPop Cast"}
+        </span>
+      </span>
+    </Link>
+  );
+}
+
 type ProgressBarProps = {
   currentTime: number;
   duration: number;
   onSeek: (seconds: number) => void;
 };
 
-// A thin bar along the top edge; an invisible range input over it keeps it
-// draggable and keyboard-accessible.
+// Small screens: a thin bar along the top edge; an invisible range input
+// over it keeps it draggable and keyboard-accessible.
 function ProgressBar({ currentTime, duration, onSeek }: ProgressBarProps) {
   const progress = duration > 0 ? (currentTime / duration) * 100 : 0;
   return (
