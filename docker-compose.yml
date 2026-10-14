@@ -1,3 +1,5 @@
+# Ports are published on loopback only: the dev stack has test users and
+# real data, and must not be reachable from the local network.
 services:
   db:
     image: postgres:16-alpine
@@ -6,7 +8,7 @@ services:
       POSTGRES_PASSWORD: dev
       POSTGRES_DB: app
     ports:
-      - "5432:5432"
+      - "127.0.0.1:5432:5432"
     volumes:
       - pgdata:/var/lib/postgresql/data
 
@@ -19,7 +21,7 @@ services:
       - ./shared/src:/app/shared/src
       - pnpm-store:/root/.local/share/pnpm/store
     ports:
-      - "13001:3001"
+      - "127.0.0.1:13001:3001"
     environment:
       - DATABASE_URL=postgresql://dev:dev@db:5432/app
       - JWT_SECRET=dev-secret-change-in-production
@@ -44,7 +46,7 @@ services:
       - ./shared/src:/app/shared/src
       - pnpm-store:/root/.local/share/pnpm/store
     ports:
-      - "9001:5173"
+      - "127.0.0.1:9001:5173"
     environment:
       - VITE_API_URL=http://localhost:13001
       - VITE_TEST_USERS_ENABLED=${VITE_TEST_USERS_ENABLED:-false}
