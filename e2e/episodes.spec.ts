@@ -10,11 +10,14 @@ test("an episode card opens the episode page with its player", async ({
   await firstCard.getByRole("link").click();
 
   await expect(page).toHaveURL(/\/episodes\/\d+-[a-z0-9-]+$/);
-  await expect(page.getByRole("heading", { level: 1 })).toBeVisible();
+  // Only the episode page has this button; waiting for it first means the
+  // list's own h1 is gone before the title is read.
+  await expect(
+    page.getByRole("button", { name: "Reproducir", exact: true }),
+  ).toBeVisible();
   expect(title).toContain(
     (await page.getByRole("heading", { level: 1 }).textContent()) ?? "",
   );
-  await expect(page.getByRole("button", { name: "Reproducir", exact: true })).toBeVisible();
   await expect(
     page.getByRole("heading", { name: /si te gustó este episodio/i }),
   ).toBeVisible();
