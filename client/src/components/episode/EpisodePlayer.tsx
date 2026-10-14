@@ -1,5 +1,4 @@
 import { Pause, Play, RotateCcw, RotateCw } from "lucide-react";
-import { formatClock } from "../../lib/format";
 import {
   PLAYBACK_RATES,
   usePlayer,
@@ -7,6 +6,7 @@ import {
   type PlayerEpisode,
 } from "../../player/PlayerProvider";
 import { savedPosition } from "../../player/storage";
+import { SeekSlider } from "./SeekSlider";
 
 const SKIP_SECONDS = 15;
 
@@ -55,23 +55,12 @@ export function EpisodePlayer({ episode }: EpisodePlayerProps) {
         </button>
 
         <div className="min-w-0 flex-1">
-          <input
-            type="range"
-            aria-label="Posición"
-            min={0}
-            max={Math.max(1, Math.floor(duration))}
-            step={1}
-            value={Math.floor(currentTime)}
+          <SeekSlider
+            currentTime={currentTime}
+            duration={duration}
+            onSeek={player.seek}
             disabled={!isCurrent}
-            onChange={(e) => {
-              player.seek(Number(e.target.value));
-            }}
-            className="w-full accent-brand disabled:opacity-60"
           />
-          <div className="mt-1 flex justify-between font-display text-xs font-medium text-text-muted">
-            <span>{formatClock(currentTime)}</span>
-            <span>{formatClock(duration)}</span>
-          </div>
         </div>
       </div>
 
