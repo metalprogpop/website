@@ -14,5 +14,11 @@ export default defineConfig({
   server: {
     host: true,
     watch: { usePolling: true },
+    // The browser calls /api on the client's own origin and Vite forwards it
+    // to the server: no CORS in dev, and the site works from any device that
+    // can reach this port. In docker compose the server is http://server:3001.
+    proxy: {
+      "/api": process.env.API_PROXY_TARGET ?? "http://localhost:13001",
+    },
   },
 });

@@ -1,5 +1,7 @@
-# Ports are published on loopback only: the dev stack has test users and
-# real data, and must not be reachable from the local network.
+# Ports are published on loopback only: the dev stack has real data (and,
+# with the .env.example flags, test users) and is not meant for the local
+# network. The client is the one exception, opt-in: DEV_HOST=0.0.0.0 publishes
+# it on the LAN, and with it the API, which the client proxies under /api.
 services:
   db:
     image: postgres:16-alpine
@@ -50,9 +52,9 @@ services:
       - ./shared/src:/app/shared/src
       - pnpm-store:/root/.local/share/pnpm/store
     ports:
-      - "127.0.0.1:9001:5173"
+      - "${DEV_HOST:-127.0.0.1}:9001:5173"
     environment:
-      - VITE_API_URL=http://localhost:13001
+      - API_PROXY_TARGET=http://server:3001
       - VITE_TEST_USERS_ENABLED=${VITE_TEST_USERS_ENABLED:-false}
       - VITE_DEV_SHOW_MAGIC_LINK=${VITE_DEV_SHOW_MAGIC_LINK:-false}
     command: pnpm dev
