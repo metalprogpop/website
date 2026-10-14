@@ -1,22 +1,35 @@
 import { BrowserRouter, Routes, Route } from "react-router-dom";
 import { LandingPage } from "./pages/LandingPage";
 import { EpisodesPage } from "./pages/EpisodesPage";
+import { EpisodePage } from "./pages/EpisodePage";
 import { FanCluPage } from "./pages/FanCluPage";
 import { LogoutPage } from "./pages/LogoutPage";
 import { AdminPage } from "./pages/AdminPage";
 import { ScrollToTop } from "./components/ScrollToTop";
+import { Toaster } from "./components/ui/sonner";
+import { PlayerProvider } from "./player/PlayerProvider";
+
+export function AppRoutes() {
+  return (
+    <Routes>
+      <Route path="/" element={<LandingPage />} />
+      <Route path="/episodes" element={<EpisodesPage />} />
+      <Route path="/episodes/:episodeRef" element={<EpisodePage />} />
+      <Route path="/fan-clu" element={<FanCluPage />} />
+      <Route path="/logout" element={<LogoutPage />} />
+      <Route path="/admin" element={<AdminPage />} />
+    </Routes>
+  );
+}
 
 export function App() {
   return (
     <BrowserRouter>
       <ScrollToTop />
-      <Routes>
-        <Route path="/" element={<LandingPage />} />
-        <Route path="/episodes" element={<EpisodesPage />} />
-        <Route path="/fan-clu" element={<FanCluPage />} />
-        <Route path="/logout" element={<LogoutPage />} />
-        <Route path="/admin" element={<AdminPage />} />
-      </Routes>
+      <PlayerProvider>
+        <AppRoutes />
+      </PlayerProvider>
+      <Toaster richColors position="bottom-right" />
     </BrowserRouter>
   );
 }
