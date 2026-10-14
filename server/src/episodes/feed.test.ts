@@ -8,6 +8,9 @@ type ItemFields = {
   description?: string;
   // The 2017 presentation, like any unnumbered item, has no itunes:title.
   itunesTitle?: boolean;
+  duration?: string;
+  pubDate?: string;
+  artworkUrl?: string;
 };
 
 // Shaped like Audioboom's real feed for channel 4940203.
@@ -17,6 +20,9 @@ const item = ({
   guid,
   description,
   itunesTitle = true,
+  duration = "7689",
+  pubDate = "Sat, 29 Aug 2026 22:26:31 +0000",
+  artworkUrl = "https://audioboom.com/i/43814774.png",
 }: ItemFields) => `
 <item>
   <title>${number === undefined ? title : `${String(number)}: ${title}`}</title>
@@ -24,10 +30,10 @@ const item = ({
   ${number === undefined ? "" : `<itunes:episode>${String(number)}</itunes:episode>`}
   ${itunesTitle ? `<itunes:title>${title}</itunes:title>` : ""}
   <enclosure url="https://audioboom.com/posts/8946874.mp3?modified=1788042675&amp;sid=4940203&amp;source=rss" length="123898997" type="audio/mpeg" />
-  <itunes:image href="https://audioboom.com/i/43814774.png" />
-  <itunes:duration>7689</itunes:duration>
+  <itunes:image href="${artworkUrl}" />
+  <itunes:duration>${duration}</itunes:duration>
   <description><![CDATA[${description ?? "<p>Un disco.</p>"}]]></description>
-  <pubDate>Sat, 29 Aug 2026 22:26:31 +0000</pubDate>
+  <pubDate>${pubDate}</pubDate>
   <guid isPermaLink="false">${guid ?? `audioboom-${title}`}</guid>
 </item>`;
 
@@ -169,6 +175,55 @@ describe("parseFeed", () => {
     );
 
     expect(episodes.map((episode) => episode.number)).toEqual([13]);
+  });
+
+  it("skips items whose duration, date or links are unusable", () => {
+    const episodes = parseFeed(
+      rss(
+        item({ title: "A - X", number: 4, duration: "" }),
+        item({ title: "B - X", number: 3, pubDate: "someday" }),
+        item({ title: "C - X", number: 2, artworkUrl: "/i/1.png" }),
+        item({ title: "D - X", number: 1 }),
+      ),
+    );
+
+    expect(episodes.map((episode) => episode.number)).toEqual([1]);
+  });
+
+  it("reads durations written as h:mm:ss or mm:ss", () => {
+    const episodes = parseFeed(
+      rss(
+        item({ title: "A - X", number: 2, duration: "2:08:09" }),
+        item({ title: "B - X", number: 1, duration: "45:30" }),
+      ),
+    );
+
+    expect(episodes.map((episode) => episode.durationSeconds)).toEqual([
+      7689, 2730,
+    ]);
+  });
+
+  it("gives number 0 only to the oldest unnumbered item and skips the rest", () => {
+    const episodes = parseFeed(
+      rss(
+        item({
+          title: "Especial de fin de año",
+          itunesTitle: false,
+          guid: "bonus",
+        }),
+        item({ title: "Holy Diver - DIO", number: 13 }),
+        item({
+          title: "Presentación de nuestro Podcast",
+          itunesTitle: false,
+          guid: "presentation",
+        }),
+      ),
+    );
+
+    expect(episodes.map(({ number, guid }) => ({ number, guid }))).toEqual([
+      { number: 13, guid: "audioboom-Holy Diver - DIO" },
+      { number: 0, guid: "presentation" },
+    ]);
   });
 
   it("keeps the newest item when two share a number", () => {

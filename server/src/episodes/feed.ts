@@ -1,25 +1,29 @@
 import { XMLParser } from "fast-xml-parser";
 import sanitizeHtml from "sanitize-html";
 import { z } from "zod";
-import type { Genre } from "shared";
+import { genreSchema, type Genre } from "shared";
 
-// An episode as read from the Audioboom RSS feed, before it is stored.
-export type FeedEpisode = {
-  guid: string;
-  number: number;
-  slug: string;
-  title: string;
-  album: string;
-  band: string | null;
-  genre: Genre | null;
-  descriptionHtml: string;
-  descriptionText: string;
-  audioUrl: string;
-  artworkUrl: string;
-  audioboomUrl: string;
-  durationSeconds: number;
-  publishedAt: Date;
-};
+// An episode as read from the Audioboom RSS feed, before it is stored. The
+// values are checked here so that one malformed item is skipped instead of
+// failing the database write or the client's validation of the whole list.
+const feedEpisodeSchema = z.object({
+  guid: z.string().min(1),
+  number: z.number().int().nonnegative(),
+  slug: z.string().min(1),
+  title: z.string().min(1),
+  album: z.string().min(1),
+  band: z.string().nullable(),
+  genre: genreSchema.nullable(),
+  descriptionHtml: z.string(),
+  descriptionText: z.string(),
+  audioUrl: z.string().url(),
+  artworkUrl: z.string().url(),
+  audioboomUrl: z.string().url(),
+  durationSeconds: z.number().int().nonnegative(),
+  publishedAt: z.date(),
+});
+
+export type FeedEpisode = z.infer<typeof feedEpisodeSchema>;
 
 const GENRES: readonly Genre[] = ["metal", "prog", "pop"];
 
@@ -111,15 +115,26 @@ const toPlainText = (html: string): string =>
     ),
   );
 
-const toEpisode = (raw: z.infer<typeof itemSchema>): FeedEpisode => {
+// itunes:duration is seconds, or h:mm:ss / mm:ss. Anything else is NaN and
+// fails validation.
+const parseDuration = (text: string): number => {
+  const parts = text.trim().split(":");
+  if (parts.some((part) => !/^\d+$/.test(part)) || parts.length > 3) {
+    return Number.NaN;
+  }
+  return parts.reduce((total, part) => total * 60 + Number(part), 0);
+};
+
+// number is null for unnumbered items; parseFeed decides what they become.
+const toCandidate = (
+  raw: z.infer<typeof itemSchema>,
+): Omit<FeedEpisode, "number" | "genre"> & { number: number | null } => {
   // Unnumbered items have no itunes:title; their plain title has no
   // "<number>: " prefix to strip either.
   const title = collapseWhitespace(
     raw["itunes:title"] ?? raw.title.replace(/^\d+:\s*/, ""),
   );
-  const number = raw["itunes:episode"]
-    ? parseInt(raw["itunes:episode"], 10)
-    : 0;
+  const number = raw["itunes:episode"] ? Number(raw["itunes:episode"]) : null;
   const description = raw.description ?? "";
   return {
     guid: typeof raw.guid === "string" ? raw.guid : raw.guid["#text"],
@@ -127,35 +142,60 @@ const toEpisode = (raw: z.infer<typeof itemSchema>): FeedEpisode => {
     slug: slugify(title),
     title,
     ...splitTitle(title),
-    genre: genreOf(number),
     descriptionHtml: sanitizeDescription(description),
     descriptionText: toPlainText(description),
     audioUrl: raw.enclosure["@_url"],
     artworkUrl: raw["itunes:image"]["@_href"],
     audioboomUrl: raw.link,
-    durationSeconds: parseInt(raw["itunes:duration"], 10),
+    durationSeconds: parseDuration(raw["itunes:duration"]),
     publishedAt: new Date(raw.pubDate),
   };
 };
 
 // Parses the podcast RSS feed into episodes, newest first as published. An
-// item that cannot be read is skipped rather than failing the whole feed. The
-// number identifies an episode on the site, so when two items share one, only
-// the newest is kept.
+// item that cannot be read is skipped rather than failing the whole feed.
+//
+// The number identifies an episode on the site, so when two items share one
+// only the newest is kept. Unnumbered items have no address: the oldest one
+// (the 2017 presentation) is episode 0 and any later ones are skipped, so a
+// new unnumbered bonus never takes over the presentation's page.
 export const parseFeed = (xml: string): FeedEpisode[] => {
   const feed = feedSchema.parse(parser.parse(xml));
-  const seen = new Set<number>();
-  const episodes: FeedEpisode[] = [];
-  for (const item of feed.rss.channel.item) {
+  const candidates = feed.rss.channel.item.flatMap((item) => {
     const parsed = itemSchema.safeParse(item);
     if (!parsed.success) {
       console.warn("Skipping unreadable feed item:", parsed.error.issues);
+      return [];
+    }
+    return [toCandidate(parsed.data)];
+  });
+  const presentation = [...candidates]
+    .reverse()
+    .find((candidate) => candidate.number === null);
+
+  const seen = new Set<number>();
+  const episodes: FeedEpisode[] = [];
+  for (const candidate of candidates) {
+    if (candidate.number === null && candidate !== presentation) {
+      console.warn(`Skipping unnumbered feed item: ${candidate.title}`);
       continue;
     }
-    const episode = toEpisode(parsed.data);
-    if (!seen.has(episode.number)) {
-      seen.add(episode.number);
-      episodes.push(episode);
+    const number = candidate.number ?? 0;
+    const episode = feedEpisodeSchema.safeParse({
+      ...candidate,
+      number,
+      genre: genreOf(number),
+    });
+    if (!episode.success) {
+      console.warn(
+        `Skipping invalid feed item ${candidate.title}:`,
+        episode.error.issues,
+      );
+      continue;
+    }
+    if (!seen.has(number)) {
+      seen.add(number);
+      episodes.push(episode.data);
     }
   }
   return episodes;
