@@ -34,6 +34,15 @@ const columns = {
   publishedAt: episodes.publishedAt,
 };
 
+// For the multi-row upsert: on conflict, each column takes the value that row
+// tried to insert.
+const fromInsertedRow = Object.fromEntries(
+  Object.entries(columns).map(([key, column]) => [
+    key,
+    sql.raw(`excluded."${column.name}"`),
+  ]),
+);
+
 const reload = async (): Promise<void> => {
   live = await db
     .select(columns)
@@ -55,13 +64,13 @@ const runSync = async (mode: SyncMode): Promise<SyncResult> => {
 
   await db.transaction(async (tx) => {
     const now = new Date();
-    for (const episode of plan.upsert) {
+    if (plan.upsert.length > 0) {
       await tx
         .insert(episodes)
-        .values(episode)
+        .values(plan.upsert)
         .onConflictDoUpdate({
           target: episodes.number,
-          set: { ...episode, updatedAt: now, deletedAt: null },
+          set: { ...fromInsertedRow, updatedAt: now, deletedAt: null },
         });
     }
     if (plan.hide.length > 0) {
