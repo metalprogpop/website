@@ -1,63 +1,33 @@
 import { queryOptions, useQuery } from "@tanstack/react-query";
-import { useState, useMemo } from "react";
-import type { Episode } from "shared";
+import {
+  episodeDetailSchema,
+  episodeListSchema,
+  type EpisodeDetail,
+  type EpisodeSummary,
+} from "shared";
 import { API_URL } from "../lib/api";
 
-// Our server relays the Audioboom feed, which browsers cannot read
-// directly (no CORS headers).
-const FEED_URL = `${API_URL}/api/v1/episodes/feed`;
-const PAGE_SIZE = 15;
+const EPISODES_URL = `${API_URL}/api/v1/episodes`;
 
-export function parseRssToEpisodes(xml: string): Episode[] {
-  const parser = new DOMParser();
-  const doc = parser.parseFromString(xml, "text/xml");
-  const items = doc.querySelectorAll("item");
+export class EpisodeNotFoundError extends Error {}
 
-  return Array.from(items).map((item) => {
-    const title = item.querySelector("title")?.textContent ?? "";
-    const episodeNumber = item
-      .getElementsByTagName("itunes:episode")
-      .item(0)?.textContent;
-    const duration = item
-      .getElementsByTagName("itunes:duration")
-      .item(0)?.textContent;
-    const image = item
-      .getElementsByTagName("itunes:image")
-      .item(0)
-      ?.getAttribute("href");
-    const description = item.querySelector("description")?.textContent ?? "";
-    const pubDate = item.querySelector("pubDate")?.textContent ?? "";
-    const link = item.querySelector("link")?.textContent ?? "";
-    const guid = item.querySelector("guid")?.textContent ?? "";
-
-    // Strip HTML tags from description
-    const cleanDescription = description.replace(/<[^>]*>/g, "").trim();
-
-    return {
-      id: guid || link,
-      spotifyEpisodeId: undefined,
-      title,
-      description: cleanDescription,
-      episodeNumber: episodeNumber ? parseInt(episodeNumber, 10) : undefined,
-      publishedAt: pubDate
-        ? new Date(pubDate).toISOString()
-        : new Date().toISOString(),
-      durationSeconds: duration ? parseInt(duration, 10) : 0,
-      artworkUrl: image ?? "",
-      spotifyUrl: link,
-    };
-  });
-}
-
-async function fetchEpisodes(): Promise<Episode[]> {
-  const response = await fetch(FEED_URL);
-
+async function fetchEpisodes(): Promise<EpisodeSummary[]> {
+  const response = await fetch(EPISODES_URL);
   if (!response.ok) {
     throw new Error("Failed to fetch episodes");
   }
+  return episodeListSchema.parse(await response.json()).items;
+}
 
-  const xml = await response.text();
-  return parseRssToEpisodes(xml);
+async function fetchEpisode(number: number): Promise<EpisodeDetail> {
+  const response = await fetch(`${EPISODES_URL}/${String(number)}`);
+  if (response.status === 404) {
+    throw new EpisodeNotFoundError(`Episode ${String(number)} not found`);
+  }
+  if (!response.ok) {
+    throw new Error("Failed to fetch episode");
+  }
+  return episodeDetailSchema.parse(await response.json());
 }
 
 // Shared by every view that lists episodes, so they hit one cache entry.
@@ -67,28 +37,19 @@ export const episodesQueryOptions = queryOptions({
   staleTime: 5 * 60 * 1000,
 });
 
+export const episodeQueryOptions = (number: number) =>
+  queryOptions({
+    queryKey: ["episodes", number],
+    queryFn: () => fetchEpisode(number),
+    staleTime: 5 * 60 * 1000,
+    retry: (failureCount, error) =>
+      !(error instanceof EpisodeNotFoundError) && failureCount < 3,
+  });
+
 export function useEpisodes() {
-  const [displayCount, setDisplayCount] = useState(PAGE_SIZE);
+  return useQuery(episodesQueryOptions);
+}
 
-  const query = useQuery(episodesQueryOptions);
-
-  const episodes = useMemo(
-    () => query.data?.slice(0, displayCount) ?? [],
-    [query.data, displayCount],
-  );
-
-  const hasMore = (query.data?.length ?? 0) > displayCount;
-
-  const loadMore = () => {
-    setDisplayCount((prev) => prev + PAGE_SIZE);
-  };
-
-  return {
-    episodes,
-    isLoading: query.isLoading,
-    isError: query.isError,
-    hasMore,
-    loadMore,
-    total: query.data?.length ?? 0,
-  };
+export function useEpisode(number: number) {
+  return useQuery(episodeQueryOptions(number));
 }

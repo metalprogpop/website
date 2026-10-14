@@ -96,3 +96,36 @@ export const subscriptions = pgTable(
     ),
   }),
 );
+
+export const episodeGenre = pgEnum("episode_genre", ["metal", "prog", "pop"]);
+
+// Episodes mirrored from the Audioboom RSS feed, so the site keeps working
+// (and old episodes stay put) when the feed is slow, down or edited. The
+// number is the episode's identity on the site. deleted_at hides episodes
+// that left the feed; they are never hard-deleted.
+export const episodes = pgTable(
+  "episodes",
+  {
+    id: serial("id").primaryKey(),
+    number: integer("number").notNull(),
+    guid: text("guid").notNull(),
+    slug: text("slug").notNull(),
+    title: text("title").notNull(),
+    album: text("album").notNull(),
+    band: text("band"),
+    genre: episodeGenre("genre"),
+    descriptionHtml: text("description_html").notNull(),
+    descriptionText: text("description_text").notNull(),
+    audioUrl: text("audio_url").notNull(),
+    artworkUrl: text("artwork_url").notNull(),
+    audioboomUrl: text("audioboom_url").notNull(),
+    durationSeconds: integer("duration_seconds").notNull(),
+    publishedAt: timestamp("published_at").notNull(),
+    createdAt: timestamp("created_at").defaultNow().notNull(),
+    updatedAt: timestamp("updated_at").defaultNow().notNull(),
+    deletedAt: timestamp("deleted_at"),
+  },
+  (table) => ({
+    numberUnique: uniqueIndex("episodes_number_unique").on(table.number),
+  }),
+);

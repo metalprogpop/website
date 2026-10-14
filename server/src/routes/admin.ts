@@ -8,6 +8,7 @@ import {
 } from "shared";
 import { db } from "../db/index.js";
 import { subscribers, subscriptions } from "../db/schema.js";
+import { syncEpisodes } from "../episodes/catalog.js";
 import { asyncHandler } from "../lib/asyncHandler.js";
 import { requireStaff } from "../middleware/requireStaff.js";
 import {
@@ -15,10 +16,10 @@ import {
   listSubscriptionsFor,
 } from "../services/subscribers.js";
 
-// Staff-only subscriber admin. Subscribers, subscriptions and their status
-// come from the payment platforms (today, the spreadsheet import), so staff
-// can only read them and edit names and notes. Nothing is created or deleted
-// here.
+// Staff-only admin. Subscribers, subscriptions and their status come from
+// the payment platforms (today, the spreadsheet import), so staff can only
+// read them and edit names and notes; nothing is created or deleted here.
+// Staff can also force a full episode re-sync from the feed.
 export const adminRouter = Router();
 adminRouter.use(requireStaff);
 
@@ -128,5 +129,23 @@ adminRouter.patch(
       return;
     }
     res.json(row);
+  }),
+);
+
+// --- Episodes ---
+
+// Re-reads the whole feed: fixes episodes uploaded with mistakes and hides
+// the ones that left it. The hourly sync only looks at the newest few.
+adminRouter.post(
+  "/episodes/resync",
+  asyncHandler(async (_req, res) => {
+    try {
+      res.json(await syncEpisodes("full"));
+    } catch (err) {
+      console.error("Episode re-sync failed:", err);
+      res.status(502).json({
+        error: "No se pudo leer el feed de Audioboom. Probá de nuevo.",
+      });
+    }
   }),
 );

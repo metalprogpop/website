@@ -8,8 +8,8 @@ import { useEpisodes } from '../../hooks/useEpisodes';
 const HOMEPAGE_EPISODE_LIMIT = 9;
 
 export function LatestEpisodes() {
-  const { episodes, isLoading, isError } = useEpisodes();
-  const displayedEpisodes = episodes.slice(0, HOMEPAGE_EPISODE_LIMIT);
+  const { data: episodes, isLoading, isError } = useEpisodes();
+  const displayedEpisodes = (episodes ?? []).slice(0, HOMEPAGE_EPISODE_LIMIT);
 
   return (
     <Section id="episodes">
@@ -37,7 +37,7 @@ export function LatestEpisodes() {
           <>
             <div className="grid grid-cols-1 gap-8 md:grid-cols-2 lg:grid-cols-3">
               {displayedEpisodes.map((episode, index) => (
-                <EpisodeCard key={episode.id} episode={episode} eager={index < 3} />
+                <EpisodeCard key={episode.number} episode={episode} eager={index < 3} />
               ))}
             </div>
 
