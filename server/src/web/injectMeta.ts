@@ -1,3 +1,5 @@
+import { truncateAtWord } from "../lib/text.js";
+
 const SITE_NAME = "MetalProgPop Cast";
 
 // Link previews (WhatsApp, X, etc.) cut descriptions around here anyway.
@@ -18,22 +20,14 @@ const escapeHtml = (text: string): string =>
     .replace(/"/g, "&quot;")
     .replace(/'/g, "&#39;");
 
-const shorten = (text: string): string => {
-  const clean = text.replace(/\s+/g, " ").trim();
-  if (clean.length <= DESCRIPTION_MAX) {
-    return clean;
-  }
-  const cut = clean.slice(0, DESCRIPTION_MAX - 1);
-  const lastSpace = cut.lastIndexOf(" ");
-  return `${(lastSpace > 0 ? cut.slice(0, lastSpace) : cut).trimEnd()}…`;
-};
-
 // Fills in the page title and the tags link previews read. The SPA's
 // index.html is the same for every route, so the server injects these per
 // request; the text comes from the podcast feed and is always escaped.
 export const injectMeta = (template: string, meta: PageMeta): string => {
   const title = escapeHtml(meta.title);
-  const description = escapeHtml(shorten(meta.description));
+  const description = escapeHtml(
+    truncateAtWord(meta.description, DESCRIPTION_MAX),
+  );
   const imageUrl = escapeHtml(meta.imageUrl);
   const url = escapeHtml(meta.url);
   const tags = [

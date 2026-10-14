@@ -7,6 +7,7 @@ import type {
   EpisodeSummary,
 } from "shared";
 import { asyncHandler } from "../lib/asyncHandler.js";
+import { truncateAtWord } from "../lib/text.js";
 import { listEpisodes } from "../episodes/catalog.js";
 import type { FeedEpisode } from "../episodes/feed.js";
 import { relatedEpisodes } from "../episodes/related.js";
@@ -18,14 +19,6 @@ const EXCERPT_MAX = 240;
 
 const numberSchema = z.coerce.number().int().nonnegative();
 
-const excerpt = (text: string): string => {
-  if (text.length <= EXCERPT_MAX) {
-    return text;
-  }
-  const cut = text.slice(0, EXCERPT_MAX);
-  return `${cut.slice(0, cut.lastIndexOf(" ")).trimEnd()}…`;
-};
-
 export const toSummary = (episode: FeedEpisode): EpisodeSummary => ({
   number: episode.number,
   slug: episode.slug,
@@ -33,7 +26,7 @@ export const toSummary = (episode: FeedEpisode): EpisodeSummary => ({
   album: episode.album,
   band: episode.band,
   genre: episode.genre,
-  excerpt: excerpt(episode.descriptionText),
+  excerpt: truncateAtWord(episode.descriptionText, EXCERPT_MAX),
   artworkUrl: episode.artworkUrl,
   audioUrl: episode.audioUrl,
   durationSeconds: episode.durationSeconds,
@@ -61,7 +54,9 @@ episodesRouter.get(
       return;
     }
     const body: EpisodeList = { items: episodes.map(toSummary) };
-    res.set("Cache-Control", "public, max-age=300").json(body);
+    // Revalidated every time (cheap: the ETag usually matches), so a staff
+    // re-sync shows up right away.
+    res.set("Cache-Control", "no-cache").json(body);
   }),
 );
 
@@ -94,7 +89,6 @@ episodesRouter.get(
       next: toLink(index > 0 ? episodes.at(index - 1) : undefined),
       related: relatedEpisodes(episode, episodes).map(toSummary),
     };
-    // Related episodes are picked at random, so this is cached briefly.
-    res.set("Cache-Control", "public, max-age=60").json(body);
+    res.set("Cache-Control", "no-cache").json(body);
   }),
 );
