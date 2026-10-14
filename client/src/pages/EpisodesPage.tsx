@@ -82,7 +82,7 @@ export function EpisodesPage() {
                   <div className="grid grid-cols-1 gap-8 md:grid-cols-2 lg:grid-cols-3">
                     {filteredEpisodes.map((episode, index) => (
                       <EpisodeCard
-                        key={episode.id}
+                        key={episode.number}
                         episode={episode}
                         eager={index < 3}
                       />

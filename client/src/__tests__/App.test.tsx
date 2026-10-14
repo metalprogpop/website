@@ -27,7 +27,7 @@ function renderWithProviders(initialRoute: string) {
 
 beforeEach(() => {
   vi.spyOn(globalThis, "fetch").mockResolvedValue(
-    new Response('<?xml version="1.0"?><rss><channel></channel></rss>'),
+    new Response(JSON.stringify({ items: [] })),
   );
 });
 
