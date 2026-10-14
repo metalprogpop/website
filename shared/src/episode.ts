@@ -59,3 +59,12 @@ export type EpisodeResyncResult = z.infer<typeof episodeResyncResultSchema>;
 // The episode page URL: /episodes/<number>-<slug>.
 export const episodePath = (episode: { number: number; slug: string }) =>
   `/episodes/${String(episode.number)}-${episode.slug}`;
+
+const EPISODE_PATH = /^\/episodes\/(\d+)(?:-[^/]*)?\/?$/;
+
+// The episode number in an episode page path (whatever its slug), or null for
+// any other path.
+export const episodeNumberFromPath = (path: string): number | null => {
+  const digits = EPISODE_PATH.exec(path)?.[1];
+  return digits === undefined ? null : Number(digits);
+};

@@ -1,5 +1,5 @@
 import { Link, Navigate, useParams } from "react-router-dom";
-import { episodePath } from "shared";
+import { episodeNumberFromPath, episodePath } from "shared";
 import { Header } from "../components/landing/Header";
 import { Footer } from "../components/landing/Footer";
 import { Container } from "../components/layout/Container";
@@ -13,16 +13,16 @@ import { EpisodeNotFoundError, useEpisode } from "../hooks/useEpisodes";
 // or missing slug redirects to the current one.
 export function EpisodePage() {
   const { episodeRef = "" } = useParams();
-  const number = /^\d+/.exec(episodeRef)?.[0];
+  const number = episodeNumberFromPath(`/episodes/${episodeRef}`);
 
   return (
     <div className="min-h-screen bg-background">
       <Header />
       <main>
-        {number === undefined ? (
+        {number === null ? (
           <NotFound />
         ) : (
-          <EpisodeContent number={Number(number)} episodeRef={episodeRef} />
+          <EpisodeContent number={number} episodeRef={episodeRef} />
         )}
       </main>
       <Footer />
