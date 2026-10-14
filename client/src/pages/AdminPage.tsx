@@ -3,6 +3,7 @@ import { Footer } from "../components/landing/Footer";
 import { Container } from "../components/layout/Container";
 import { Section } from "../components/layout/Section";
 import { Card } from "../components/ui/brand/Card";
+import { EpisodesResyncButton } from "../components/admin/EpisodesResyncButton";
 import { SubscribersPanel } from "../components/admin/SubscribersPanel";
 import { useAuth } from "../hooks/useAuth";
 
@@ -59,6 +60,7 @@ export function AdminPage() {
                 Suscriptores
               </h1>
             </div>
+            <EpisodesResyncButton />
           </div>
           <Card padding="md">
             <SubscribersPanel />

@@ -1,5 +1,6 @@
 import {
   apiErrorSchema,
+  episodeResyncResultSchema,
   subscriberListResponseSchema,
   subscriberSchema,
   subscriptionListSchema,
@@ -87,5 +88,9 @@ export const adminApi = {
   updateSubscription: async (id: number, data: SubscriptionUpdate) =>
     subscriptionSchema.parse(
       await request(`/subscriptions/${id}`, json("PATCH", data)),
+    ),
+  resyncEpisodes: async () =>
+    episodeResyncResultSchema.parse(
+      await request("/episodes/resync", { method: "POST" }),
     ),
 };
