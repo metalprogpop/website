@@ -1,6 +1,6 @@
 import { Pause, Play, RotateCcw, RotateCw, X } from "lucide-react";
 import { Link, useLocation } from "react-router-dom";
-import { episodePath } from "shared";
+import { episodeNumberFromPath, episodePath } from "shared";
 import { Container } from "../components/layout/Container";
 import { formatClock } from "../lib/format";
 import { PLAYBACK_RATES, usePlayer, usePlayerTime } from "./PlayerProvider";
@@ -21,13 +21,11 @@ export function MiniPlayer() {
   if (!episode) {
     return null;
   }
-  const pageNumber = /^\/episodes\/(\d+)/.exec(pathname)?.[1];
-  if (pageNumber !== undefined && Number(pageNumber) === episode.number) {
+  if (episodeNumberFromPath(pathname) === episode.number) {
     return null;
   }
 
   const duration = time.duration > 0 ? time.duration : episode.durationSeconds;
-  const progress = duration > 0 ? (time.currentTime / duration) * 100 : 0;
 
   return (
     <>
@@ -37,24 +35,11 @@ export function MiniPlayer() {
         aria-label="Reproductor"
         className="fixed inset-x-0 bottom-0 z-40 border-t border-border bg-surface/95 shadow-lg backdrop-blur-lg"
       >
-        <div className="relative h-1 bg-border">
-          <div
-            className="h-full bg-brand"
-            style={{ width: `${String(progress)}%` }}
-          />
-          <input
-            type="range"
-            aria-label="Posición"
-            min={0}
-            max={Math.max(1, Math.floor(duration))}
-            step={1}
-            value={Math.floor(time.currentTime)}
-            onChange={(e) => {
-              player.seek(Number(e.target.value));
-            }}
-            className="absolute inset-x-0 -top-2 h-5 w-full cursor-pointer opacity-0"
-          />
-        </div>
+        <ProgressBar
+          currentTime={time.currentTime}
+          duration={duration}
+          onSeek={player.seek}
+        />
 
         <Container>
           <div className="flex h-16 items-center gap-3">
@@ -157,5 +142,37 @@ export function MiniPlayer() {
         </Container>
       </section>
     </>
+  );
+}
+
+type ProgressBarProps = {
+  currentTime: number;
+  duration: number;
+  onSeek: (seconds: number) => void;
+};
+
+// A thin bar along the top edge; an invisible range input over it keeps it
+// draggable and keyboard-accessible.
+function ProgressBar({ currentTime, duration, onSeek }: ProgressBarProps) {
+  const progress = duration > 0 ? (currentTime / duration) * 100 : 0;
+  return (
+    <div className="relative h-1 bg-border">
+      <div
+        className="h-full bg-brand"
+        style={{ width: `${String(progress)}%` }}
+      />
+      <input
+        type="range"
+        aria-label="Posición"
+        min={0}
+        max={Math.max(1, Math.floor(duration))}
+        step={1}
+        value={Math.floor(currentTime)}
+        onChange={(e) => {
+          onSeek(Number(e.target.value));
+        }}
+        className="absolute inset-x-0 -top-2 h-5 w-full cursor-pointer opacity-0"
+      />
+    </div>
   );
 }

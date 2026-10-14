@@ -1,5 +1,5 @@
 import { episodeSummarySchema } from "shared";
-import type { PlayerEpisode } from "./PlayerProvider";
+import type { PlayerEpisode } from "./types";
 
 // What the player remembers in this browser: where each episode was left,
 // the last episode loaded and the playback speed. Storage can be missing or
