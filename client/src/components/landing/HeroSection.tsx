@@ -23,10 +23,10 @@ export function HeroSection() {
 
           <div className="animate-on-load animate-fade-up delay-400 flex flex-col items-center justify-center gap-4 sm:flex-row">
             <Button size="lg" variant="primary">
-              Escuchar Ahora
+              Escuchar ahora
             </Button>
             <Button size="lg" variant="secondary">
-              Ver Episodios
+              Ver episodios
             </Button>
           </div>
         </div>

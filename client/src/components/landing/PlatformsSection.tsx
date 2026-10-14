@@ -12,7 +12,7 @@ export function PlatformsSection() {
             Suscribite
           </span>
           <h2 className="font-display text-3xl font-bold tracking-tight text-text-primary sm:text-4xl">
-            Dónde Escuchar
+            Dónde escuchar
           </h2>
         </div>
 

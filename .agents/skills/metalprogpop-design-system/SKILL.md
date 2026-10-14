@@ -3,10 +3,11 @@ name: metalprogpop-design-system
 description: >-
   Use this skill whenever creating or editing a page or page-level UI in
   client/ (any file under client/src/pages, or new top-level layouts and
-  sections). Codifies the project's design tokens, the mandatory page shell
+  sections), or when writing any user-facing copy (headings, buttons, labels,
+  nav). Codifies the project's design tokens, the mandatory page shell
   (shared Header/Footer + Container/Section), the eyebrow + heading pattern,
-  and the brand component library (Button, Card, Logo). Prevents per-page
-  style divergence from the homepage.
+  the brand component library (Button, Card, Logo), and the sentence-case copy
+  rule. Prevents per-page style divergence from the homepage.
 license: MIT
 ---
 
@@ -68,6 +69,25 @@ For page-level (h1) hero variants, see `HeroSection.tsx` — same anatomy with
 `text-4xl sm:text-5xl md:text-6xl` and the optional animation classes
 (`animate-on-load animate-fade-up delay-200`).
 
+## Copy: Sentence Case, Never Title Case
+
+All of the site's own copy is written in sentence case: only the first word
+and proper nouns are capitalized. This covers headings, eyebrows, buttons,
+nav links, labels, placeholders, empty states, and errors.
+
+| Wrong (Title Case)    | Right (sentence case) |
+| --------------------- | --------------------- |
+| `Nuevos Episodios`    | `Nuevos episodios`    |
+| `Escuchar Ahora`      | `Escuchar ahora`      |
+| `Todos los Episodios` | `Todos los episodios` |
+
+- **Proper nouns keep their capitals**: `MetalProgPop`, `Fan Clú`,
+  `Apple Podcasts`, `Spotify`.
+- **External content is left as-is**: episode titles and descriptions come
+  from the feed and are rendered exactly as received. Don't transform them.
+- **CSS casing doesn't count**: eyebrows render with `uppercase`, but the
+  source string is still written in sentence case.
+
 ## Color & Typography Tokens
 
 Always use semantic Tailwind tokens. They're wired up via `@theme` in
@@ -117,6 +137,7 @@ These all produce style drift. If you see one, fix it.
 | `py-20`, `py-16`, etc. on a page section                   | `<Section>`                                                                   |
 | Different fonts / weights than `font-display` + body Inter | Stick to the two-font system                                                  |
 | Dark backgrounds (`bg-zinc-900`, etc.)                     | Site is light-themed; use `bg-background` / `bg-surface`                      |
+| Title Case copy (`Ver Episodios`)                          | Sentence case (`Ver episodios`)                                               |
 
 ## Forms (inputs, fields)
 
@@ -157,8 +178,9 @@ Before considering a page-level change done, verify:
 3. **Tokens**: no `zinc-*`, no `var(--color-pop-red)`, no hex colors, no arbitrary `bg-[...]` / `text-[...]`.
 4. **Components**: every button is `<Button>`; every framed panel is `<Card>` (or matches its visual).
 5. **Typography**: headings use `font-display` + `tracking-tight`; eyebrows use the standard `uppercase tracking-widest text-brand` chip.
-6. **Visual parity**: open the dev server and side-by-side compare against `/` (the homepage). Background tone, header, footer, eyebrow color, heading weight should match.
-7. **Tests**: `pnpm --filter client test` and `pnpm --filter client exec tsc --noEmit` both pass.
+6. **Copy**: every string the site authors is sentence case (proper nouns and feed content excepted).
+7. **Visual parity**: open the dev server and side-by-side compare against `/` (the homepage). Background tone, header, footer, eyebrow color, heading weight should match.
+8. **Tests**: `pnpm --filter client test` and `pnpm --filter client exec tsc --noEmit` both pass.
 
 ## When to Add a New Token or Component
 
@@ -176,5 +198,5 @@ how divergence starts.
 
 Page = `Header` + `Section` + `Container` + content + `Footer`. Use brand
 tokens (`bg-background`, `text-text-primary`, `text-brand`, …), `<Button>` for
-buttons, `<Card>` for panels. No zinc, no hex, no `var(--color-pop-red)`, no
+buttons, `<Card>` for panels. Copy in sentence case. No zinc, no hex, no `var(--color-pop-red)`, no
 homemade headers. When unsure, mirror `LandingPage.tsx`.

@@ -16,7 +16,7 @@ export function LatestEpisodes() {
       <Container>
         <div className="mb-12 text-center">
           <span className="mb-3 inline-block font-display text-sm font-semibold uppercase tracking-widest text-brand">
-            Nuevos Episodios
+            Nuevos episodios
           </span>
           <h2 className="font-display text-3xl font-bold tracking-tight text-text-primary sm:text-4xl">
             Últimos Lanzamientos

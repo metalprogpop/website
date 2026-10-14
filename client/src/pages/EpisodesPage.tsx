@@ -43,7 +43,7 @@ export function EpisodesPage() {
                 Catálogo
               </span>
               <h1 className="mb-3 font-display text-3xl font-bold tracking-tight text-text-primary sm:text-4xl">
-                Todos los Episodios
+                Todos los episodios
               </h1>
               {!isLoading && !isError && (
                 <p className="text-text-secondary">

@@ -60,6 +60,7 @@ The linter enforces these strictly — code that violates them will not pass:
 - Use Zod for validation; share types via the `shared` package
 - API routes follow `/api/v1/[resource]`
 - Wrap async route handlers with error middleware (`asyncHandler`)
+- User-facing copy is sentence case, never Title Case (proper nouns and feed content such as episode titles excepted); see the `metalprogpop-design-system` skill
 
 ### Dependencies
 
