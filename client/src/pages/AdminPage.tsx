@@ -4,7 +4,6 @@ import { Container } from "../components/layout/Container";
 import { Section } from "../components/layout/Section";
 import { Card } from "../components/ui/brand/Card";
 import { SubscribersPanel } from "../components/admin/SubscribersPanel";
-import { Toaster } from "@/components/ui/sonner";
 import { useAuth } from "../hooks/useAuth";
 
 function Shell({ children }: { children: React.ReactNode }) {
@@ -66,7 +65,6 @@ export function AdminPage() {
           </Card>
         </Container>
       </Section>
-      <Toaster richColors position="bottom-right" />
     </Shell>
   );
 }

@@ -6,10 +6,12 @@ type EpisodeArtworkProps = {
   url: string;
   alt: string;
   eager?: boolean;
+  // Rendered widths, for picking the srcSet candidate; defaults to the card's.
+  sizes?: string;
 };
 
 // Card widths: full width on mobile, half on md, a third (max ~370px) on lg.
-const SIZES = "(min-width: 1024px) 370px, (min-width: 768px) 50vw, 100vw";
+const CARD_SIZES = "(min-width: 1024px) 370px, (min-width: 768px) 50vw, 100vw";
 
 // Progressive artwork: a blurred 75px copy fills the square at once and the
 // sized image fades in over it when it has loaded.
@@ -17,6 +19,7 @@ export function EpisodeArtwork({
   url,
   alt,
   eager = false,
+  sizes = CARD_SIZES,
 }: EpisodeArtworkProps) {
   const { src, srcSet, placeholder } = artworkSources(url);
   const [loaded, setLoaded] = useState(false);
@@ -40,7 +43,7 @@ export function EpisodeArtwork({
         }}
         src={src}
         srcSet={srcSet}
-        sizes={srcSet ? SIZES : undefined}
+        sizes={srcSet ? sizes : undefined}
         width={600}
         height={600}
         alt={alt}
