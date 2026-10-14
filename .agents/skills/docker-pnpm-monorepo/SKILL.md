@@ -91,7 +91,7 @@ test-results
 playwright-report
 .vscode
 .github
-# plus any agent/tooling dirs (.claude, .codex, .cursor, etc.)
+# plus any agent/tooling dirs (.claude, .codex, etc.)
 ```
 
 Per-service `.dockerignore` files become redundant (the service dir is no longer the context) and can be removed.
