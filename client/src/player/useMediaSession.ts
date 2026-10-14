@@ -1,5 +1,5 @@
 import { useEffect, useRef, type RefObject } from "react";
-import type { PlayerEpisode } from "./PlayerProvider";
+import type { PlayerEpisode } from "./types";
 
 const SKIP_SECONDS = 15;
 
