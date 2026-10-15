@@ -10,23 +10,31 @@ test.describe("fan-clu real-flow auth", () => {
     await context.clearCookies();
   });
 
-  test("page loads with teaser, login form, and dev test-user button", async ({
+  test("home shows how to join, the login form and the Hall of Fans", async ({
     page,
   }) => {
     await page.goto("/fan-clu");
     await expect(
       page.getByRole("heading", { level: 1, name: /fan clú/i }),
     ).toBeVisible();
+    await expect(page.getByRole("link", { name: /ars 5000/i })).toBeVisible();
     await expect(page.getByPlaceholder(/email/i)).toBeVisible();
     await expect(page.getByRole("button", { name: /enviar/i })).toBeVisible();
     await expect(page.getByTestId("dev-test-login")).toBeVisible();
+    await expect(
+      page.getByRole("region", { name: /hall of fans/i }),
+    ).toBeVisible();
   });
 
+  // The test user may be a fan or staff depending on the database, so check
+  // only what both views show.
   test("test user button logs in instantly", async ({ page }) => {
     await page.goto("/fan-clu");
     await page.getByTestId("dev-test-login").click();
-    await expect(page.getByText(/bienvenid/i)).toBeVisible();
     await expect(page.getByText(TEST_EMAIL)).toBeVisible();
+    await expect(
+      page.getByRole("button", { name: /cerrar sesión/i }),
+    ).toBeVisible();
   });
 
   test("magic link viewer flow logs the user in", async ({ page, request }) => {
@@ -35,7 +43,6 @@ test.describe("fan-clu real-flow auth", () => {
 
     await page.goto("/fan-clu");
     await page.getByTestId("dev-test-login").click();
-    await expect(page.getByText(/bienvenid/i)).toBeVisible();
     await page.getByRole("button", { name: /cerrar sesión/i }).click();
 
     await expect(page.getByPlaceholder(/email/i)).toBeVisible();
@@ -51,8 +58,9 @@ test.describe("fan-clu real-flow auth", () => {
       throw new Error("magic link href missing");
     }
 
+    // The e2e user is a fan without a subscription: signed in, on the home.
     await page.goto(href);
-    await expect(page.getByText(/bienvenid/i)).toBeVisible();
+    await expect(page.getByText(/iniciaste sesión/i)).toBeVisible();
     await expect(page.getByText(E2E_MAGIC_LINK_EMAIL)).toBeVisible();
   });
 

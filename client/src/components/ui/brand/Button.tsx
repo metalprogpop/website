@@ -1,4 +1,4 @@
-import type { ButtonHTMLAttributes, ReactNode } from 'react';
+import type { AnchorHTMLAttributes, ButtonHTMLAttributes, ReactNode } from 'react';
 import { cva, type VariantProps } from 'class-variance-authority';
 
 const buttonVariants = cva(
@@ -33,5 +33,20 @@ export function Button({ children, variant, size, className = '', ...props }: Bu
     <button className={`${buttonVariants({ variant, size })} ${className}`} {...props}>
       {children}
     </button>
+  );
+}
+
+type ButtonLinkProps = AnchorHTMLAttributes<HTMLAnchorElement> &
+  VariantProps<typeof buttonVariants> & {
+    href: string;
+    children: ReactNode;
+  };
+
+// A link that looks like a button, for navigation such as external checkouts.
+export function ButtonLink({ children, variant, size, className = '', ...props }: ButtonLinkProps) {
+  return (
+    <a className={`${buttonVariants({ variant, size })} ${className}`} {...props}>
+      {children}
+    </a>
   );
 }
