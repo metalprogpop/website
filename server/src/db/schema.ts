@@ -54,7 +54,11 @@ export const subscribers = pgTable(
     firstName: text("first_name"),
     lastName: text("last_name"),
     fanName: text("fan_name"),
-    inHallOfFame: boolean("in_hall_of_fame").notNull().default(false),
+    // Everyone who ever subscribed is listed in the public Hall of Fans;
+    // staff set this when someone asks to be left out.
+    hiddenFromHallOfFans: boolean("hidden_from_hall_of_fans")
+      .notNull()
+      .default(false),
     fanSpotlight: boolean("fan_spotlight").notNull().default(false),
     contacted: boolean("contacted").notNull().default(false),
     replied: boolean("replied").notNull().default(false),

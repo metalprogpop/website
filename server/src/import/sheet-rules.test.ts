@@ -179,7 +179,6 @@ describe("buildImport", () => {
       firstName: "Ana",
       lastName: "Pérez",
       fanName: "Ana Prog",
-      inHallOfFame: true,
       fanSpotlight: true,
       contacted: true,
       replied: true,
