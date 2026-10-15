@@ -25,7 +25,7 @@ const subscriber = {
   firstName: "Ana",
   lastName: "Pérez",
   fanName: "Ana Prog",
-  inHallOfFame: true,
+  hiddenFromHallOfFans: false,
   fanSpotlight: false,
   contacted: true,
   replied: false,
@@ -62,11 +62,16 @@ const mockApi = (role: "fan" | "staff") => {
       const url = input instanceof Request ? input.url : String(input);
       if (url.endsWith("/api/v1/auth/me")) {
         return Promise.resolve(
-          jsonResponse({ id: 1, email: "staff@example.com", role }),
+          jsonResponse({
+            id: 1,
+            email: "staff@example.com",
+            role,
+            fanClubAccess: role === "staff",
+          }),
         );
       }
       if (
-        url.includes("/api/v1/admin/subscribers/7") &&
+        url.endsWith("/api/v1/admin/subscribers/7") &&
         init?.method === "PATCH"
       ) {
         return Promise.resolve(
@@ -75,6 +80,9 @@ const mockApi = (role: "fan" | "staff") => {
       }
       if (url.includes("/api/v1/admin/subscribers?")) {
         return Promise.resolve(jsonResponse(list));
+      }
+      if (url.includes("/api/v1/admin/subscribers/7/subscriptions")) {
+        return Promise.resolve(jsonResponse([subscriber.latestSubscription]));
       }
       return Promise.resolve(jsonResponse({ error: "Not found" }, 404));
     });
@@ -147,6 +155,29 @@ describe("AdminPage", () => {
         ([, init]) => init?.method === "PATCH",
       );
       expect(patch?.[1]?.body).toBe(JSON.stringify({ firstName: "Anita" }));
+    });
+  });
+
+  it("hides a subscriber from the Hall of Fans from the expanded row", async () => {
+    const fetchMock = mockApi("staff");
+    renderPage();
+    await userEvent.click(
+      await screen.findByRole("button", { name: "Detalle de ana@example.com" }),
+    );
+    const shown = await screen.findByRole("checkbox", {
+      name: /mostrar en el hall of fans/i,
+    });
+    expect(shown).toBeChecked();
+
+    await userEvent.click(shown);
+
+    await waitFor(() => {
+      const patch = fetchMock.mock.calls.find(
+        ([, init]) => init?.method === "PATCH",
+      );
+      expect(patch?.[1]?.body).toBe(
+        JSON.stringify({ hiddenFromHallOfFans: true }),
+      );
     });
   });
 });

@@ -19,7 +19,8 @@ import {
 
 // Staff-only admin. Subscribers, subscriptions and their status come from
 // the payment platforms (today, the spreadsheet import), so staff can only
-// read them and edit names and notes; nothing is created or deleted here.
+// read them and edit names, notes and the Hall of Fans opt-out; nothing is
+// created or deleted here.
 // Staff can also force a full episode re-sync from the feed.
 export const adminRouter = Router();
 adminRouter.use(requireStaff);
