@@ -4,6 +4,7 @@ import cors from "cors";
 import { authRouter } from "./routes/auth.js";
 import { adminRouter } from "./routes/admin.js";
 import { episodesRouter } from "./routes/episodes.js";
+import { fanClubRouter } from "./routes/fanClub.js";
 import { startHourlySync } from "./episodes/catalog.js";
 import { serveClient } from "./web/serveClient.js";
 
@@ -27,6 +28,7 @@ app.get("/api/v1/health", (_req, res) => {
 app.use("/api/v1/auth", authRouter);
 app.use("/api/v1/admin", adminRouter);
 app.use("/api/v1/episodes", episodesRouter);
+app.use("/api/v1/fan-clu", fanClubRouter);
 
 // Production: serve the built client from the same origin (see Dockerfile).
 const clientDistDir = process.env.CLIENT_DIST_DIR;
