@@ -4,7 +4,9 @@ import crypto from "node:crypto";
 import { eq, and, lt } from "drizzle-orm";
 import { db } from "../db/index.js";
 import { users, magicTokens } from "../db/schema.js";
-import { magicLinkRequestSchema } from "shared";
+import { magicLinkRequestSchema, type MeResponse } from "shared";
+import { hasFanClubAccess } from "../fanClub/access.js";
+import { latestStatusForEmail } from "../fanClub/queries.js";
 import { signToken, getJwtExpirationDays } from "../lib/jwt.js";
 import { sendMagicLinkEmail, buildMagicLinkUrl } from "../lib/email.js";
 import { asyncHandler } from "../lib/asyncHandler.js";
@@ -117,16 +119,37 @@ const upsertTestUser = async (
   return created;
 };
 
-const issueMagicLinkIfRegistered = async (
+// Registered users, plus active subscribers, who get their user row on the
+// first request. Paused or cancelled subscribers would only see the public
+// home, so they get no link.
+const findOrEnrollUser = async (
   email: string,
-): Promise<{ token: string } | null> => {
+): Promise<{ id: number } | null> => {
   const rows = await db
-    .select()
+    .select({ id: users.id })
     .from(users)
     .where(eq(users.email, email))
     .limit(1);
+  const existing = rows.at(0);
+  if (existing) {
+    return existing;
+  }
+  if ((await latestStatusForEmail(email)) !== "active") {
+    return null;
+  }
+  await db.insert(users).values({ email }).onConflictDoNothing();
+  const enrolled = await db
+    .select({ id: users.id })
+    .from(users)
+    .where(eq(users.email, email))
+    .limit(1);
+  return enrolled.at(0) ?? null;
+};
 
-  const user = rows.at(0);
+const issueMagicLinkIfRegistered = async (
+  email: string,
+): Promise<{ token: string } | null> => {
+  const user = await findOrEnrollUser(email);
   if (!user) {
     return null;
   }
@@ -174,26 +197,26 @@ authRouter.post(
       return;
     }
 
-    const issued = await issueMagicLinkIfRegistered(email);
-    const showLink = isFlagEnabled(process.env.DEV_SHOW_MAGIC_LINK);
-
-    if (issued && showLink) {
+    if (isFlagEnabled(process.env.DEV_SHOW_MAGIC_LINK)) {
+      const issued = await issueMagicLinkIfRegistered(email);
       res.status(200).json({
         message: GENERIC_MESSAGE,
-        magicLink: buildMagicLinkUrl(issued.token),
+        ...(issued && { magicLink: buildMagicLinkUrl(issued.token) }),
       });
       return;
     }
 
-    if (issued) {
-      try {
-        await sendMagicLinkEmail(email, issued.token);
-      } catch (err) {
-        console.error("Magic link email send failed", err);
-      }
-    }
-
+    // Answer before looking the email up, so response time can't tell who is
+    // registered or an active subscriber.
     res.status(200).json({ message: GENERIC_MESSAGE });
+    try {
+      const issued = await issueMagicLinkIfRegistered(email);
+      if (issued) {
+        await sendMagicLinkEmail(email, issued.token);
+      }
+    } catch (err) {
+      console.error("Magic link issue or send failed", err);
+    }
   }),
 );
 
@@ -258,11 +281,18 @@ authRouter.get(
       .from(users)
       .where(eq(users.id, req.user.id))
       .limit(1);
-    const me = rows.at(0);
-    if (!me) {
+    const found = rows.at(0);
+    if (!found) {
       res.status(401).json({ error: "Authentication required" });
       return;
     }
+    const me: MeResponse = {
+      ...found,
+      fanClubAccess: hasFanClubAccess({
+        role: found.role,
+        latestStatus: await latestStatusForEmail(found.email),
+      }),
+    };
     res.json(me);
   }),
 );
