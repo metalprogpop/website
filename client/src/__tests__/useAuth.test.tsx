@@ -31,7 +31,12 @@ describe("useAuth", () => {
   it("returns authenticated user when /me succeeds", async () => {
     vi.spyOn(globalThis, "fetch").mockResolvedValueOnce(
       new Response(
-        JSON.stringify({ id: 1, email: "fan@example.com", role: "fan" }),
+        JSON.stringify({
+          id: 1,
+          email: "fan@example.com",
+          role: "fan",
+          fanClubAccess: false,
+        }),
         {
           status: 200,
           headers: { "Content-Type": "application/json" },
@@ -50,6 +55,7 @@ describe("useAuth", () => {
       id: 1,
       email: "fan@example.com",
       role: "fan",
+      fanClubAccess: false,
     });
   });
 

@@ -62,7 +62,12 @@ const mockApi = (role: "fan" | "staff") => {
       const url = input instanceof Request ? input.url : String(input);
       if (url.endsWith("/api/v1/auth/me")) {
         return Promise.resolve(
-          jsonResponse({ id: 1, email: "staff@example.com", role }),
+          jsonResponse({
+            id: 1,
+            email: "staff@example.com",
+            role,
+            fanClubAccess: role === "staff",
+          }),
         );
       }
       if (

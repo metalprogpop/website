@@ -20,7 +20,7 @@ type ListQuery = z.output<typeof subscriberListQuerySchema>;
 
 // One row per subscriber: their most recent live subscription (by start
 // date, then id). Filters on status/platform apply to this subscription.
-const latestSubscription = db
+export const latestSubscription = db
   .selectDistinctOn([subscriptions.subscriberId], {
     subscriberId: subscriptions.subscriberId,
     subscriptionId: sql<number | null>`${subscriptions.id}`.as(
