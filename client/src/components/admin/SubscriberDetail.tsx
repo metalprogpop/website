@@ -7,7 +7,8 @@ type SubscriberDetailProps = {
   subscriber: SubscriberRow;
 };
 
-// Expanded row: editable notes plus the subscription history.
+// Expanded row: editable notes, the Hall of Fans opt-out and the
+// subscription history.
 export function SubscriberDetail({ subscriber }: SubscriberDetailProps) {
   const update = useUpdateSubscriber();
   return (
@@ -25,6 +26,25 @@ export function SubscriberDetail({ subscriber }: SubscriberDetailProps) {
           }}
         />
       </div>
+      <label className="flex items-center gap-3 rounded-lg border border-border bg-surface p-4 text-sm text-text-primary">
+        <input
+          type="checkbox"
+          checked={!subscriber.hiddenFromHallOfFans}
+          onChange={(e) => {
+            update.mutate({
+              id: subscriber.id,
+              data: { hiddenFromHallOfFans: !e.target.checked },
+            });
+          }}
+          className="size-4 accent-brand"
+        />
+        <span>
+          Mostrar en el Hall of Fans
+          <span className="block text-text-muted">
+            Destildá si la persona pidió no aparecer en la lista pública.
+          </span>
+        </span>
+      </label>
       <SubscriptionHistory subscriber={subscriber} />
     </div>
   );

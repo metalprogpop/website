@@ -47,7 +47,7 @@ export const subscriberSchema = z.object({
   firstName: z.string().nullable(),
   lastName: z.string().nullable(),
   fanName: z.string().nullable(),
-  inHallOfFame: z.boolean(),
+  hiddenFromHallOfFans: z.boolean(),
   fanSpotlight: z.boolean(),
   contacted: z.boolean(),
   replied: z.boolean(),
@@ -93,14 +93,16 @@ export const subscriberListQuerySchema = z.object({
 });
 export type SubscriberListQuery = z.input<typeof subscriberListQuerySchema>;
 
-// Staff edits only what the payment platforms do not provide: names and
-// notes. Unknown keys are rejected, not silently dropped.
+// Staff edits only what the payment platforms do not provide: names, notes
+// and whether someone is left out of the Hall of Fans. Unknown keys are
+// rejected, not silently dropped.
 export const subscriberUpdateSchema = z
   .object({
     firstName: optionalTextSchema,
     lastName: optionalTextSchema,
     fanName: optionalTextSchema,
     notes: optionalTextSchema,
+    hiddenFromHallOfFans: z.boolean(),
   })
   .partial()
   .strict()

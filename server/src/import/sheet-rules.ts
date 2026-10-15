@@ -26,7 +26,6 @@ export type ImportedSubscriber = {
   firstName: string | null;
   lastName: string | null;
   fanName: string | null;
-  inHallOfFame: boolean;
   fanSpotlight: boolean;
   contacted: boolean;
   replied: boolean;
@@ -50,7 +49,8 @@ const COLUMN = {
   platform: 7,
   contacted: 8,
   replied: 9,
-  inHallOfFame: 10,
+  // Column 10 ("En HoF") was an opt-in list. The Hall of Fans now shows
+  // every subscriber unless staff hide them, so it is not imported.
   fanSpotlight: 11,
   fanName: 12,
   extraNotes: 13,
@@ -217,7 +217,6 @@ export const buildImport = (rows: readonly (readonly unknown[])[]) => {
     const ended = parseDateCell(cell(COLUMN.endedOn));
     const contacted = parseFlag(cell(COLUMN.contacted), "Contactadx");
     const replied = parseFlag(cell(COLUMN.replied), "Contestó");
-    const hallOfFame = parseFlag(cell(COLUMN.inHallOfFame), "En HoF");
     const spotlight = parseFlag(cell(COLUMN.fanSpotlight), "Fan Spotlight");
 
     const subscription: ImportedSubscription = {
@@ -239,7 +238,6 @@ export const buildImport = (rows: readonly (readonly unknown[])[]) => {
     const personNotes = joinNotes(
       contacted.note,
       replied.note,
-      hallOfFame.note,
       spotlight.note,
     );
 
@@ -257,7 +255,6 @@ export const buildImport = (rows: readonly (readonly unknown[])[]) => {
         existing.fanName,
         text(cell(COLUMN.fanName)),
       );
-      existing.inHallOfFame ||= hallOfFame.flag;
       existing.fanSpotlight ||= spotlight.flag;
       existing.contacted ||= contacted.flag;
       existing.replied ||= replied.flag;
@@ -271,7 +268,6 @@ export const buildImport = (rows: readonly (readonly unknown[])[]) => {
       firstName: text(cell(COLUMN.firstName)),
       lastName: text(cell(COLUMN.lastName)),
       fanName: text(cell(COLUMN.fanName)),
-      inHallOfFame: hallOfFame.flag,
       fanSpotlight: spotlight.flag,
       contacted: contacted.flag,
       replied: replied.flag,
