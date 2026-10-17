@@ -19,6 +19,12 @@ export function Header() {
             >
               Episodios
             </Link>
+            <Link
+              to="/about"
+              className="font-display text-sm font-medium text-text-secondary transition-colors hover:text-brand"
+            >
+              Nosotros
+            </Link>
             <a
               href="#listen"
               className="font-display text-sm font-medium text-text-secondary transition-colors hover:text-brand"

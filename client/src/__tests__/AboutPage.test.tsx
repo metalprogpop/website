@@ -78,4 +78,14 @@ describe("AboutPage", () => {
       screen.queryByRole("region", { name: /nos invitaron/i }),
     ).not.toBeInTheDocument();
   });
+
+  it("links to the about page from the header", () => {
+    renderPage();
+
+    expect(
+      within(screen.getByRole("banner")).getByRole("link", {
+        name: "Nosotros",
+      }),
+    ).toHaveAttribute("href", "/about");
+  });
 });
