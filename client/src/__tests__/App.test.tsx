@@ -6,6 +6,7 @@ import { Routes, Route } from "react-router-dom";
 import { LandingPage } from "../pages/LandingPage";
 import { EpisodesPage } from "../pages/EpisodesPage";
 import { FanCluPage } from "../pages/FanCluPage";
+import { AboutPage } from "../pages/AboutPage";
 
 function renderWithProviders(initialRoute: string) {
   const queryClient = new QueryClient({
@@ -18,6 +19,7 @@ function renderWithProviders(initialRoute: string) {
         <Routes>
           <Route path="/" element={<LandingPage />} />
           <Route path="/episodes" element={<EpisodesPage />} />
+          <Route path="/about" element={<AboutPage />} />
           <Route path="/fan-clu" element={<FanCluPage />} />
         </Routes>
       </MemoryRouter>
@@ -41,6 +43,13 @@ describe("App routing", () => {
     renderWithProviders("/episodes");
     expect(
       screen.getByRole("heading", { level: 1, name: /todos los episodios/i }),
+    ).toBeInTheDocument();
+  });
+
+  it("renders about page at /about", () => {
+    renderWithProviders("/about");
+    expect(
+      screen.getByRole("heading", { level: 2, name: /quiénes somos/i }),
     ).toBeInTheDocument();
   });
 
