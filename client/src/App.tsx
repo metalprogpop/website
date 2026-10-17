@@ -3,6 +3,7 @@ import { LandingPage } from "./pages/LandingPage";
 import { EpisodesPage } from "./pages/EpisodesPage";
 import { EpisodePage } from "./pages/EpisodePage";
 import { FanCluPage } from "./pages/FanCluPage";
+import { AboutPage } from "./pages/AboutPage";
 import { LogoutPage } from "./pages/LogoutPage";
 import { AdminPage } from "./pages/AdminPage";
 import { ScrollToTop } from "./components/ScrollToTop";
@@ -16,6 +17,7 @@ export function AppRoutes() {
       <Route path="/" element={<LandingPage />} />
       <Route path="/episodes" element={<EpisodesPage />} />
       <Route path="/episodes/:episodeRef" element={<EpisodePage />} />
+      <Route path="/about" element={<AboutPage />} />
       <Route path="/fan-clu" element={<FanCluPage />} />
       <Route path="/logout" element={<LogoutPage />} />
       <Route path="/admin" element={<AdminPage />} />
