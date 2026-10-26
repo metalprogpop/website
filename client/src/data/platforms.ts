@@ -2,7 +2,7 @@ export type Platform = {
   id: string;
   name: string;
   url: string;
-  iconName: 'spotify' | 'apple' | 'audioboom' | 'rss';
+  iconName: 'spotify' | 'apple' | 'audioboom';
 };
 
 // Checked by hand: every link opens the podcast's page on that platform.
@@ -24,12 +24,5 @@ export const platforms: Platform[] = [
     name: 'Audioboom',
     url: 'https://audioboom.com/channels/4940203',
     iconName: 'audioboom',
-  },
-  {
-    id: 'rss',
-    name: 'RSS Feed',
-    // The podcast's own feed, as published by Audioboom.
-    url: 'https://audioboom.com/channels/4940203.rss',
-    iconName: 'rss',
   },
 ];

@@ -16,7 +16,7 @@ export function PlatformsSection() {
           </h2>
         </div>
 
-        <div className="mx-auto grid max-w-3xl grid-cols-2 gap-4 sm:grid-cols-4 sm:gap-6">
+        <div className="mx-auto grid max-w-2xl grid-cols-3 gap-4 sm:gap-6">
           {platforms.map((platform) => (
             <PlatformLink key={platform.id} platform={platform} />
           ))}

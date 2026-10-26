@@ -11,9 +11,6 @@ export function ListenElsewhere() {
     <div className="flex flex-wrap items-center gap-x-5 gap-y-2">
       <span className="font-display text-sm text-text-muted">También en</span>
       {platforms.map((platform) => {
-        if (platform.iconName === "rss") {
-          return null;
-        }
         const Icon = icons[platform.iconName];
         return (
           <a

@@ -1,4 +1,4 @@
-import { FaSpotify, FaApple, FaRss } from 'react-icons/fa';
+import { FaSpotify, FaApple } from 'react-icons/fa';
 import { SiAudioboom } from 'react-icons/si';
 import type { Platform } from '../../data/platforms';
 
@@ -10,7 +10,6 @@ const iconMap = {
   spotify: FaSpotify,
   apple: FaApple,
   audioboom: SiAudioboom,
-  rss: FaRss,
 };
 
 export function PlatformLink({ platform }: PlatformLinkProps) {
