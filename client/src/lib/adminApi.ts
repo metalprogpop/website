@@ -5,6 +5,7 @@ import {
   subscriberSchema,
   subscriptionListSchema,
   subscriptionSchema,
+  videoSyncResultSchema,
   type Platform,
   type SubscriberUpdate,
   type SubscriptionStatus,
@@ -92,5 +93,9 @@ export const adminApi = {
   resyncEpisodes: async () =>
     episodeResyncResultSchema.parse(
       await request("/episodes/resync", { method: "POST" }),
+    ),
+  syncVideos: async (full: boolean) =>
+    videoSyncResultSchema.parse(
+      await request("/videos/sync", json("POST", { full })),
     ),
 };

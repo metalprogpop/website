@@ -84,6 +84,17 @@ const mockApi = (role: "fan" | "staff") => {
       if (url.includes("/api/v1/admin/subscribers/7/subscriptions")) {
         return Promise.resolve(jsonResponse([subscriber.latestSubscription]));
       }
+      if (url.endsWith("/api/v1/admin/videos/sync")) {
+        return Promise.resolve(
+          jsonResponse({
+            total: 287,
+            added: 3,
+            updated: 3,
+            hidden: 0,
+            ignored: 7,
+          }),
+        );
+      }
       return Promise.resolve(jsonResponse({ error: "Not found" }, 404));
     });
   return fetchMock;
@@ -178,6 +189,25 @@ describe("AdminPage", () => {
       expect(patch?.[1]?.body).toBe(
         JSON.stringify({ hiddenFromHallOfFans: true }),
       );
+    });
+  });
+
+  it.each([
+    ["Sincronizar videos", false],
+    ["Revisar todos", true],
+  ])("syncs the videos with “%s”", async (name, full) => {
+    const fetchMock = mockApi("staff");
+    renderPage();
+    await userEvent.click(await screen.findByRole("button", { name }));
+
+    await waitFor(() => {
+      const sync = fetchMock.mock.calls.find(([input]) =>
+        (input instanceof Request ? input.url : input.toString()).endsWith(
+          "/api/v1/admin/videos/sync",
+        ),
+      );
+      expect(sync?.[1]?.method).toBe("POST");
+      expect(sync?.[1]?.body).toBe(JSON.stringify({ full }));
     });
   });
 });

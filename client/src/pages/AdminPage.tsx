@@ -4,6 +4,7 @@ import { Container } from "../components/layout/Container";
 import { Section } from "../components/layout/Section";
 import { Card } from "../components/ui/brand/Card";
 import { EpisodesResyncButton } from "../components/admin/EpisodesResyncButton";
+import { VideosSyncControl } from "../components/admin/VideosSyncControl";
 import { SubscribersPanel } from "../components/admin/SubscribersPanel";
 import { useAuth } from "../hooks/useAuth";
 
@@ -60,7 +61,10 @@ export function AdminPage() {
                 Suscriptores
               </h1>
             </div>
-            <EpisodesResyncButton />
+            <div className="flex flex-wrap items-center gap-3">
+              <VideosSyncControl />
+              <EpisodesResyncButton />
+            </div>
           </div>
           <Card padding="md">
             <SubscribersPanel />
