@@ -4,6 +4,7 @@ import userEvent from "@testing-library/user-event";
 import { MemoryRouter } from "react-router-dom";
 import { QueryClient, QueryClientProvider } from "@tanstack/react-query";
 import { FanCluPage } from "../pages/FanCluPage";
+import { videoProgram } from "./videoFixtures";
 
 const API_URL = "http://localhost:3001";
 
@@ -119,7 +120,10 @@ describe("FanCluPage", () => {
     ["active subscribers", "fan"],
     ["staff", "staff"],
   ])("welcomes %s and shows the Hall of Fans", async (_who, role) => {
-    mockApi({ "/auth/me": () => signedIn(true, role) });
+    mockApi({
+      "/auth/me": () => signedIn(true, role),
+      "/fan-clu/videos": () => json({ programs: [videoProgram(2)] }),
+    });
 
     renderPage();
 
@@ -129,7 +133,9 @@ describe("FanCluPage", () => {
         name: /gracias por el aguante/i,
       }),
     ).toBeInTheDocument();
-    expect(screen.getByText(/videos/i)).toBeInTheDocument();
+    expect(
+      await screen.findByRole("heading", { name: "Programa 2" }),
+    ).toBeInTheDocument();
     expect(
       screen.getByRole("button", { name: /cerrar sesión/i }),
     ).toBeInTheDocument();

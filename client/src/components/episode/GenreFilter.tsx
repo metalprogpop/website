@@ -11,14 +11,20 @@ const OPTIONS: { value: Genre | null; label: string }[] = [
 type GenreFilterProps = {
   value: Genre | null;
   onChange: (genre: Genre | null) => void;
+  // Centered under a page heading; "end" sits at the end of a toolbar.
+  align?: "center" | "end";
 };
 
-export function GenreFilter({ value, onChange }: GenreFilterProps) {
+export function GenreFilter({
+  value,
+  onChange,
+  align = "center",
+}: GenreFilterProps) {
   return (
     <div
       role="group"
       aria-label="Filtrar por género"
-      className="flex flex-wrap justify-center gap-2"
+      className={`flex flex-wrap gap-2 ${align === "center" ? "justify-center" : "md:justify-end"}`}
     >
       {OPTIONS.map((option) => {
         const selected = option.value === value;
