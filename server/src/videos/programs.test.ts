@@ -71,4 +71,11 @@ describe("buildPrograms", () => {
     });
     expect(program?.publishedAt).toBeNull();
   });
+
+  it("never carries a file's key, even when the row has one", () => {
+    const rows = [{ ...video(5, 1), s3Key: "videos/secret-name.mp4" }];
+    expect(JSON.stringify(buildPrograms(rows, catalog))).not.toContain(
+      "secret-name",
+    );
+  });
 });
