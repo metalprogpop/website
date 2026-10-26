@@ -67,8 +67,6 @@ export const videoSyncRequestSchema = z
   .object({ full: z.boolean().default(false) })
   .strict();
 
-export type VideoSyncRequest = z.infer<typeof videoSyncRequestSchema>;
-
 export const videoSyncResultSchema = z.object({
   // Live videos after the sync.
   total: z.number().int().nonnegative(),

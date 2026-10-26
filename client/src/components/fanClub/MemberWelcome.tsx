@@ -23,6 +23,7 @@ export function MemberWelcome({ email, onLogout }: MemberWelcomeProps) {
           <span>
             Entraste como <span className="text-text-primary">{email}</span>
           </span>
+          <span aria-hidden="true">·</span>
           <Button variant="ghost" size="sm" className="px-0" onClick={onLogout}>
             Cerrar sesión
           </Button>

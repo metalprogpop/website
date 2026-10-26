@@ -108,6 +108,15 @@ describe("VideoHub", () => {
         .map((l) => l.getAttribute("href")),
     ).toEqual(["/fan-clu/programa/3"]);
 
+    // A number doesn't match inside a longer one ("12").
+    await user.clear(search);
+    await user.type(search, "2");
+    expect(
+      screen
+        .getAllByRole("link", { name: /^programa \d/i })
+        .map((l) => l.getAttribute("href")),
+    ).toEqual(["/fan-clu/programa/2"]);
+
     await user.clear(search);
     await user.type(search, "BÁNDA 5");
     expect(

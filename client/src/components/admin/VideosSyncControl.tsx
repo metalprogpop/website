@@ -20,7 +20,11 @@ export function VideosSyncControl() {
       toast.success(
         `Videos sincronizados: ${String(total)} publicados${details.length > 0 ? `, ${details.join(", ")}` : ""}`,
       );
-      await queryClient.invalidateQueries({ queryKey: ["fan-clu", "videos"] });
+      // Exact: the signed URLs below this key must not refetch mid-playback.
+      await queryClient.invalidateQueries({
+        queryKey: ["fan-clu", "videos"],
+        exact: true,
+      });
     },
     onError: (error) => {
       toast.error(error.message);

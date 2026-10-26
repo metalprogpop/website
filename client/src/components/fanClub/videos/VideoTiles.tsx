@@ -67,7 +67,11 @@ export function ProgramTile({
       <TileCaption
         program={program.number}
         date={program.publishedAt}
-        title={program.parts.map(partAlbum).join(" · ")}
+        title={program.parts
+          .map((p) =>
+            p.missing ? `${partAlbum(p)} (sin video)` : partAlbum(p),
+          )
+          .join(" · ")}
       />
     </Link>
   );
