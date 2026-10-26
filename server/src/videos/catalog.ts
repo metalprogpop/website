@@ -1,4 +1,4 @@
-import { and, asc, count, eq, gte, isNull, lte, sql } from "drizzle-orm";
+import { and, asc, count, desc, eq, gte, isNull, lte, sql } from "drizzle-orm";
 import type { FanClubProgram, VideoSyncResult, VideoUrls } from "shared";
 import { db } from "../db/index.js";
 import { fanClubVideos } from "../db/schema.js";
@@ -6,13 +6,16 @@ import { findEpisode, listEpisodes } from "../episodes/catalog.js";
 import { attachmentDisposition, downloadFileName } from "./download.js";
 import { episodeNumbersOf, parseVideoKey } from "./keys.js";
 import { buildPrograms } from "./programs.js";
-import { listVideoObjects, SIGNED_URL_SECONDS, signObjectUrl } from "./s3.js";
+import { listVideoObjects, SIGNED_URL_SECONDS, signVideoUrl } from "./s3.js";
 import { planVideoSync, type VideoSyncMode } from "./sync.js";
 
 const isLive = isNull(fanClubVideos.deletedAt);
 
-// Syncs run one at a time, in the order they were asked for.
+// Syncs run one at a time, in the order they were asked for. Across
+// processes (the CLI next to the admin button) a transaction-scoped
+// advisory lock does the same, and the table is read under it.
 let queue: Promise<unknown> = Promise.resolve();
+const SYNC_LOCK_ID = 7_210_001;
 
 const runSync = async (mode: VideoSyncMode): Promise<VideoSyncResult> => {
   const objects = await listVideoObjects();
@@ -20,16 +23,16 @@ const runSync = async (mode: VideoSyncMode): Promise<VideoSyncResult> => {
     const parsed = parseVideoKey(object);
     return parsed ? [parsed] : [];
   });
-  const stored = await db
-    .select({
-      program: fanClubVideos.program,
-      part: fanClubVideos.part,
-      hidden: sql<boolean>`${fanClubVideos.deletedAt} IS NOT NULL`,
-    })
-    .from(fanClubVideos);
-  const plan = planVideoSync(stored, listing, mode);
-
-  await db.transaction(async (tx) => {
+  const plan = await db.transaction(async (tx) => {
+    await tx.execute(sql`select pg_advisory_xact_lock(${SYNC_LOCK_ID})`);
+    const stored = await tx
+      .select({
+        program: fanClubVideos.program,
+        part: fanClubVideos.part,
+        hidden: sql<boolean>`${fanClubVideos.deletedAt} IS NOT NULL`,
+      })
+      .from(fanClubVideos);
+    const plan = planVideoSync(stored, listing, mode);
     const now = new Date();
     if (plan.upsert.length > 0) {
       await tx
@@ -63,6 +66,7 @@ const runSync = async (mode: VideoSyncMode): Promise<VideoSyncResult> => {
           and(eq(fanClubVideos.program, program), eq(fanClubVideos.part, part)),
         );
     }
+    return plan;
   });
 
   const total =
@@ -137,6 +141,8 @@ export const signPart = async (
           gte(fanClubVideos.lastPart, part),
         ),
       )
+      // Overlaps are dropped by the sync; this keeps the answer stable anyway.
+      .orderBy(desc(fanClubVideos.lastPart))
       .limit(1)
   ).at(0);
   if (!video) {
@@ -153,8 +159,8 @@ export const signPart = async (
   });
   const expiresAt = new Date(Date.now() + SIGNED_URL_SECONDS * 1000);
   const [url, downloadUrl] = await Promise.all([
-    signObjectUrl(video.s3Key),
-    signObjectUrl(video.s3Key, attachmentDisposition(fileName)),
+    signVideoUrl(video.s3Key),
+    signVideoUrl(video.s3Key, attachmentDisposition(fileName)),
   ]);
   return { url, downloadUrl, expiresAt: expiresAt.toISOString() };
 };

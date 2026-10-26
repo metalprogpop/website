@@ -72,6 +72,19 @@ describe("planVideoSync, recent", () => {
   });
 });
 
+describe("planVideoSync, overlapping files", () => {
+  it("keeps the file covering the whole program over a stray part", () => {
+    const whole = { ...file(1, 1, "videos/z-whole.mp4"), lastPart: 3 };
+    const plan = planVideoSync(
+      [],
+      [file(1, 2, "videos/a-part.mp4"), whole],
+      "full",
+    );
+    expect(plan.upsert.map((f) => f.key)).toEqual(["videos/z-whole.mp4"]);
+    expect(plan.duplicates).toBe(1);
+  });
+});
+
 describe("planVideoSync, full", () => {
   it("re-checks every file and hides the parts that left the bucket", () => {
     const plan = planVideoSync(

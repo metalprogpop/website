@@ -33,16 +33,27 @@ export type VideoSyncPlan = {
 const slot = (video: { program: number; part: number }) =>
   `${String(video.program)}-${String(video.part)}`;
 
-// Two files for the same part: keep the first by key, so the choice is
-// stable between syncs.
+// Two files claiming the same part (or overlapping parts, like a stray
+// part next to a file covering the whole program): keep the widest, then
+// the first by key, so the choice is stable between syncs.
 const dedupe = (listing: ParsedVideo[]) => {
-  const bySlot = new Map<string, ParsedVideo>();
-  for (const video of [...listing].sort((a, b) => a.key.localeCompare(b.key))) {
-    if (!bySlot.has(slot(video))) {
-      bySlot.set(slot(video), video);
+  const kept: ParsedVideo[] = [];
+  const ordered = [...listing].sort(
+    (a, b) =>
+      b.lastPart - b.part - (a.lastPart - a.part) || a.key.localeCompare(b.key),
+  );
+  for (const video of ordered) {
+    const overlaps = kept.some(
+      (other) =>
+        other.program === video.program &&
+        other.part <= video.lastPart &&
+        video.part <= other.lastPart,
+    );
+    if (!overlaps) {
+      kept.push(video);
     }
   }
-  return [...bySlot.values()];
+  return kept;
 };
 
 export const planVideoSync = (
