@@ -24,7 +24,28 @@ export function ScrollRow({
       });
     }
   };
-  useEffect(updateEdges, [children]);
+  // Arrows enable or disable as the row's content or width changes.
+  useEffect(() => {
+    const el = ref.current;
+    updateEdges();
+    if (!el || typeof ResizeObserver === "undefined") {
+      return undefined;
+    }
+    const observer = new ResizeObserver(updateEdges);
+    observer.observe(el);
+    return () => {
+      observer.disconnect();
+    };
+  }, []);
+
+  // Ends a drag however the pointer was released, even outside the row.
+  const endDrag = () => {
+    drag.current.active = false;
+    if (ref.current) {
+      ref.current.style.scrollSnapType = "";
+      ref.current.style.cursor = "";
+    }
+  };
 
   const page = (direction: 1 | -1) => {
     const el = ref.current;
@@ -61,6 +82,11 @@ export function ScrollRow({
           if (!drag.current.active || !el) {
             return;
           }
+          // Released outside the window before the drag began.
+          if ((e.buttons & 1) === 0) {
+            endDrag();
+            return;
+          }
           const dx = e.clientX - drag.current.startX;
           if (!drag.current.moved && Math.abs(dx) > 6) {
             drag.current.moved = true;
@@ -72,13 +98,9 @@ export function ScrollRow({
             el.scrollLeft = drag.current.startLeft - dx;
           }
         }}
-        onPointerUp={() => {
-          drag.current.active = false;
-          if (ref.current) {
-            ref.current.style.scrollSnapType = "";
-            ref.current.style.cursor = "";
-          }
-        }}
+        onPointerUp={endDrag}
+        onPointerCancel={endDrag}
+        onLostPointerCapture={endDrag}
         onClickCapture={(e) => {
           if (drag.current.moved) {
             e.preventDefault();
