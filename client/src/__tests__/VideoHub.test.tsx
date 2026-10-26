@@ -150,6 +150,21 @@ describe("VideoHub", () => {
     expect(
       await screen.findByRole("heading", { name: "Seguí mirando" }),
     ).toBeInTheDocument();
+
+    // Nor does a search that matches nothing hide it.
+    await user.type(
+      screen.getByRole("searchbox", { name: /buscar/i }),
+      "nada que ver",
+    );
+    expect(
+      screen.getByText("No hay videos que coincidan."),
+    ).toBeInTheDocument();
+    expect(
+      screen.getByRole("heading", { name: "Seguí mirando" }),
+    ).toBeInTheDocument();
+    expect(
+      await screen.findByRole("heading", { name: "Seguí mirando" }),
+    ).toBeInTheDocument();
   });
 
   it("says so when the videos can't be loaded", async () => {

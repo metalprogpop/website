@@ -3,7 +3,6 @@ import { useSearchParams } from "react-router-dom";
 import { genreSchema, type FanClubProgram } from "shared";
 import { useFanClubVideos } from "../../../hooks/useFanClubVideos";
 import {
-  groupByYear,
   partMatches,
   partsOfGenre,
   programMatches,
@@ -11,47 +10,20 @@ import {
 } from "../../../lib/fanClubVideos";
 import { ContinueRow } from "./ContinueRow";
 import { FeaturedVideo, type Featured } from "./FeaturedVideo";
-import { ScrollRow } from "./ScrollRow";
 import { VideoHubSkeleton } from "./VideoHubSkeleton";
 import { PartTile, ProgramTile } from "./VideoTiles";
 import { VideoTools } from "./VideoTools";
+import { YearGrids, YearRows } from "./YearGroups";
 
 const partKey = (item: PartItem) =>
   `${String(item.program.number)}-${String(item.part.part)}`;
-
-const yearTitle = (year: number | null) => (year ? String(year) : "Sin fecha");
-
-function YearGrids<T>({
-  items,
-  dateOf,
-  compact,
-  render,
-}: {
-  items: T[];
-  dateOf: (item: T) => string | null | undefined;
-  compact: boolean;
-  render: (item: T) => ReactNode;
-}) {
-  return groupByYear(items, dateOf).map(([year, group]) => (
-    <section key={year ?? "none"} className="mb-10">
-      <h3 className="mb-4 font-display text-xl font-bold text-text-primary">
-        {yearTitle(year)}
-      </h3>
-      <div
-        className={`grid gap-6 ${compact ? "grid-cols-2 sm:grid-cols-3 lg:grid-cols-5" : "sm:grid-cols-2 lg:grid-cols-3"}`}
-      >
-        {group.map(render)}
-      </div>
-    </section>
-  ));
-}
-
 const programDate = (p: FanClubProgram) => p.publishedAt;
 const partDate = (i: PartItem) => i.part.episodes.at(0)?.publishedAt;
 
 // The members' video room: the newest program first, then what you were
-// watching, then every program by year. A genre filter turns each tile into
-// that genre's part, so a tile always opens what it shows.
+// watching (whatever the filter or search), then every program by year. A
+// genre filter turns each tile into that genre's part, so a tile always
+// opens what it shows.
 export function VideoHub() {
   const { data: programs, isLoading, isError } = useFanClubVideos();
   const [params, setParams] = useSearchParams();
@@ -74,57 +46,45 @@ export function VideoHub() {
   const foundParts = genre
     ? partsOfGenre(programs, genre).filter((i) => partMatches(i, search))
     : [];
-  const newestPart = foundParts.at(0);
-  const newestProgram = programs.at(0);
 
-  let content: ReactNode;
+  // One element for both cases, so switching genres animates its height
+  // instead of mounting a new block. A lost part is never featured.
+  const newestPart =
+    foundParts.find((i) => !i.part.missing) ?? foundParts.at(0);
+  const newestProgram = programs.at(0);
+  let featured: Featured | null = null;
+  if (!searching && genre && newestPart) {
+    featured = { kind: "part", ...newestPart, genre };
+  } else if (!searching && !genre && newestProgram) {
+    featured = { kind: "program", program: newestProgram };
+  }
+
+  let results: ReactNode;
   if (genre ? foundParts.length === 0 : foundPrograms.length === 0) {
-    content = <p className="text-text-muted">No hay videos que coincidan.</p>;
-  } else if (searching) {
-    content = genre ? (
-      <YearGrids
-        items={foundParts}
+    results = <p className="text-text-muted">No hay videos que coincidan.</p>;
+  } else if (genre) {
+    const Groups = searching ? YearGrids : YearRows;
+    results = (
+      <Groups
+        items={foundParts.filter((i) => i !== newestPart || searching)}
         dateOf={partDate}
         compact
-        render={(i) => <PartTile key={partKey(i)} item={i} inRow={false} />}
-      />
-    ) : (
-      <YearGrids
-        items={foundPrograms}
-        dateOf={programDate}
-        compact={false}
-        render={(p) => <ProgramTile key={p.number} program={p} inRow={false} />}
+        render={(i) => (
+          <PartTile key={partKey(i)} item={i} inRow={!searching} />
+        )}
       />
     );
   } else {
-    // One element for both cases, so switching genres animates its height
-    // instead of mounting a new block.
-    const featured: Featured | null =
-      genre && newestPart
-        ? { kind: "part", ...newestPart, genre }
-        : !genre && newestProgram
-          ? { kind: "program", program: newestProgram }
-          : null;
-    content = (
-      <>
-        {featured ? <FeaturedVideo item={featured} /> : null}
-        <ContinueRow programs={programs} />
-        {genre
-          ? groupByYear(foundParts.slice(1), partDate).map(([year, items]) => (
-              <ScrollRow key={year ?? "none"} title={yearTitle(year)}>
-                {items.map((i) => (
-                  <PartTile key={partKey(i)} item={i} />
-                ))}
-              </ScrollRow>
-            ))
-          : groupByYear(programs.slice(1), programDate).map(([year, items]) => (
-              <ScrollRow key={year ?? "none"} title={yearTitle(year)}>
-                {items.map((p) => (
-                  <ProgramTile key={p.number} program={p} />
-                ))}
-              </ScrollRow>
-            ))}
-      </>
+    const Groups = searching ? YearGrids : YearRows;
+    results = (
+      <Groups
+        items={searching ? foundPrograms : programs.slice(1)}
+        dateOf={programDate}
+        compact={false}
+        render={(p) => (
+          <ProgramTile key={p.number} program={p} inRow={!searching} />
+        )}
+      />
     );
   }
 
@@ -144,7 +104,9 @@ export function VideoHub() {
           setParams(g ? { genero: g } : {}, { replace: true });
         }}
       />
-      {content}
+      {featured ? <FeaturedVideo item={featured} /> : null}
+      <ContinueRow programs={programs} />
+      {results}
     </section>
   );
 }
