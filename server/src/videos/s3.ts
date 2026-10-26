@@ -48,8 +48,8 @@ export const listVideoObjects = async (): Promise<VideoObject[]> => {
   return objects;
 };
 
-// A URL to read the object, optionally as a download with this disposition.
-export const signObjectUrl = (
+// A URL to read a video, optionally as a download with this disposition.
+export const signVideoUrl = (
   key: string,
   contentDisposition?: string,
 ): Promise<string> =>
@@ -59,6 +59,8 @@ export const signObjectUrl = (
       Bucket: getBucket(),
       Key: key,
       ResponseContentDisposition: contentDisposition,
+      // Some uploads may carry a generic type, which Safari won't play.
+      ResponseContentType: "video/mp4",
     }),
     { expiresIn: SIGNED_URL_SECONDS },
   );
