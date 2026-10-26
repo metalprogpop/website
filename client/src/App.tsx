@@ -3,6 +3,7 @@ import { LandingPage } from "./pages/LandingPage";
 import { EpisodesPage } from "./pages/EpisodesPage";
 import { EpisodePage } from "./pages/EpisodePage";
 import { FanCluPage } from "./pages/FanCluPage";
+import { FanClubProgramPage } from "./pages/FanClubProgramPage";
 import { AboutPage } from "./pages/AboutPage";
 import { LogoutPage } from "./pages/LogoutPage";
 import { AdminPage } from "./pages/AdminPage";
@@ -19,6 +20,10 @@ export function AppRoutes() {
       <Route path="/episodes/:episodeRef" element={<EpisodePage />} />
       <Route path="/about" element={<AboutPage />} />
       <Route path="/fan-clu" element={<FanCluPage />} />
+      <Route
+        path="/fan-clu/programa/:programNumber"
+        element={<FanClubProgramPage />}
+      />
       <Route path="/logout" element={<LogoutPage />} />
       <Route path="/admin" element={<AdminPage />} />
     </Routes>
