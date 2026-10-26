@@ -43,6 +43,13 @@
       "when": 1792026045553,
       "tag": "0005_magical_sue_storm",
       "breakpoints": true
+    },
+    {
+      "idx": 6,
+      "version": "7",
+      "when": 1793011828897,
+      "tag": "0006_add_fan_club_videos",
+      "breakpoints": true
     }
   ]
 }

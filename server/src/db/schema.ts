@@ -1,5 +1,6 @@
 import { sql } from "drizzle-orm";
 import {
+  bigint,
   boolean,
   date,
   index,
@@ -131,5 +132,31 @@ export const episodes = pgTable(
   },
   (table) => ({
     numberUnique: uniqueIndex("episodes_number_unique").on(table.number),
+  }),
+);
+
+// Fan Club program videos, mirrored from the media bucket by a staff-run
+// sync (videos don't change once uploaded). One row per file: part k of
+// program N is episode 3 × (N − 1) + k, and program 1 is a single file that
+// covers parts 1 to 3 (last_part 3). A part with no row was lost. The S3 key
+// never leaves the server: members get presigned URLs, nothing else.
+export const fanClubVideos = pgTable(
+  "fan_club_videos",
+  {
+    id: serial("id").primaryKey(),
+    program: integer("program").notNull(),
+    part: integer("part").notNull(),
+    lastPart: integer("last_part").notNull(),
+    s3Key: text("s3_key").notNull(),
+    sizeBytes: bigint("size_bytes", { mode: "number" }).notNull(),
+    createdAt: timestamp("created_at").defaultNow().notNull(),
+    updatedAt: timestamp("updated_at").defaultNow().notNull(),
+    deletedAt: timestamp("deleted_at"),
+  },
+  (table) => ({
+    programPartUnique: uniqueIndex("fan_club_videos_program_part_unique").on(
+      table.program,
+      table.part,
+    ),
   }),
 );
