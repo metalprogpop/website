@@ -34,7 +34,7 @@ export function Header() {
           </nav>
 
           <ButtonRouteLink to="/fan-clu" size="sm" variant="primary">
-            Fan Clú
+            Sumate
           </ButtonRouteLink>
         </div>
       </Container>

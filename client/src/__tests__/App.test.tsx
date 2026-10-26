@@ -43,7 +43,7 @@ describe("App routing", () => {
     // Earlier renders stay mounted in this file, so look only at this one.
     const page = within(renderWithProviders("/").container);
     expect(
-      within(page.getByRole("banner")).getByRole("link", { name: "Fan Clú" }),
+      within(page.getByRole("banner")).getByRole("link", { name: "Sumate" }),
     ).toHaveAttribute("href", "/fan-clu");
     expect(
       page.getByRole("heading", { level: 2, name: /bancá el programa/i }),
