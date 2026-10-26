@@ -1,7 +1,8 @@
-import { FaApple, FaSpotify, FaYoutube } from "react-icons/fa";
+import { FaApple, FaSpotify } from "react-icons/fa";
+import { SiAudioboom } from "react-icons/si";
 import { platforms } from "../../data/platforms";
 
-const icons = { spotify: FaSpotify, apple: FaApple, youtube: FaYoutube };
+const icons = { spotify: FaSpotify, apple: FaApple, audioboom: SiAudioboom };
 
 // The feed carries no per-episode links for these platforms, so they lead to
 // the show's page on each one.

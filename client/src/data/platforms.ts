@@ -2,11 +2,10 @@ export type Platform = {
   id: string;
   name: string;
   url: string;
-  iconName: 'spotify' | 'apple' | 'youtube' | 'rss';
+  iconName: 'spotify' | 'apple' | 'audioboom' | 'rss';
 };
 
 // Checked by hand: every link opens the podcast's page on that platform.
-// YouTube is left out until the podcast has a channel there.
 export const platforms: Platform[] = [
   {
     id: 'spotify',
@@ -19,6 +18,12 @@ export const platforms: Platform[] = [
     name: 'Apple Podcasts',
     url: 'https://podcasts.apple.com/us/podcast/metalprogpop-cast/id1329301095',
     iconName: 'apple',
+  },
+  {
+    id: 'audioboom',
+    name: 'Audioboom',
+    url: 'https://audioboom.com/channels/4940203',
+    iconName: 'audioboom',
   },
   {
     id: 'rss',
