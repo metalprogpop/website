@@ -1,5 +1,5 @@
 import { describe, it, expect, vi, beforeEach } from "vitest";
-import { render, screen } from "@testing-library/react";
+import { render, screen, within } from "@testing-library/react";
 import { MemoryRouter } from "react-router-dom";
 import { QueryClient, QueryClientProvider } from "@tanstack/react-query";
 import { Routes, Route } from "react-router-dom";
@@ -37,6 +37,20 @@ describe("App routing", () => {
   it("renders landing page at /", () => {
     renderWithProviders("/");
     expect(screen.getByRole("heading", { level: 1 })).toBeInTheDocument();
+  });
+
+  it("leads to the Fan Clú from the header and from its section on the home", () => {
+    // Earlier renders stay mounted in this file, so look only at this one.
+    const page = within(renderWithProviders("/").container);
+    expect(
+      within(page.getByRole("banner")).getByRole("link", { name: "Fan Clú" }),
+    ).toHaveAttribute("href", "/fan-clu");
+    expect(
+      page.getByRole("heading", { level: 2, name: /bancá el programa/i }),
+    ).toBeInTheDocument();
+    expect(
+      page.getByRole("link", { name: /sumate al fan clú/i }),
+    ).toHaveAttribute("href", "/fan-clu");
   });
 
   it("renders episodes page at /episodes", () => {
