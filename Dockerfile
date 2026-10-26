@@ -5,7 +5,12 @@
 #   docker build -t metalprogpop .
 #   docker run -p 3001:3001 -e DATABASE_URL=... -e JWT_SECRET=... \
 #     -e CLIENT_URL=https://<public site URL> -e RESEND_API_KEY=... \
-#     -e MAGIC_LINK_BASE_URL=https://<public site URL> metalprogpop
+#     -e MAGIC_LINK_BASE_URL=https://<public site URL> \
+#     -e AWS_REGION=sa-east-1 -e MEDIA_BUCKET=metalprogpop metalprogpop
+#
+# Fan Club videos need AWS credentials that can list and read the media
+# bucket's video prefixes: the runtime's role, or AWS_ACCESS_KEY_ID and
+# AWS_SECRET_ACCESS_KEY for a dedicated prod identity.
 #
 # Apply migrations with the same image: append `pnpm db:migrate` to the run.
 

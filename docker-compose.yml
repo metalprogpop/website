@@ -39,6 +39,12 @@ services:
       - TEST_USERS_ENABLED=${TEST_USERS_ENABLED:-false}
       - TEST_USER_EMAILS=${TEST_USER_EMAILS:-}
       - DEV_SHOW_MAGIC_LINK=${DEV_SHOW_MAGIC_LINK:-false}
+      # Fan Club videos: a read-only identity for the media bucket (list and
+      # sign URLs). Empty keys leave the video catalog unavailable.
+      - AWS_ACCESS_KEY_ID=${AWS_ACCESS_KEY_ID:-}
+      - AWS_SECRET_ACCESS_KEY=${AWS_SECRET_ACCESS_KEY:-}
+      - AWS_REGION=${AWS_REGION:-sa-east-1}
+      - MEDIA_BUCKET=${MEDIA_BUCKET:-metalprogpop}
     depends_on:
       - db
     command: pnpm dev
