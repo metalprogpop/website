@@ -5,6 +5,7 @@ import {
   subscriberListQuerySchema,
   subscriberUpdateSchema,
   subscriptionUpdateSchema,
+  videoSyncRequestSchema,
 } from "shared";
 import { db } from "../db/index.js";
 import { subscribers, subscriptions } from "../db/schema.js";
@@ -12,6 +13,8 @@ import { syncEpisodes } from "../episodes/catalog.js";
 import { SyncRefusedError } from "../episodes/sync.js";
 import { asyncHandler } from "../lib/asyncHandler.js";
 import { requireStaff } from "../middleware/requireStaff.js";
+import { syncVideos } from "../videos/catalog.js";
+import { VideoSyncRefusedError } from "../videos/sync.js";
 import {
   listSubscribers,
   listSubscriptionsFor,
@@ -21,7 +24,8 @@ import {
 // the payment platforms (today, the spreadsheet import), so staff can only
 // read them and edit names, notes and the Hall of Fans opt-out; nothing is
 // created or deleted here.
-// Staff can also force a full episode re-sync from the feed.
+// Staff can also force a full episode re-sync from the feed, and sync the
+// Fan Club videos with the media bucket.
 export const adminRouter = Router();
 adminRouter.use(requireStaff);
 
@@ -151,6 +155,33 @@ adminRouter.post(
       console.error("Episode re-sync failed:", err);
       res.status(502).json({
         error: "No se pudo leer el feed de Audioboom. Probá de nuevo.",
+      });
+    }
+  }),
+);
+
+// --- Fan Club videos ---
+
+// Re-checks the newest programs and adds new ones; with `full`, re-checks
+// the whole bucket and hides the videos no longer in it.
+adminRouter.post(
+  "/videos/sync",
+  asyncHandler(async (req, res) => {
+    const body = videoSyncRequestSchema.safeParse(req.body ?? {});
+    if (!body.success) {
+      badRequest(res, body.error);
+      return;
+    }
+    try {
+      res.json(await syncVideos(body.data.full ? "full" : "recent"));
+    } catch (err) {
+      if (err instanceof VideoSyncRefusedError) {
+        res.status(409).json({ error: err.message });
+        return;
+      }
+      console.error("Video sync failed:", err);
+      res.status(502).json({
+        error: "No se pudo leer el bucket de videos. Probá de nuevo.",
       });
     }
   }),
