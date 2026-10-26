@@ -1,6 +1,6 @@
 import { Link } from "react-router-dom";
 import { Logo } from "../ui/brand/Logo";
-import { Button } from "../ui/brand/Button";
+import { ButtonRouteLink } from "../ui/brand/Button";
 import { Container } from "../layout/Container";
 
 export function Header() {
@@ -33,9 +33,9 @@ export function Header() {
             </a>
           </nav>
 
-          <Button size="sm" variant="primary">
-            Escuchar
-          </Button>
+          <ButtonRouteLink to="/fan-clu" size="sm" variant="primary">
+            Fan Clú
+          </ButtonRouteLink>
         </div>
       </Container>
     </header>

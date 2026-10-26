@@ -1,4 +1,5 @@
 import type { AnchorHTMLAttributes, ButtonHTMLAttributes, ReactNode } from 'react';
+import { Link, type LinkProps } from 'react-router-dom';
 import { cva, type VariantProps } from 'class-variance-authority';
 
 const buttonVariants = cva(
@@ -48,5 +49,19 @@ export function ButtonLink({ children, variant, size, className = '', ...props }
     <a className={`${buttonVariants({ variant, size })} ${className}`} {...props}>
       {children}
     </a>
+  );
+}
+
+type ButtonRouteLinkProps = LinkProps &
+  VariantProps<typeof buttonVariants> & {
+    children: ReactNode;
+  };
+
+// A link to a page of this site that looks like a button.
+export function ButtonRouteLink({ children, variant, size, className = '', ...props }: ButtonRouteLinkProps) {
+  return (
+    <Link className={`${buttonVariants({ variant, size })} ${className}`} {...props}>
+      {children}
+    </Link>
   );
 }
