@@ -25,12 +25,12 @@ export function Header() {
             >
               Nosotros
             </Link>
-            <a
-              href="#listen"
+            <Link
+              to="/#listen"
               className="font-display text-sm font-medium text-text-secondary transition-colors hover:text-brand"
             >
               Escuchar
-            </a>
+            </Link>
           </nav>
 
           <ButtonRouteLink to="/fan-clu" size="sm" variant="primary">
