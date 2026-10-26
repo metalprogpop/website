@@ -168,4 +168,35 @@ describe("FanClubProgramPage", () => {
       expect(video().getAttribute("src")).toContain("p4-1-v2");
     });
   });
+
+  it("resumes at the same second after renewing, and gives up after a second failure", async () => {
+    let signed = 0;
+    mockApi({
+      "/auth/me": member,
+      "/fan-clu/videos/4/1/urls": () => {
+        signed += 1;
+        return urls(`p4-1-v${String(signed)}`)();
+      },
+      "/fan-clu/videos": catalog,
+    });
+
+    renderPage("/fan-clu/programa/4");
+    await waitFor(() => {
+      expect(video().getAttribute("src")).toContain("p4-1-v1");
+    });
+    (video() as HTMLVideoElement).currentTime = 754;
+    fireEvent.error(video());
+    await waitFor(() => {
+      expect(video().getAttribute("src")).toContain("p4-1-v2");
+    });
+    (video() as HTMLVideoElement).currentTime = 0;
+    fireEvent.loadedMetadata(video());
+    expect((video() as HTMLVideoElement).currentTime).toBe(754);
+
+    fireEvent.error(video());
+    expect(
+      await screen.findByText("No pudimos cargar el video."),
+    ).toBeInTheDocument();
+    expect(signed).toBe(2);
+  });
 });

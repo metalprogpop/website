@@ -1,4 +1,4 @@
-import { useEffect, useRef } from "react";
+import { useEffect, useRef, useState } from "react";
 import type { FanClubVideoPart } from "shared";
 import { usePartUrls } from "../../../hooks/useFanClubVideos";
 import {
@@ -36,6 +36,10 @@ export function VideoPlayer({
   const lastSave = useRef(0);
   const resume = useRef<{ at: number; play: boolean } | null>(null);
   const renewed = useRef(false);
+  // The part whose URL failed again after signing a new one: stop and say
+  // so (keyed, so another part starts clean).
+  const [failedKey, setFailedKey] = useState<string | null>(null);
+  const failed = failedKey === key;
 
   useEffect(() => {
     lastSave.current = 0;
@@ -43,11 +47,18 @@ export function VideoPlayer({
     renewed.current = false;
   }, [key]);
 
-  if (urls.isError) {
+  if (urls.isError || failed) {
     return (
       <div className="flex aspect-video w-full flex-col items-center justify-center gap-4 rounded-2xl bg-text-primary p-6 text-center text-white">
         <p>No pudimos cargar el video.</p>
-        <Button size="sm" onClick={() => void urls.refetch()}>
+        <Button
+          size="sm"
+          onClick={() => {
+            renewed.current = false;
+            setFailedKey(null);
+            void urls.refetch();
+          }}
+        >
           Probar de nuevo
         </Button>
       </div>
@@ -96,6 +107,7 @@ export function VideoPlayer({
       }}
       onError={(event) => {
         if (renewed.current) {
+          setFailedKey(key);
           return;
         }
         const video = event.currentTarget;
