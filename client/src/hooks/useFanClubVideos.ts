@@ -31,14 +31,15 @@ const fetchPartUrls = async (
   return videoUrlsSchema.parse(await response.json());
 };
 
-export const fanClubVideosQueryOptions = queryOptions({
+const fanClubVideosQueryOptions = queryOptions({
   queryKey: ["fan-clu", "videos"],
   queryFn: fetchPrograms,
   staleTime: 5 * 60 * 1000,
 });
 
-export function useFanClubVideos() {
-  return useQuery(fanClubVideosQueryOptions);
+// Members only: pass enabled = false until access is known.
+export function useFanClubVideos({ enabled = true } = {}) {
+  return useQuery({ ...fanClubVideosQueryOptions, enabled });
 }
 
 // The URLs last 24 hours. A refetch would swap the playing video's source

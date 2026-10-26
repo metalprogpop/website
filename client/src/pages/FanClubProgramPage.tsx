@@ -1,40 +1,18 @@
 import { useState } from "react";
 import { Link, Navigate, useParams, useSearchParams } from "react-router-dom";
 import type { FanClubVideoPart } from "shared";
-import { Header } from "../components/landing/Header";
-import { Footer } from "../components/landing/Footer";
-import { Container } from "../components/layout/Container";
-import { Section } from "../components/layout/Section";
+import {
+  ProgramPageShell as Shell,
+  Spinner,
+} from "../components/fanClub/videos/ProgramPageShell";
 import { ProgramVideo } from "../components/fanClub/videos/ProgramVideo";
 import { PartPlaylist } from "../components/fanClub/videos/PartPlaylist";
 import { useAuth } from "../hooks/useAuth";
 import { useFanClubVideos } from "../hooks/useFanClubVideos";
-import { programPath } from "../lib/fanClubVideos";
+import { nextPlayable, programPath } from "../lib/fanClubVideos";
 
 const backLink =
   "font-display text-sm font-semibold text-brand transition-colors hover:text-brand-hover";
-
-function Shell({ children }: { children: React.ReactNode }) {
-  return (
-    <div className="min-h-screen bg-background">
-      <Header />
-      <main>
-        <Section className="!py-6 lg:!py-10">
-          <Container width="wide">{children}</Container>
-        </Section>
-      </main>
-      <Footer />
-    </div>
-  );
-}
-
-function Spinner() {
-  return (
-    <div className="flex min-h-[40vh] items-center justify-center">
-      <div className="h-8 w-8 animate-spin rounded-full border-4 border-brand border-t-transparent" />
-    </div>
-  );
-}
 
 // One program in theater mode: the player, the part's details and the
 // program's parts as a playlist. Members only; everyone else goes to the
@@ -43,8 +21,10 @@ export function FanClubProgramPage() {
   const { user, isLoading: authLoading } = useAuth();
   const { programNumber } = useParams();
   const [params, setParams] = useSearchParams();
-  const videos = useFanClubVideos();
-  const [autoPlay, setAutoPlay] = useState(false);
+  const videos = useFanClubVideos({ enabled: !!user?.fanClubAccess });
+  // The part chosen to start playing on its own (a playlist click or the
+  // previous part ending); landing on a page never autoplays.
+  const [autoPlayKey, setAutoPlayKey] = useState<string | null>(null);
 
   if (authLoading) {
     return (
@@ -56,7 +36,7 @@ export function FanClubProgramPage() {
   if (!user?.fanClubAccess) {
     return <Navigate to="/fan-clu" replace />;
   }
-  if (videos.isLoading) {
+  if (videos.isPending) {
     return (
       <Shell>
         <Spinner />
@@ -88,11 +68,13 @@ export function FanClubProgramPage() {
   if (!current) {
     return <Navigate to="/fan-clu" replace />;
   }
+  const keyOf = (part: FanClubVideoPart) =>
+    `${String(program.number)}-${String(part.part)}`;
   const select = (part: FanClubVideoPart, play: boolean) => {
-    setAutoPlay(play);
+    setAutoPlayKey(play ? keyOf(part) : null);
     setParams({ parte: String(part.part) }, { replace: true });
   };
-  const next = program.parts.at(program.parts.indexOf(current) + 1);
+  const next = nextPlayable(program.parts, current);
   const older = programs.at(index + 1);
   const newer = index > 0 ? programs.at(index - 1) : undefined;
 
@@ -105,7 +87,7 @@ export function FanClubProgramPage() {
         <ProgramVideo
           program={program}
           part={current}
-          autoPlay={autoPlay}
+          autoPlay={autoPlayKey === keyOf(current)}
           onEnded={() => {
             if (next) {
               select(next, true);

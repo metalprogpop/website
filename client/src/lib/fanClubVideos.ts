@@ -67,8 +67,14 @@ const normalize = (text: string) =>
     .replace(/[\u0300-\u036f]/g, "")
     .toLowerCase();
 
-const partMatchesText = (part: FanClubVideoPart, needle: string) =>
-  part.episodes.some((e) => normalize(e.title).includes(needle));
+// A number only matches whole numbers in a title ("2112", but not "97"
+// inside "1997"), so searching a program number doesn't bring up years.
+const partMatchesText = (part: FanClubVideoPart, needle: string) => {
+  const matches = /^\d+$/.test(needle)
+    ? (title: string) => new RegExp(`(^|\\D)${needle}(\\D|$)`).test(title)
+    : (title: string) => title.includes(needle);
+  return part.episodes.some((e) => matches(normalize(e.title)));
+};
 
 // Search by program number (exact), album or band, ignoring accents.
 export const programMatches = (program: FanClubProgram, search: string) => {
@@ -88,3 +94,9 @@ export const partMatches = ({ program, part }: PartItem, search: string) => {
     partMatchesText(part, needle)
   );
 };
+
+// The part that plays after this one: lost parts are skipped.
+export const nextPlayable = (
+  parts: FanClubVideoPart[],
+  current: FanClubVideoPart,
+) => parts.slice(parts.indexOf(current) + 1).find((part) => !part.missing);

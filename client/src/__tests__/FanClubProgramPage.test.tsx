@@ -199,4 +199,26 @@ describe("FanClubProgramPage", () => {
     ).toBeInTheDocument();
     expect(signed).toBe(2);
   });
+
+  it("moves on to the next part when one ends", async () => {
+    mockApi({
+      "/auth/me": member,
+      "/fan-clu/videos/4/1/urls": urls("p4-1"),
+      "/fan-clu/videos/4/2/urls": urls("p4-2"),
+      "/fan-clu/videos/3/2/urls": urls("p3-2"),
+      "/fan-clu/videos": catalog,
+    });
+
+    renderPage("/fan-clu/programa/4");
+    await waitFor(() => {
+      expect(video().getAttribute("src")).toContain("p4-1");
+    });
+    fireEvent.ended(video());
+    expect(
+      await screen.findByRole("heading", { level: 1, name: "Disco 11" }),
+    ).toBeInTheDocument();
+    await waitFor(() => {
+      expect(video().getAttribute("src")).toContain("p4-2");
+    });
+  });
 });

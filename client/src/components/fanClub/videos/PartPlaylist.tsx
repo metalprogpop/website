@@ -1,6 +1,6 @@
 import type { FanClubVideoPart } from "shared";
 import { progressKey } from "../../../hooks/useWatchProgress";
-import { partTitle } from "../../../lib/fanClubVideos";
+import { nextPlayable, partTitle } from "../../../lib/fanClubVideos";
 import { EpisodeArtwork } from "../../landing/EpisodeArtwork";
 import { WatchProgressBar } from "./WatchProgressBar";
 
@@ -16,11 +16,7 @@ function PlaylistItem({
   onSelect: () => void;
 }) {
   const episode = part.episodes.at(0);
-  const label = part.missing
-    ? `Parte ${String(part.part)} · sin video`
-    : active
-      ? "Reproduciendo"
-      : `Parte ${String(part.part)}`;
+  const label = `Parte ${String(part.part)}${part.missing ? " · sin video" : active ? " · en pantalla" : ""}`;
   return (
     <button
       type="button"
@@ -60,7 +56,7 @@ export function PartPlaylist({
   current: FanClubVideoPart;
   onSelect: (part: FanClubVideoPart) => void;
 }) {
-  const next = parts.at(parts.indexOf(current) + 1);
+  const next = nextPlayable(parts, current);
   return (
     <>
       <h2 className="mb-3 font-display text-lg font-bold text-text-primary">
