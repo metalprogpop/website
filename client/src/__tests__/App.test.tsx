@@ -53,6 +53,15 @@ describe("App routing", () => {
     ).toHaveAttribute("href", "/fan-clu");
   });
 
+  it("links our Telegram group from the footer", () => {
+    const page = within(renderWithProviders("/").container);
+    expect(
+      within(page.getByRole("contentinfo")).getByRole("link", {
+        name: "Telegram",
+      }),
+    ).toHaveAttribute("href", "https://t.me/metalprogpop");
+  });
+
   it("renders episodes page at /episodes", () => {
     renderWithProviders("/episodes");
     expect(

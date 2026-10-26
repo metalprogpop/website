@@ -1,4 +1,5 @@
 import { Twitter, Instagram } from "lucide-react";
+import { FaTelegramPlane } from "react-icons/fa";
 import { Container } from "../layout/Container";
 import { Logo } from "../ui/brand/Logo";
 
@@ -9,6 +10,8 @@ const socialLinks = [
     url: "https://instagram.com/metalprogpop",
     Icon: Instagram,
   },
+  // Lucide has no Telegram mark; this one matches the others' size.
+  { name: "Telegram", url: "https://t.me/metalprogpop", Icon: FaTelegramPlane },
 ];
 
 export function Footer() {
