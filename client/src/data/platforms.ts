@@ -5,29 +5,26 @@ export type Platform = {
   iconName: 'spotify' | 'apple' | 'youtube' | 'rss';
 };
 
+// Checked by hand: every link opens the podcast's page on that platform.
+// YouTube is left out until the podcast has a channel there.
 export const platforms: Platform[] = [
   {
     id: 'spotify',
     name: 'Spotify',
-    url: 'https://open.spotify.com/show/metalprogpopcast',
+    url: 'https://open.spotify.com/show/4QlRgUm2JiY71meg8UGpDm',
     iconName: 'spotify',
   },
   {
     id: 'apple',
     name: 'Apple Podcasts',
-    url: 'https://podcasts.apple.com/podcast/metalprogpopcast',
+    url: 'https://podcasts.apple.com/us/podcast/metalprogpop-cast/id1329301095',
     iconName: 'apple',
-  },
-  {
-    id: 'youtube',
-    name: 'YouTube',
-    url: 'https://youtube.com/@metalprogpopcast',
-    iconName: 'youtube',
   },
   {
     id: 'rss',
     name: 'RSS Feed',
-    url: 'https://metalprogpop.com/feed.xml',
+    // The podcast's own feed, as published by Audioboom.
+    url: 'https://audioboom.com/channels/4940203.rss',
     iconName: 'rss',
   },
 ];

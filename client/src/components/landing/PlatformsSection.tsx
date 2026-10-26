@@ -5,7 +5,7 @@ import { platforms } from '../../data/platforms';
 
 export function PlatformsSection() {
   return (
-    <Section id="listen">
+    <Section id="listen" className="scroll-mt-16">
       <Container>
         <div className="mb-12 text-center">
           <span className="mb-3 inline-block font-display text-sm font-semibold uppercase tracking-widest text-brand">
@@ -16,7 +16,7 @@ export function PlatformsSection() {
           </h2>
         </div>
 
-        <div className="mx-auto grid max-w-3xl grid-cols-2 gap-4 sm:grid-cols-4 sm:gap-6">
+        <div className="mx-auto grid max-w-2xl grid-cols-3 gap-4 sm:gap-6">
           {platforms.map((platform) => (
             <PlatformLink key={platform.id} platform={platform} />
           ))}
