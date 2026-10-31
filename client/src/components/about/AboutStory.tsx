@@ -1,51 +1,49 @@
-// Drafted from the story on aguante.metalprogpop.com; edit freely.
+import { lecheenpolvoChannel } from "../../data/about";
+
+// Guido's own words from aguante.metalprogpop.com, copied verbatim. Don't
+// rewrite them.
 export function AboutStory() {
   return (
-    <div className="grid gap-10 text-lg leading-relaxed text-text-secondary lg:grid-cols-2 lg:gap-16">
-      <div className="space-y-5">
-        <h2 className="font-display text-2xl font-bold tracking-tight text-text-primary sm:text-3xl">
-          Cómo empezó
-        </h2>
-        <p>
-          Todo empezó en una sobremesa. El Dr. Ángel juntó a la troupe de
-          Lecheenpolvo a comer y, entre el vino y el postre, El Colo y el Rey
-          Tut se pusieron a discutir bandas, temas y discos. Datos, retrucos y
-          anécdotas volaban de un lado al otro de la mesa, y el resto lloraba de
-          risa.
-        </p>
-        <p>Unos días después llegó la propuesta:</p>
-        <blockquote className="border-l-4 border-brand pl-4 font-display text-xl text-text-primary">
-          Che... ¿Y si lo grabamos y lo subimos?
-        </blockquote>
-        <p>
-          El primer episodio salió en diciembre de 2017. Desde entonces vamos
-          rotando: un disco de metal, uno de prog y uno de pop. El que lo trae
-          cuenta su historia y lo defiende; los otros dos opinan, a veces con
-          amor y a veces sin ninguna piedad.
-        </p>
-        <p>
-          Detrás de escena está Santi Grillo, el cuarto integrante: las tapas,
-          las imágenes y toda la magia que no se escucha pero se ve.
-        </p>
-      </div>
-      <div className="space-y-5">
-        <h2 className="font-display text-2xl font-bold tracking-tight text-text-primary sm:text-3xl">
-          Por qué lo hacemos
-        </h2>
-        <p>
-          Porque nos encanta la música y nos encanta discutirla. Porque hay
-          discos enormes que el tiempo dejó en un cajón y se merecen otra
-          vuelta. Porque escuchar algo que nunca hubieras elegido es la mejor
-          manera de descubrir algo nuevo, aunque lo nuevo sea que lo odiás.
-        </p>
-        <p>
-          Y porque es la excusa perfecta para seguir juntándonos entre amigos.
-          MetalProgPop es, antes que nada, una celebración de la amistad
-          melómana. Si te reís con nosotros, si descubriste un disco gracias a
-          un episodio o si te aburriste como El Colo escuchando The Flower
-          Kings, ya sos parte.
-        </p>
-      </div>
+    <div className="mx-auto max-w-3xl space-y-5 text-lg leading-relaxed text-text-secondary">
+      <h2 className="font-display text-2xl font-bold tracking-tight text-text-primary sm:text-3xl">
+        Cómo empezó
+      </h2>
+      <p>
+        Resulta que un día, como ser humano del bien que es, el Dr. Appiani
+        decidió reunir a la troupe de{" "}
+        <a
+          href={lecheenpolvoChannel}
+          target="_blank"
+          rel="noopener noreferrer"
+          className="font-semibold text-brand underline-offset-4 hover:underline"
+        >
+          Lecheenpolvo
+        </a>{" "}
+        en memorable comilona. Entre los presentes se encontraban, por supuesto,
+        El Colo y el Rey Tut. Y sucedió que en la sobremesa surgió el debate de
+        bandas, temas y discos que amaríamos homenajear con el proyecto.
+      </p>
+      <p>
+        La charla devino en una tormenta de datos, retrucos y <em>anedas</em> de
+        sus artistas más amados que los susodichos se arrojaron y rearrojaron
+        para el deleite del resto de los presentes. Y por deleite nos referimos
+        a carcajadas de ésas que hacen salir el vino por la nariz. Grandes
+        momentos. Tal fue el éxito de la tertulia que unos días más tarde el
+        Doctor comunicose con Mr. Colo y Mr. Tut con la propuesta:
+      </p>
+      <blockquote className="border-l-4 border-brand pl-4 font-display text-xl font-bold italic text-text-primary">
+        Che... ¿Y si lo grabamos y los subimos?
+      </blockquote>
+      <p>
+        Así comenzó <em>MetalProgPop Cast</em> a fines de 2017. Ahora es cuando
+        mirás el almanaque y sacás la cuenta de cuánto tiempo hace que estamos
+        con esta locura. Una locura que se ama fuerte. No vamos a engañarnos:
+        nos divertimos mucho. Nos encanta hacerlo y queremos poder seguir
+        haciéndolo un montón de tiempo más. Nos encanta saber que estás del otro
+        lado, que te reís con nosotros, que te sorprendés descubriendo discos
+        olvidados o te aburrís como El Colo cuando lo obligan a escuchar The
+        Flower Kings.
+      </p>
     </div>
   );
 }

@@ -27,8 +27,12 @@ describe("AboutPage", () => {
       screen.getByRole("heading", { level: 2, name: /cómo empezó/i }),
     ).toBeInTheDocument();
     expect(
-      screen.getByRole("heading", { level: 2, name: /por qué lo hacemos/i }),
+      screen.getByText(/che\.\.\. ¿y si lo grabamos y los subimos\?/i),
     ).toBeInTheDocument();
+    expect(screen.getByRole("link", { name: "Lecheenpolvo" })).toHaveAttribute(
+      "href",
+      "https://www.youtube.com/@lecheenpolvo",
+    );
   });
 
   it("introduces the four of us with links to our Instagram profiles", () => {
