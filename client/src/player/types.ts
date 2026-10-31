@@ -10,7 +10,14 @@ export type PlayerEpisode = Pick<
   | "artworkUrl"
   | "audioUrl"
   | "durationSeconds"
->;
+> & {
+  // Where the title links; an episode's page by default. Poné Rec™ links
+  // to its own page.
+  href?: string;
+  // For audio served from a presigned URL, the API path that signs a new
+  // one; the player asks it when the URL stops working (it expired).
+  refreshUrlPath?: string;
+};
 
 export const PLAYBACK_RATES = [1, 1.25, 1.5, 2] as const;
 

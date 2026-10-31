@@ -6,6 +6,8 @@ import {
   type AudioHTMLAttributes,
   type RefObject,
 } from "react";
+import { poneRecUrlSchema } from "shared";
+import { API_URL } from "../lib/api";
 import {
   clearPosition,
   saveEpisode,
@@ -27,6 +29,17 @@ const SAVE_EVERY_SECONDS = 5;
 // Closer than this to the end, an episode counts as finished: the next play
 // starts from the beginning.
 const FINISHED_MARGIN_SECONDS = 30;
+
+const renewedUrlSchema = poneRecUrlSchema.pick({ url: true });
+
+// A fresh presigned URL for audio whose URL expired.
+const fetchRenewedUrl = async (path: string): Promise<string> => {
+  const response = await fetch(`${API_URL}${path}`, { credentials: "include" });
+  if (!response.ok) {
+    throw new Error("Could not renew the audio URL");
+  }
+  return renewedUrlSchema.parse(await response.json()).url;
+};
 
 const resumePoint = (episode: PlayerEpisode): number => {
   const seconds = savedPosition(episode.number);
@@ -56,6 +69,11 @@ export function usePlayerEngine(): {
   // Where to jump once the loaded audio's metadata arrives.
   const pendingSeekRef = useRef(0);
   const lastSavedRef = useRef(0);
+  // Whether the listener asked to play (so a renewed source resumes), and
+  // whether the loaded source was already renewed once (so a URL that keeps
+  // failing doesn't loop).
+  const wantsPlayRef = useRef(false);
+  const renewedRef = useRef(false);
   const [playing, setPlaying] = useState(false);
   const [playbackRate, setPlaybackRate] = useState(() =>
     savedRate(PLAYBACK_RATES),
@@ -88,8 +106,10 @@ export function usePlayerEngine(): {
     if (!current) {
       return;
     }
+    wantsPlayRef.current = true;
     if (loadedRef.current !== current.number) {
       loadedRef.current = current.number;
+      renewedRef.current = false;
       pendingSeekRef.current = resumePoint(current);
       lastSavedRef.current = pendingSeekRef.current;
       audio.src = current.audioUrl;
@@ -104,6 +124,7 @@ export function usePlayerEngine(): {
   }, []);
 
   const pause = useCallback(() => {
+    wantsPlayRef.current = false;
     audioRef.current?.pause();
   }, []);
 
@@ -210,11 +231,50 @@ export function usePlayerEngine(): {
     }
   };
 
+  // The presigned URL stopped working (it expired while paused, or a saved
+  // episode was resumed days later): sign a new one once and carry on from
+  // the same second.
+  const renewSource = async (audio: HTMLAudioElement) => {
+    const current = episodeRef.current;
+    if (!current?.refreshUrlPath || !isLoaded(current) || renewedRef.current) {
+      setPlaying(false);
+      return;
+    }
+    renewedRef.current = true;
+    const resumeAt =
+      audio.currentTime > 0 ? audio.currentTime : pendingSeekRef.current;
+    try {
+      const url = await fetchRenewedUrl(current.refreshUrlPath);
+      if (episodeRef.current?.number !== current.number) {
+        return;
+      }
+      const renewed = { ...current, audioUrl: url };
+      episodeRef.current = renewed;
+      setEpisode(renewed);
+      saveEpisode(renewed);
+      pendingSeekRef.current = resumeAt;
+      audio.src = url;
+      audio.defaultPlaybackRate = rateRef.current;
+      audio.playbackRate = rateRef.current;
+      if (wantsPlayRef.current) {
+        await audio.play();
+      }
+    } catch {
+      setPlaying(false);
+    }
+  };
+
   const audioProps: AudioProps = {
     ref: audioRef,
     preload: "metadata",
     onPlay: () => {
       setPlaying(true);
+    },
+    onPlaying: () => {
+      renewedRef.current = false;
+    },
+    onError: (e) => {
+      void renewSource(e.currentTarget);
     },
     onPause: (e) => {
       setPlaying(false);

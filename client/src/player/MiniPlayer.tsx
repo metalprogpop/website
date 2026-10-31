@@ -139,12 +139,12 @@ export function MiniPlayer() {
   );
 }
 
-// Artwork and title, linking to the episode's page. Takes the free space on
+// Artwork and title, linking to the episode's page (or its own link). Takes the free space on
 // small screens; a fixed width on desktop, where the slider takes it.
 function EpisodeLink({ episode }: { episode: PlayerEpisode }) {
   return (
     <Link
-      to={episodePath(episode)}
+      to={episode.href ?? episodePath(episode)}
       className="flex min-w-0 flex-1 items-center gap-3 md:w-64 md:flex-none"
     >
       <img

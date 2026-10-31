@@ -1,3 +1,4 @@
+import { z } from "zod";
 import { episodeSummarySchema } from "shared";
 import type { PlayerEpisode } from "./types";
 
@@ -53,16 +54,22 @@ export const saveRate = (rate: number): void => {
   write("rate", String(rate));
 };
 
-const playerEpisodeSchema = episodeSummarySchema.pick({
-  number: true,
-  slug: true,
-  title: true,
-  album: true,
-  band: true,
-  artworkUrl: true,
-  audioUrl: true,
-  durationSeconds: true,
-});
+const playerEpisodeSchema = episodeSummarySchema
+  .pick({
+    number: true,
+    slug: true,
+    title: true,
+    album: true,
+    band: true,
+    audioUrl: true,
+    durationSeconds: true,
+  })
+  .extend({
+    // Episode artwork is an Audioboom URL; Poné Rec's comes from the API.
+    artworkUrl: z.string(),
+    href: z.string().startsWith("/").optional(),
+    refreshUrlPath: z.string().startsWith("/api/v1/fan-clu/").optional(),
+  });
 
 export const savedEpisode = (): PlayerEpisode | null => {
   const raw = read("episode");
