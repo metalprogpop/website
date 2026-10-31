@@ -12,6 +12,7 @@
     "set-role": "node --import tsx src/scripts/set-role.ts",
     "import-sheet": "node --import tsx src/scripts/import-sheet.ts",
     "sync-videos": "node --import tsx src/scripts/sync-videos.ts",
+    "import-pone-rec": "node --import tsx src/scripts/import-pone-rec.ts",
     "test": "vitest run"
   },
   "dependencies": {
