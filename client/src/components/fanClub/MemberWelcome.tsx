@@ -1,4 +1,5 @@
 import { Button } from "../ui/brand/Button";
+import { PoneRecBanner } from "./poneRec/PoneRecBanner";
 import { VideoHub } from "./videos/VideoHub";
 
 type MemberWelcomeProps = {
@@ -6,7 +7,8 @@ type MemberWelcomeProps = {
   onLogout: () => void;
 };
 
-// What active subscribers and staff see: the program videos.
+// What active subscribers and staff see: the way into Poné Rec™ and the
+// program videos.
 export function MemberWelcome({ email, onLogout }: MemberWelcomeProps) {
   return (
     <>
@@ -29,6 +31,7 @@ export function MemberWelcome({ email, onLogout }: MemberWelcomeProps) {
           </Button>
         </div>
       </div>
+      <PoneRecBanner />
       <VideoHub />
     </>
   );

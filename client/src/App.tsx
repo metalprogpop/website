@@ -4,6 +4,7 @@ import { EpisodesPage } from "./pages/EpisodesPage";
 import { EpisodePage } from "./pages/EpisodePage";
 import { FanCluPage } from "./pages/FanCluPage";
 import { FanClubProgramPage } from "./pages/FanClubProgramPage";
+import { PoneRecPage } from "./pages/PoneRecPage";
 import { AboutPage } from "./pages/AboutPage";
 import { LogoutPage } from "./pages/LogoutPage";
 import { AdminPage } from "./pages/AdminPage";
@@ -24,6 +25,7 @@ export function AppRoutes() {
         path="/fan-clu/programa/:programNumber"
         element={<FanClubProgramPage />}
       />
+      <Route path="/fan-clu/pone-rec" element={<PoneRecPage />} />
       <Route path="/logout" element={<LogoutPage />} />
       <Route path="/admin" element={<AdminPage />} />
     </Routes>

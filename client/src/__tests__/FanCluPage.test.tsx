@@ -123,6 +123,7 @@ describe("FanCluPage", () => {
     mockApi({
       "/auth/me": () => signedIn(true, role),
       "/fan-clu/videos": () => json({ programs: [videoProgram(2)] }),
+      "/fan-clu/pone-rec": () => json({ episodes: [] }),
     });
 
     renderPage();
@@ -136,6 +137,10 @@ describe("FanCluPage", () => {
     expect(
       await screen.findByRole("heading", { name: "Programa 2" }),
     ).toBeInTheDocument();
+    expect(screen.getByRole("link", { name: /poné rec™/i })).toHaveAttribute(
+      "href",
+      "/fan-clu/pone-rec",
+    );
     expect(
       screen.getByRole("button", { name: /cerrar sesión/i }),
     ).toBeInTheDocument();
@@ -195,9 +200,7 @@ describe("FanCluPage", () => {
     "renders test-user button and submits the test email (VITE_TEST_USER_EMAIL=%s)",
     async (configured, expected) => {
       vi.stubEnv("VITE_TEST_USERS_ENABLED", "true");
-      if (configured) {
-        vi.stubEnv("VITE_TEST_USER_EMAIL", configured);
-      }
+      vi.stubEnv("VITE_TEST_USER_EMAIL", configured ?? "");
       const user = userEvent.setup();
       let loggedIn = false;
       const fetchSpy = mockApi({
