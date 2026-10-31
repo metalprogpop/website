@@ -10,6 +10,7 @@ import { latestStatusForEmail } from "../fanClub/queries.js";
 import { signToken, getJwtExpirationDays } from "../lib/jwt.js";
 import { sendMagicLinkEmail, buildMagicLinkUrl } from "../lib/email.js";
 import { asyncHandler } from "../lib/asyncHandler.js";
+import { isFlagEnabled, isTestUser } from "../lib/testUsers.js";
 import { requireAuth } from "../middleware/auth.js";
 
 export const authRouter = Router();
@@ -24,24 +25,6 @@ const getTokenExpirationMinutes = (): number => {
   }
   const parsed = parseInt(minutes, 10);
   return Number.isNaN(parsed) ? 10 : parsed;
-};
-
-const isFlagEnabled = (val: string | undefined): boolean =>
-  val === "true" || val === "1";
-
-const getTestUserEmails = (): readonly string[] => {
-  const raw = process.env.TEST_USER_EMAILS ?? "";
-  return raw
-    .split(",")
-    .map((s) => s.trim().toLowerCase())
-    .filter((s) => s.length > 0);
-};
-
-const isTestUser = (email: string): boolean => {
-  if (!isFlagEnabled(process.env.TEST_USERS_ENABLED)) {
-    return false;
-  }
-  return getTestUserEmails().includes(email.toLowerCase());
 };
 
 const GENERIC_MESSAGE =
