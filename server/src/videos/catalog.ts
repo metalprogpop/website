@@ -6,7 +6,11 @@ import { findEpisode, listEpisodes } from "../episodes/catalog.js";
 import { attachmentDisposition, downloadFileName } from "./download.js";
 import { episodeNumbersOf, parseVideoKey } from "./keys.js";
 import { buildPrograms } from "./programs.js";
-import { listVideoObjects, SIGNED_URL_SECONDS, signVideoUrl } from "./s3.js";
+import {
+  listMediaObjects,
+  SIGNED_URL_SECONDS,
+  signMediaUrl,
+} from "../lib/media.js";
 import { planVideoSync, type VideoSyncMode } from "./sync.js";
 
 const isLive = isNull(fanClubVideos.deletedAt);
@@ -18,7 +22,7 @@ let queue: Promise<unknown> = Promise.resolve();
 const SYNC_LOCK_ID = 7_210_001;
 
 const runSync = async (mode: VideoSyncMode): Promise<VideoSyncResult> => {
-  const objects = await listVideoObjects();
+  const objects = await listMediaObjects("videos/");
   const listing = objects.flatMap((object) => {
     const parsed = parseVideoKey(object);
     return parsed ? [parsed] : [];
@@ -159,8 +163,8 @@ export const signPart = async (
   });
   const expiresAt = new Date(Date.now() + SIGNED_URL_SECONDS * 1000);
   const [url, downloadUrl] = await Promise.all([
-    signVideoUrl(video.s3Key),
-    signVideoUrl(video.s3Key, attachmentDisposition(fileName)),
+    signMediaUrl(video.s3Key, "video/mp4"),
+    signMediaUrl(video.s3Key, "video/mp4", attachmentDisposition(fileName)),
   ]);
   return { url, downloadUrl, expiresAt: expiresAt.toISOString() };
 };

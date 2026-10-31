@@ -1,3 +1,5 @@
+import type { MediaObject } from "../lib/media.js";
+
 // Parsing of the media bucket's video keys. Uploads are inconsistent, so the
 // pattern is lenient about spaces and zero padding:
 //   videos/Programa097-Parte 1-<album>.mp4     the usual name
@@ -10,8 +12,6 @@
 
 const VIDEO_KEY_RE =
   /^videos\/Programa\s*0*(\d+)\s*-\s*(?:Parte|Ep(?:is|si)odio)\s*(\d+(?:\s*(?:y\s*)?\d+)*)\s*-.*\.mp4$/i;
-
-export type VideoObject = { key: string; size: number };
 
 export type ParsedVideo = {
   program: number;
@@ -26,7 +26,7 @@ export type ParsedVideo = {
 export const parseVideoKey = ({
   key,
   size,
-}: VideoObject): ParsedVideo | null => {
+}: MediaObject): ParsedVideo | null => {
   const match = VIDEO_KEY_RE.exec(key.normalize("NFC"));
   if (!match?.[1] || !match[2] || size <= 0) {
     return null;
