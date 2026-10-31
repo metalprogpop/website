@@ -6,6 +6,7 @@ import { adminRouter } from "./routes/admin.js";
 import { episodesRouter } from "./routes/episodes.js";
 import { fanClubRouter } from "./routes/fanClub.js";
 import { videosRouter } from "./routes/videos.js";
+import { poneRecRouter } from "./routes/poneRec.js";
 import { startHourlySync } from "./episodes/catalog.js";
 import { serveClient } from "./web/serveClient.js";
 
@@ -30,6 +31,7 @@ app.use("/api/v1/auth", authRouter);
 app.use("/api/v1/admin", adminRouter);
 app.use("/api/v1/episodes", episodesRouter);
 app.use("/api/v1/fan-clu/videos", videosRouter);
+app.use("/api/v1/fan-clu/pone-rec", poneRecRouter);
 app.use("/api/v1/fan-clu", fanClubRouter);
 
 // Production: serve the built client from the same origin (see Dockerfile).
