@@ -3,3 +3,4 @@ export * from "./episode.ts";
 export * from "./auth.ts";
 export * from "./admin.ts";
 export * from "./fanClub.ts";
+export * from "./poneRec.ts";
