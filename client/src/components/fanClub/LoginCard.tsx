@@ -6,7 +6,7 @@ import { useMagicLinkLogin } from "../../hooks/useMagicLinkLogin";
 import {
   isTestUsersEnabled,
   isDevShowMagicLink,
-  TEST_USER_EMAIL,
+  testUserEmail,
 } from "../../lib/devFlags";
 
 const errorBanner =
@@ -93,13 +93,13 @@ export function LoginCard() {
               variant="secondary"
               size="md"
               onClick={() => {
-                void submitEmail(TEST_USER_EMAIL);
+                void submitEmail(testUserEmail());
               }}
               disabled={submitting}
               data-testid="dev-test-login"
               className="mt-3 w-full"
             >
-              Dev: ingresar como {TEST_USER_EMAIL}
+              Dev: ingresar como {testUserEmail()}
             </Button>
           )}
         </>

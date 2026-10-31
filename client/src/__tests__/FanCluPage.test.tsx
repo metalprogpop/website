@@ -188,32 +188,42 @@ describe("FanCluPage", () => {
     expect(screen.queryByTestId("dev-test-login")).not.toBeInTheDocument();
   });
 
-  it("renders test-user button and submits TEST_USER_EMAIL when flag is on", async () => {
-    vi.stubEnv("VITE_TEST_USERS_ENABLED", "true");
-    const user = userEvent.setup();
-    let loggedIn = false;
-    const fetchSpy = mockApi({
-      "/auth/me": () => (loggedIn ? signedIn(false) : anonymous()),
-      "/magic-link": () => {
-        loggedIn = true;
-        return json({ authenticated: true, message: "ok" });
-      },
-    });
+  it.each([
+    [undefined, "test@example.com"],
+    ["admin@example.com", "admin@example.com"],
+  ])(
+    "renders test-user button and submits the test email (VITE_TEST_USER_EMAIL=%s)",
+    async (configured, expected) => {
+      vi.stubEnv("VITE_TEST_USERS_ENABLED", "true");
+      if (configured) {
+        vi.stubEnv("VITE_TEST_USER_EMAIL", configured);
+      }
+      const user = userEvent.setup();
+      let loggedIn = false;
+      const fetchSpy = mockApi({
+        "/auth/me": () => (loggedIn ? signedIn(false) : anonymous()),
+        "/magic-link": () => {
+          loggedIn = true;
+          return json({ authenticated: true, message: "ok" });
+        },
+      });
 
-    renderPage();
+      renderPage();
 
-    const button = await screen.findByTestId("dev-test-login");
-    await user.click(button);
+      const button = await screen.findByTestId("dev-test-login");
+      await user.click(button);
 
-    const magicLinkCall = fetchSpy.mock.calls.find(
-      ([url]) => typeof url === "string" && url.includes("/magic-link"),
-    );
-    expect(magicLinkCall).toBeDefined();
-    const body = JSON.parse(
-      (magicLinkCall?.[1]?.body as string | undefined) ?? "{}",
-    ) as { email?: string };
-    expect(body.email).toBe("test@example.com");
-  });
+      const magicLinkCall = fetchSpy.mock.calls.find(
+        ([url]) => typeof url === "string" && url.includes("/magic-link"),
+      );
+      expect(magicLinkCall).toBeDefined();
+      const body = JSON.parse(
+        (magicLinkCall?.[1]?.body as string | undefined) ?? "{}",
+      ) as { email?: string };
+      expect(body.email).toBe(expected);
+      expect(button).toHaveTextContent(expected);
+    },
+  );
 
   it("renders magic link in success state when DEV_SHOW_MAGIC_LINK on", async () => {
     vi.stubEnv("VITE_DEV_SHOW_MAGIC_LINK", "true");
