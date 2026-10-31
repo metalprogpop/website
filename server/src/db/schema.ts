@@ -160,3 +160,64 @@ export const fanClubVideos = pgTable(
     ),
   }),
 );
+
+// Poné Rec™, the Fan Club's bonus podcast: one episode per program, mirrored
+// from the media bucket and loaded with the content staff approved (main
+// topic, thumbnail, topics and tags). Only the main topic shows on its card;
+// topics and tags are for search, and a topic that isn't searchable is kept
+// but never served. The S3 keys never leave the server.
+export const poneRecs = pgTable(
+  "pone_recs",
+  {
+    id: serial("id").primaryKey(),
+    program: integer("program").notNull(),
+    s3Key: text("s3_key").notNull(),
+    sizeBytes: bigint("size_bytes", { mode: "number" }).notNull(),
+    durationSeconds: integer("duration_seconds").notNull(),
+    mainTopic: text("main_topic").notNull(),
+    thumbnailKey: text("thumbnail_key"),
+    createdAt: timestamp("created_at").defaultNow().notNull(),
+    updatedAt: timestamp("updated_at").defaultNow().notNull(),
+    deletedAt: timestamp("deleted_at"),
+  },
+  (table) => ({
+    programUnique: uniqueIndex("pone_recs_program_unique").on(table.program),
+  }),
+);
+
+export const poneRecTopics = pgTable(
+  "pone_rec_topics",
+  {
+    id: serial("id").primaryKey(),
+    poneRecId: integer("pone_rec_id")
+      .notNull()
+      .references(() => poneRecs.id, { onDelete: "restrict" }),
+    position: integer("position").notNull(),
+    title: text("title").notNull(),
+    // "07:06": where it starts in the episode.
+    startsAt: text("starts_at"),
+    quote: text("quote"),
+    searchable: boolean("searchable").notNull(),
+    createdAt: timestamp("created_at").defaultNow().notNull(),
+    deletedAt: timestamp("deleted_at"),
+  },
+  (table) => ({
+    poneRecIdx: index("pone_rec_topics_pone_rec_id_idx").on(table.poneRecId),
+  }),
+);
+
+export const poneRecTags = pgTable(
+  "pone_rec_tags",
+  {
+    id: serial("id").primaryKey(),
+    poneRecId: integer("pone_rec_id")
+      .notNull()
+      .references(() => poneRecs.id, { onDelete: "restrict" }),
+    name: text("name").notNull(),
+    createdAt: timestamp("created_at").defaultNow().notNull(),
+    deletedAt: timestamp("deleted_at"),
+  },
+  (table) => ({
+    poneRecIdx: index("pone_rec_tags_pone_rec_id_idx").on(table.poneRecId),
+  }),
+);
