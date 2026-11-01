@@ -1,5 +1,4 @@
 import type { MeResponse } from "shared";
-import { FanClubStory } from "./FanClubStory";
 import { LoginCard } from "./LoginCard";
 import { SignedInCard } from "./SignedInCard";
 import { SupportOptions } from "./SupportOptions";
@@ -9,7 +8,7 @@ type FanClubHomeProps = {
   onLogout: () => void;
 };
 
-// The public home: why to join and how, beside the login form (or, for a
+// The public home: what the Fan Clú is, what you get and how to join, beside the login form (or, for a
 // signed-in fan without an active subscription, a note on how to get one).
 export function FanClubHome({ user, onLogout }: FanClubHomeProps) {
   return (
@@ -26,10 +25,7 @@ export function FanClubHome({ user, onLogout }: FanClubHomeProps) {
         </p>
       </div>
       <div className="grid gap-12 lg:grid-cols-[minmax(0,1fr)_24rem] lg:gap-16">
-        <div className="space-y-16">
-          <FanClubStory />
-          <SupportOptions />
-        </div>
+        <SupportOptions />
         {/* On phones the login comes first, so members needn't scroll past the pitch. */}
         <div className="order-first lg:order-none lg:sticky lg:top-24 lg:self-start">
           {user ? (

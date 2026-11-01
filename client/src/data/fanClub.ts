@@ -6,5 +6,4 @@ export const fanClubLinks = {
   mercadoPagoCustom:
     "https://www.mercadopago.com.ar/subscriptions/checkout?preapproval_plan_id=2c938084865eb593018660df0bc501e1",
   patreon: "https://www.patreon.com/metalprogpop",
-  lecheenpolvo: "https://www.youtube.com/user/lecheenpolvo",
 } as const;

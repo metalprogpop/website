@@ -96,6 +96,28 @@ describe("FanCluPage", () => {
     expect(within(hall).getByText("Ana Pérez")).toBeInTheDocument();
   });
 
+  it("pitches what members get and how to join, not the show's story", async () => {
+    mockApi({ "/auth/me": anonymous });
+
+    renderPage();
+
+    expect(
+      await screen.findByRole("heading", { name: /cómo funciona/i }),
+    ).toBeInTheDocument();
+    for (const perk of [
+      "Los videos de los programas",
+      "Poné Rec™",
+      "Fan destacado",
+      "Hall of Fans",
+    ]) {
+      expect(screen.getByText(perk, { selector: "span" })).toBeInTheDocument();
+    }
+    expect(
+      screen.getByRole("link", { name: /mirá quiénes son/i }),
+    ).toHaveAttribute("href", "/fan-clu#hall-of-fans");
+    expect(screen.queryByText(/lecheenpolvo/i)).not.toBeInTheDocument();
+  });
+
   it("tells signed-in fans without an active subscription how to join", async () => {
     const user = userEvent.setup();
     mockApi({
