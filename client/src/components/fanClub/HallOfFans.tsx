@@ -15,13 +15,16 @@ export function HallOfFans() {
   const { data: names, isLoading, isError } = useHallOfFans();
 
   return (
-    <section aria-labelledby="hall-of-fans" className="text-center">
+    <section
+      aria-labelledby="hall-of-fans"
+      className="scroll-mt-24 text-center"
+    >
       <span className="mb-3 inline-block font-display text-sm font-semibold uppercase tracking-widest text-brand">
         Gracias por siempre
       </span>
       <h2
         id="hall-of-fans"
-        className="mb-4 font-display text-3xl font-bold tracking-tight text-text-primary sm:text-4xl"
+        className="mb-4 scroll-mt-24 font-display text-3xl font-bold tracking-tight text-text-primary sm:text-4xl"
       >
         Hall of Fans de MetalProgPop Cast™
       </h2>

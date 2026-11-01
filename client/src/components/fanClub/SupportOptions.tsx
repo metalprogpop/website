@@ -1,15 +1,13 @@
 import { Card } from "../ui/brand/Card";
 import { ButtonLink } from "../ui/brand/Button";
 import { fanClubLinks } from "../../data/fanClub";
-
-const benefits = [
-  "Tu nombre inmortalizado en piedra (bueno, en bytes) en el Hall of Fans, al final de esta página.",
-  "Ser fan destacado de uno de nuestros programas, con mención al aire y todo eso.",
-  "Con cada programa nuevo te llega un email con el Link Supersecreto™ para ver los videos de los programas y el podcast adicional: Poné Rec™.",
-];
+import { FanClubPerks } from "./FanClubPerks";
+import { FanClubSteps } from "./FanClubSteps";
 
 const checkout = { target: "_blank", rel: "noreferrer" } as const;
 
+// The pitch: how the contributions work (Guido's words from the old
+// aguante.metalprogpop.com page), what members get and how to join.
 export function SupportOptions() {
   return (
     <div className="space-y-10">
@@ -20,21 +18,17 @@ export function SupportOptions() {
         <p>
           Además de agitando en la Sección Quejas™ (que nos encanta) o
           compartiendo lo que hacemos, podés brindar tu aguante aportando
-          mensualmente unos pesitos; lo que puedas está bien. Todo contribuye,
-          además de para cubrir la logística propia del programa, para que nunca
-          nos falte el whisky 🥃. Posta, todo suma un montón. Y si lo hacés,
-          queremos retribuírtelo.
+          mensualmente con unos pesitos; lo que puedas está bien. Todo
+          contribuye, además de para cubrir la logística propia del programa,
+          para que nunca nos falte el whisky 🥃. Posta todo suma un montón. Y si
+          lo hacés, queremos retribuírtelo.
         </p>
-        <p>Es simple: con un modestísimo aporte mensual obtenés:</p>
-        <ul className="space-y-3">
-          {benefits.map((benefit) => (
-            <li key={benefit} className="flex gap-3">
-              <span className="mt-3 h-1.5 w-1.5 shrink-0 rounded-full bg-brand" />
-              <span>{benefit}</span>
-            </li>
-          ))}
-        </ul>
+        <p>Es simple: un modestísimo aporte mensual y obtenés:</p>
       </div>
+
+      <FanClubPerks />
+
+      <FanClubSteps />
 
       <Card padding="md" className="p-8 text-center">
         <h3 className="mb-2 font-display text-2xl font-bold tracking-tight text-text-primary">
