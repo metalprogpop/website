@@ -1,7 +1,7 @@
 import { lecheenpolvoChannel } from "../../data/about";
 
-// Guido's own words from aguante.metalprogpop.com, copied verbatim. Don't
-// rewrite them.
+// Guido's own words from aguante.metalprogpop.com, copied verbatim (he only
+// fixed "los subimos" to "lo subimos"). Don't rewrite them.
 export function AboutStory() {
   return (
     <div className="mx-auto max-w-3xl space-y-5 text-lg leading-relaxed text-text-secondary">
@@ -32,7 +32,7 @@ export function AboutStory() {
         Doctor comunicose con Mr. Colo y Mr. Tut con la propuesta:
       </p>
       <blockquote className="border-l-4 border-brand pl-4 font-display text-xl font-bold italic text-text-primary">
-        Che... ¿Y si lo grabamos y los subimos?
+        Che... ¿Y si lo grabamos y lo subimos?
       </blockquote>
       <p>
         Así comenzó <em>MetalProgPop Cast</em> a fines de 2017. Ahora es cuando
