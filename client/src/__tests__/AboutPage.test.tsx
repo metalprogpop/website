@@ -27,7 +27,7 @@ describe("AboutPage", () => {
       screen.getByRole("heading", { level: 2, name: /cómo empezó/i }),
     ).toBeInTheDocument();
     expect(
-      screen.getByText(/che\.\.\. ¿y si lo grabamos y los subimos\?/i),
+      screen.getByText(/che\.\.\. ¿y si lo grabamos y lo subimos\?/i),
     ).toBeInTheDocument();
     expect(screen.getByRole("link", { name: "Lecheenpolvo" })).toHaveAttribute(
       "href",
