@@ -74,15 +74,6 @@ export function SupportOptions() {
           La letra chica
         </p>
         <p>Todos los importes están expresados en pesos argentinos.</p>
-        <p>
-          Cada nivel incluye las recompensas (?) de los anteriores: si te
-          suscribís al nivel LONG PLAY, tenés todo lo de SINGLE.
-        </p>
-        <p>
-          Si aportás un monto definido por vos, recibís lo del nivel cuyo monto
-          es el inmediato anterior a tu aporte. Por ejemplo, si tu aporte no
-          llega al de LONG PLAY, cuenta como SINGLE.
-        </p>
       </div>
     </div>
   );
