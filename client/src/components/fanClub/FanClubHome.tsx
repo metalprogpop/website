@@ -8,8 +8,9 @@ type FanClubHomeProps = {
   onLogout: () => void;
 };
 
-// The public home: what the Fan Clú is, what you get and how to join, beside the login form (or, for a
-// signed-in fan without an active subscription, a note on how to get one).
+// The public home: what the Fan Clú is, what you get and how to join,
+// beside the login form (or, for a signed-in fan without an active
+// subscription, a note on how to get one).
 export function FanClubHome({ user, onLogout }: FanClubHomeProps) {
   return (
     <>

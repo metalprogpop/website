@@ -15,10 +15,7 @@ export function HallOfFans() {
   const { data: names, isLoading, isError } = useHallOfFans();
 
   return (
-    <section
-      aria-labelledby="hall-of-fans"
-      className="scroll-mt-24 text-center"
-    >
+    <section aria-labelledby="hall-of-fans" className="text-center">
       <span className="mb-3 inline-block font-display text-sm font-semibold uppercase tracking-widest text-brand">
         Gracias por siempre
       </span>
