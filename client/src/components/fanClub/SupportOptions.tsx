@@ -16,9 +16,9 @@ export function SupportOptions() {
           ¿Cómo hacernos el aguante?
         </h2>
         <p>
-          Además de agitando en la Sección Quejas™ (que nos encanta) o
-          compartiendo lo que hacemos, podés brindar tu aguante aportando
-          mensualmente con unos pesitos; lo que puedas está bien. Todo
+          Además de agitando en la <strong>Sección Quejas™</strong> (que nos
+          encanta) o compartiendo lo que hacemos, podés brindar tu aguante
+          aportando mensualmente con unos pesitos; lo que puedas está bien. Todo
           contribuye, además de para cubrir la logística propia del programa,
           para que nunca nos falte el whisky 🥃. Posta todo suma un montón. Y si
           lo hacés, queremos retribuírtelo.
@@ -31,9 +31,9 @@ export function SupportOptions() {
       <FanClubSteps />
 
       <Card padding="md" className="p-8 text-center">
-        <h3 className="mb-2 font-display text-2xl font-bold tracking-tight text-text-primary">
+        <h2 className="mb-2 font-display text-2xl font-bold tracking-tight text-text-primary">
           ¿Entonces? ¿Le hacés el aguante a MetalProgPop?
-        </h3>
+        </h2>
         <p className="mb-6 text-text-secondary">
           Obvio que sí, así que tocá este botón y dale para adelante:
         </p>

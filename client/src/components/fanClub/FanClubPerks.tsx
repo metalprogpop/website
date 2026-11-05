@@ -10,18 +10,19 @@ import { useHallOfFans } from "../../hooks/useHallOfFans";
 
 type Perk = { Icon: LucideIcon; title: string; text: string };
 
-// The Hall of Fans and fan destacado lines are Guido's, from the old
-// aguante.metalprogpop.com page; keep their wording.
+// The fan destacado and Hall of Fans sentences are Guido's, verbatim from
+// the old aguante.metalprogpop.com page; keep their wording. The count and
+// the link after the Hall of Fans sentence are ours.
 const perks: Perk[] = [
   {
     Icon: Clapperboard,
     title: "Los videos de los programas",
-    text: "Cada programa grabado en video, desde el primero. Lo mirás acá cuando quieras, o lo bajás.",
+    text: "Los programas grabados en video, desde el primero. Los mirás acá cuando quieras, o los bajás.",
   },
   {
     Icon: Headphones,
     title: "Poné Rec™",
-    text: "El podcast adicional: con cada programa, un episodio extra solo para el Fan Clú.",
+    text: "El podcast adicional: episodios extra, solo para el Fan Clú.",
   },
   {
     Icon: Mic,
@@ -33,6 +34,8 @@ const perks: Perk[] = [
 // What a member gets on top of the show.
 export function FanClubPerks() {
   const { data: fans } = useHallOfFans();
+  // The list can repeat a name; count each name once.
+  const fanCount = new Set(fans).size;
   return (
     <ul className="grid gap-4 sm:grid-cols-2">
       {perks.map(({ Icon, title, text }) => (
@@ -41,11 +44,10 @@ export function FanClubPerks() {
         </PerkItem>
       ))}
       <PerkItem Icon={Trophy} title="Hall of Fans">
-        Tu nombre inmortalizado en piedra (bueno, en bytes) en el Hall of Fans
-        {fans && fans.length > 0
-          ? `, junto a ${String(fans.length)} personas hermosas que ya están`
-          : ""}
-        .{" "}
+        Tu nombre será inmortalizado en piedra (bueno, en bytes) en el{" "}
+        <em>Hall of Fans</em> de MetalProgPop Cast (al final de esta misma
+        página).{" "}
+        {fanCount > 1 ? `Ya hay ${String(fanCount)} personas hermosas. ` : ""}
         <Link
           to="/fan-clu#hall-of-fans"
           className="font-semibold text-brand underline-offset-4 hover:underline"

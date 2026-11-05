@@ -116,6 +116,17 @@ describe("FanCluPage", () => {
       screen.getByRole("link", { name: /mirá quiénes son/i }),
     ).toHaveAttribute("href", "/fan-clu#hall-of-fans");
     expect(screen.queryByText(/lecheenpolvo/i)).not.toBeInTheDocument();
+    expect(screen.getByText(/posta todo suma un montón/i)).toBeInTheDocument();
+    expect(
+      await screen.findByText(/ya hay 2 personas hermosas/i),
+    ).toBeInTheDocument();
+    expect(
+      screen.getByText(/el mismo con el que aportás/i),
+    ).toBeInTheDocument();
+    expect(screen.getByText(/unos días en activarse/i)).toBeInTheDocument();
+    expect(
+      screen.queryByText(/supersecreto|long play|single/i),
+    ).not.toBeInTheDocument();
   });
 
   it("tells signed-in fans without an active subscription how to join", async () => {
