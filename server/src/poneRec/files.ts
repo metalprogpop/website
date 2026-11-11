@@ -1,4 +1,5 @@
 import { z } from "zod";
+import { poneRecMainTopicSchema, poneRecTagsSchema } from "shared";
 import type { MediaObject } from "../lib/media.js";
 
 // Poné Rec™ files: "Poné REC/Poné Rec 097.mp3", with the same leniency as
@@ -25,10 +26,10 @@ export const poneRecImportSchema = z.array(
   z
     .object({
       program: z.number().int().positive(),
-      mainTopic: z.string().trim().min(1),
+      mainTopic: poneRecMainTopicSchema,
       durationSeconds: z.number().int().positive(),
       thumbnailKey: z.string().startsWith(PONE_REC_PREFIX).nullable(),
-      tags: z.array(z.string().trim().min(1)),
+      tags: poneRecTagsSchema,
       topics: z.array(
         z.object({
           title: z.string().trim().min(1),
@@ -90,9 +91,9 @@ export const proposalFolder = (program: number) =>
 export const poneRecProposalSchema = z
   .object({
     program: z.number().int().positive(),
-    mainTopic: z.string().trim().min(1),
+    mainTopic: poneRecMainTopicSchema,
     durationSeconds: z.number().int().positive(),
-    tags: z.array(z.string().trim().min(1)),
+    tags: poneRecTagsSchema,
     topics: z.array(
       z.object({
         title: z.string().trim().min(1),
@@ -106,18 +107,22 @@ export const poneRecProposalSchema = z
 
 export type PoneRecProposal = z.infer<typeof poneRecProposalSchema>;
 
-// The candidate images in a proposal's folder, in name order.
-export const candidateKeys = (program: number, objects: MediaObject[]) =>
-  objects
+// The candidate images right in a proposal's folder (not in subfolders),
+// in name order.
+export const candidateKeys = (program: number, objects: MediaObject[]) => {
+  const folder = proposalFolder(program).normalize("NFC");
+  return objects
     .map((object) => object.key)
-    .filter(
-      (key) =>
-        key
-          .normalize("NFC")
-          .startsWith(proposalFolder(program).normalize("NFC")) &&
-        /\.webp$/i.test(key),
-    )
+    .filter((key) => {
+      const name = key.normalize("NFC");
+      return (
+        name.startsWith(folder) &&
+        !name.slice(folder.length).includes("/") &&
+        /\.webp$/i.test(name)
+      );
+    })
     .sort((a, b) => a.localeCompare(b));
+};
 
 // Same tag twice, differing only in case, counts once (the first wins).
 export const dedupeTags = (tags: string[]) => {
@@ -131,3 +136,13 @@ export const dedupeTags = (tags: string[]) => {
     return true;
   });
 };
+
+// What changes when an episode's tags become `wanted`: the live tags to
+// soft-delete and the names to add.
+export const diffTags = (
+  current: { id: number; name: string }[],
+  wanted: string[],
+) => ({
+  gone: current.filter((tag) => !wanted.includes(tag.name)),
+  added: wanted.filter((name) => !current.some((tag) => tag.name === name)),
+});

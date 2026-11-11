@@ -4,12 +4,13 @@ import { db } from "../db/index.js";
 import { poneRecTags, poneRecThumbnails, poneRecs } from "../db/schema.js";
 import { findEpisode } from "../episodes/catalog.js";
 import { readMediaObject } from "../lib/media.js";
-import { dedupeTags } from "./files.js";
+import { dedupeTags, diffTags } from "./files.js";
 
 const optionPath = (id: number) =>
   `/api/v1/admin/pone-rec/thumbnails/${String(id)}`;
 
-const liveEpisodes = () =>
+// Every live episode, or just one.
+const liveEpisodes = (id?: number) =>
   db
     .select({
       id: poneRecs.id,
@@ -19,7 +20,11 @@ const liveEpisodes = () =>
       thumbnailKey: poneRecs.thumbnailKey,
     })
     .from(poneRecs)
-    .where(isNull(poneRecs.deletedAt))
+    .where(
+      id === undefined
+        ? isNull(poneRecs.deletedAt)
+        : and(eq(poneRecs.id, id), isNull(poneRecs.deletedAt)),
+    )
     .orderBy(desc(poneRecs.program));
 
 type LiveEpisode = Awaited<ReturnType<typeof liveEpisodes>>[number];
@@ -82,22 +87,25 @@ export const listAdminPoneRecs = async () => {
 export class InvalidThumbnailError extends Error {}
 
 // Applies staff's edit and returns the episode as it now is, or null if
-// there's no such live episode. Tags that go away are soft-deleted.
+// there's no such live episode. Tags that go away are soft-deleted. The
+// episode's row is locked meanwhile, so two edits to it run one after the
+// other.
 export const updatePoneRec = async (
   program: number,
   update: AdminPoneRecUpdate,
 ): Promise<AdminPoneRec | null> => {
-  const episode = (
-    await db
-      .select({ id: poneRecs.id })
-      .from(poneRecs)
-      .where(and(eq(poneRecs.program, program), isNull(poneRecs.deletedAt)))
-      .limit(1)
-  ).at(0);
-  if (!episode) {
-    return null;
-  }
-  await db.transaction(async (tx) => {
+  const id = await db.transaction(async (tx) => {
+    const episode = (
+      await tx
+        .select({ id: poneRecs.id })
+        .from(poneRecs)
+        .where(and(eq(poneRecs.program, program), isNull(poneRecs.deletedAt)))
+        .limit(1)
+        .for("update")
+    ).at(0);
+    if (!episode) {
+      return null;
+    }
     const now = new Date();
     const set: Partial<typeof poneRecs.$inferInsert> = {};
     if (update.mainTopic !== undefined) {
@@ -143,7 +151,7 @@ export const updatePoneRec = async (
             isNull(poneRecTags.deletedAt),
           ),
         );
-      const gone = current.filter((t) => !wanted.includes(t.name));
+      const { gone, added } = diffTags(current, wanted);
       if (gone.length > 0) {
         await tx
           .update(poneRecTags)
@@ -155,18 +163,17 @@ export const updatePoneRec = async (
             ),
           );
       }
-      const added = wanted.filter(
-        (name) => !current.some((t) => t.name === name),
-      );
       if (added.length > 0) {
         await tx
           .insert(poneRecTags)
           .values(added.map((name) => ({ poneRecId: episode.id, name })));
       }
     }
+    return episode.id;
   });
-  const fresh = (await liveEpisodes()).filter((e) => e.id === episode.id);
-  return (await describe(fresh)).at(0) ?? null;
+  return id === null
+    ? null
+    : ((await describe(await liveEpisodes(id))).at(0) ?? null);
 };
 
 // A live option's image, for staff to choose from.

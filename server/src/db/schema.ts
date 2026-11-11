@@ -162,10 +162,10 @@ export const fanClubVideos = pgTable(
 );
 
 // Poné Rec™, the Fan Club's bonus podcast: one episode per program, mirrored
-// from the media bucket and loaded with the content staff approved (main
-// topic, thumbnail, topics and tags). Only the main topic shows on its card;
-// topics and tags are for search, and a topic that isn't searchable is kept
-// but never served. The S3 keys never leave the server.
+// from the media bucket and published as soon as it's imported. Only the
+// main topic shows on its card; members search the main topic and the tags.
+// The transcript's topics are the pipeline's material: they stay on the
+// server and are never served. The S3 keys never leave the server.
 export const poneRecs = pgTable(
   "pone_recs",
   {
