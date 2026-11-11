@@ -46,12 +46,12 @@ const rec = (program: number, extra: Partial<AdminPoneRec> = {}) => ({
 // 98 is new: still on the default image, with two candidates.
 const episodes = () => [
   rec(98, {
-    mainTopic: "Cómo nos llevamos con la sangre",
-    tags: ["Sangre", "Accidentes"],
+    mainTopic: "Las peores vacaciones en carpa",
+    tags: ["Carpas", "Accidentes"],
     thumbnails: [option(1), option(2)],
     thumbnailId: null,
   }),
-  rec(97, { mainTopic: "Los peores olores de nuestras vidas" }),
+  rec(97, { mainTopic: "Discos que nunca devolvimos" }),
 ];
 
 type Patch = { program: number; body: AdminPoneRecUpdate };
@@ -86,7 +86,7 @@ const mockApi = ({ failPatch = false } = {}) => {
     if (url.endsWith("/api/v1/admin/pone-rec")) {
       return json({
         episodes: state,
-        tags: ["Accidentes", "Sangre", "Viajes"],
+        tags: ["Accidentes", "Carpas", "Viajes"],
       });
     }
     return json({ error: "Not found" }, 404);
@@ -136,7 +136,7 @@ describe("Admin · Poné Rec", () => {
       "page",
     );
     expect(
-      await screen.findByText("Cómo nos llevamos con la sangre"),
+      await screen.findByText("Las peores vacaciones en carpa"),
     ).toBeInTheDocument();
     // Nothing waits for approval: an episode without an image is just
     // flagged as using the default one.
@@ -175,13 +175,13 @@ describe("Admin · Poné Rec", () => {
 
     await user.type(field, " (borrador)");
     await user.keyboard("{Escape}");
-    expect(field).toHaveValue("Los peores olores de nuestras vidas");
+    expect(field).toHaveValue("Discos que nunca devolvimos");
     // That Escape only undid the edit; the panel is still open.
     expect(screen.getByRole("dialog")).toBeInTheDocument();
 
     await user.clear(field);
     await user.tab();
-    expect(field).toHaveValue("Los peores olores de nuestras vidas");
+    expect(field).toHaveValue("Discos que nunca devolvimos");
     expect(patches).toEqual([]);
 
     // With nothing pending, Escape closes the panel and goes back to the card.
@@ -208,8 +208,8 @@ describe("Admin · Poné Rec", () => {
 
     await waitFor(() => {
       expect(patches.map((p) => p.body)).toEqual([
-        { tags: ["Sangre", "Accidentes", "Halloween"] },
-        { tags: ["Sangre", "Halloween"] },
+        { tags: ["Carpas", "Accidentes", "Halloween"] },
+        { tags: ["Carpas", "Halloween"] },
       ]);
     });
   });
@@ -226,7 +226,7 @@ describe("Admin · Poné Rec", () => {
 
     await waitFor(() => {
       expect(patches.at(-1)?.body).toEqual({
-        tags: ["Sangre", "Accidentes", "Uno", "Dos"],
+        tags: ["Carpas", "Accidentes", "Uno", "Dos"],
       });
     });
   });
