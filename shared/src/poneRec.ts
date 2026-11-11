@@ -35,3 +35,49 @@ export type PoneRecUrl = z.infer<typeof poneRecUrlSchema>;
 
 export const poneRecUrlPath = (program: number) =>
   `/api/v1/fan-clu/pone-rec/${String(program)}/url`;
+
+// --- Staff: /admin, Poné Rec™ ---
+
+export const adminPoneRecSchema = z.object({
+  program: z.number().int().positive(),
+  mainTopic: z.string(),
+  publishedAt: z.string().nullable(),
+  durationSeconds: z.number().int().nonnegative(),
+  tags: z.array(z.string()),
+  // The images it can show (the chosen one included); null is the default.
+  thumbnails: z.array(
+    z.object({
+      id: z.number().int().positive(),
+      path: z.string().startsWith("/api/v1/admin/pone-rec/"),
+    }),
+  ),
+  thumbnailId: z.number().int().positive().nullable(),
+});
+
+export type AdminPoneRec = z.infer<typeof adminPoneRecSchema>;
+
+export const adminPoneRecListSchema = z.object({
+  // Newest first.
+  episodes: z.array(adminPoneRecSchema),
+  // Every tag in use, to suggest when adding one.
+  tags: z.array(z.string()),
+});
+
+export type AdminPoneRecList = z.infer<typeof adminPoneRecListSchema>;
+
+// Staff edit only the main topic, the tags and the image. Anything else is
+// a 400, not silently ignored.
+export const adminPoneRecUpdateSchema = z
+  .object({
+    mainTopic: z
+      .string()
+      .trim()
+      .min(1, "El tema principal no puede quedar vacío")
+      .max(200),
+    tags: z.array(z.string().trim().min(1).max(40)).max(12),
+    thumbnailId: z.number().int().positive().nullable(),
+  })
+  .partial()
+  .strict();
+
+export type AdminPoneRecUpdate = z.infer<typeof adminPoneRecUpdateSchema>;
