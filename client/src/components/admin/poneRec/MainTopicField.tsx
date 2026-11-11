@@ -5,7 +5,8 @@ const FIELD =
 
 // The card's only text. It grows with its content, so a long topic is
 // never cut off (an invisible copy of the text sets the height). Saves on
-// blur or Enter; Escape puts back what was saved.
+// blur or Enter; Escape puts back what was saved. While it has focus, a
+// change from the server doesn't touch what's being typed.
 export function MainTopicField({
   value,
   onSave,
@@ -14,13 +15,22 @@ export function MainTopicField({
   onSave: (next: string) => void;
 }) {
   const [draft, setDraft] = useState(value);
+  const [focused, setFocused] = useState(false);
+  // Follow the saved value when it changes (React's "adjust state when a
+  // prop changes" pattern), unless it's being edited.
+  const [seen, setSeen] = useState(value);
+  if (value !== seen) {
+    setSeen(value);
+    if (!focused) {
+      setDraft(value);
+    }
+  }
   const commit = () => {
     const next = draft.trim();
     if (next && next !== value) {
       onSave(next);
-    } else {
-      setDraft(value);
     }
+    setDraft(next || value);
   };
   return (
     <div className="grid w-full">
@@ -40,11 +50,17 @@ export function MainTopicField({
         onChange={(e) => {
           setDraft(e.target.value.replace(/\n/g, " "));
         }}
-        onBlur={commit}
+        onFocus={() => {
+          setFocused(true);
+        }}
+        onBlur={() => {
+          setFocused(false);
+          commit();
+        }}
         onKeyDown={(e) => {
           if (e.key === "Enter") {
             e.preventDefault();
-            e.currentTarget.blur();
+            commit();
           }
           if (e.key === "Escape") {
             setDraft(value);

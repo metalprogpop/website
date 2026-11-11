@@ -14,6 +14,7 @@ import {
   type AdminPoneRec,
   type AdminPoneRecUpdate,
 } from "shared";
+import { toast } from "sonner";
 import { AdminPage } from "../pages/AdminPage";
 
 const API_URL = "http://localhost:3001";
@@ -175,11 +176,21 @@ describe("Admin · Poné Rec", () => {
     await user.type(field, " (borrador)");
     await user.keyboard("{Escape}");
     expect(field).toHaveValue("Los peores olores de nuestras vidas");
+    // That Escape only undid the edit; the panel is still open.
+    expect(screen.getByRole("dialog")).toBeInTheDocument();
 
     await user.clear(field);
     await user.tab();
     expect(field).toHaveValue("Los peores olores de nuestras vidas");
     expect(patches).toEqual([]);
+
+    // With nothing pending, Escape closes the panel and goes back to the card.
+    await user.click(field);
+    await user.keyboard("{Escape}");
+    await waitFor(() => {
+      expect(screen.queryByRole("dialog")).not.toBeInTheDocument();
+    });
+    expect(screen.getByRole("button", { name: /programa 97/i })).toHaveFocus();
   });
 
   it("adds and removes tags", async () => {
@@ -200,6 +211,23 @@ describe("Admin · Poné Rec", () => {
         { tags: ["Sangre", "Accidentes", "Halloween"] },
         { tags: ["Sangre", "Halloween"] },
       ]);
+    });
+  });
+
+  it("keeps every change when tags are edited in quick succession", async () => {
+    const patches = mockApi();
+    renderAdmin();
+    const { user, sheet } = await openEditor(/programa 98/i);
+
+    await user.type(
+      within(sheet).getByRole("combobox", { name: "Agregar etiqueta" }),
+      "Uno{Enter}Dos{Enter}",
+    );
+
+    await waitFor(() => {
+      expect(patches.at(-1)?.body).toEqual({
+        tags: ["Sangre", "Accidentes", "Uno", "Dos"],
+      });
     });
   });
 
@@ -228,6 +256,7 @@ describe("Admin · Poné Rec", () => {
   });
 
   it("rolls back and says so when a save fails", async () => {
+    const error = vi.spyOn(toast, "error");
     mockApi({ failPatch: true });
     renderAdmin();
     const { user, sheet } = await openEditor(/programa 98/i);
@@ -242,6 +271,7 @@ describe("Admin · Poné Rec", () => {
         }),
       ).toBeInTheDocument();
     });
+    expect(error).toHaveBeenCalledWith("No se pudo guardar");
   });
 
   it("keeps Suscriptores as the default tab", async () => {

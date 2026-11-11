@@ -1,8 +1,5 @@
 import { useState } from "react";
-import {
-  useAdminPoneRecs,
-  useUpdatePoneRec,
-} from "../../../hooks/useAdminPoneRecs";
+import { useAdminPoneRecs } from "../../../hooks/useAdminPoneRecs";
 import { Skeleton } from "../../ui/skeleton";
 import { AdminPoneRecCard } from "./AdminPoneRecCard";
 import { PoneRecEditSheet } from "./PoneRecEditSheet";
@@ -14,8 +11,8 @@ const GRID =
 // its editor: main topic, tags and image.
 export function PoneRecAdminPanel() {
   const { data, isLoading, isError } = useAdminPoneRecs();
-  const update = useUpdatePoneRec();
   const [editing, setEditing] = useState<number | null>(null);
+  const [opener, setOpener] = useState<HTMLElement | null>(null);
 
   if (isLoading) {
     return (
@@ -47,7 +44,8 @@ export function PoneRecAdminPanel() {
           <li key={rec.program}>
             <AdminPoneRecCard
               rec={rec}
-              onOpen={() => {
+              onOpen={(button) => {
+                setOpener(button);
                 setEditing(rec.program);
               }}
             />
@@ -57,9 +55,7 @@ export function PoneRecAdminPanel() {
       <PoneRecEditSheet
         rec={data.episodes.find((rec) => rec.program === editing)}
         tags={data.tags}
-        onSave={(program, change) => {
-          update.mutate({ program, data: change });
-        }}
+        opener={opener}
         onClose={() => {
           setEditing(null);
         }}

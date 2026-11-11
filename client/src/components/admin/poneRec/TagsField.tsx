@@ -6,11 +6,13 @@ import { X } from "lucide-react";
 export function TagsField({
   tags,
   suggestions,
-  onSave,
+  onAdd,
+  onRemove,
 }: {
   tags: string[];
   suggestions: string[];
-  onSave: (next: string[]) => void;
+  onAdd: (tag: string) => void;
+  onRemove: (tag: string) => void;
 }) {
   const listId = useId();
   const [draft, setDraft] = useState("");
@@ -20,7 +22,7 @@ export function TagsField({
       (t) => t.toLocaleLowerCase("es") === tag.toLocaleLowerCase("es"),
     );
     if (tag && !known) {
-      onSave([...tags, tag]);
+      onAdd(tag);
     }
     setDraft("");
   };
@@ -36,7 +38,7 @@ export function TagsField({
             type="button"
             aria-label={`Sacar ${tag}`}
             onClick={() => {
-              onSave(tags.filter((t) => t !== tag));
+              onRemove(tag);
             }}
             className="rounded-full p-0.5 hover:bg-white/20"
           >
@@ -49,6 +51,8 @@ export function TagsField({
         list={listId}
         placeholder="Agregar etiqueta"
         aria-label="Agregar etiqueta"
+        // A half-typed tag: Escape clears it instead of closing the panel.
+        data-dirty={draft !== ""}
         onChange={(e) => {
           setDraft(e.target.value);
         }}
@@ -56,6 +60,9 @@ export function TagsField({
           if (e.key === "Enter") {
             e.preventDefault();
             add();
+          }
+          if (e.key === "Escape") {
+            setDraft("");
           }
         }}
         className="w-44 rounded-full border border-border bg-surface px-3 py-1 text-sm focus:border-brand focus:outline-none focus:ring-2 focus:ring-brand/20"
