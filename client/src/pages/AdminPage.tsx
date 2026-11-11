@@ -6,6 +6,8 @@ import { Card } from "../components/ui/brand/Card";
 import { EpisodesResyncButton } from "../components/admin/EpisodesResyncButton";
 import { VideosSyncControl } from "../components/admin/VideosSyncControl";
 import { SubscribersPanel } from "../components/admin/SubscribersPanel";
+import { PoneRecAdminPanel } from "../components/admin/poneRec/PoneRecAdminPanel";
+import { AdminTabs, useAdminSection } from "../components/admin/AdminTabs";
 import { useAuth } from "../hooks/useAuth";
 
 function Shell({ children }: { children: React.ReactNode }) {
@@ -20,6 +22,7 @@ function Shell({ children }: { children: React.ReactNode }) {
 
 export function AdminPage() {
   const { isLoading, isStaff } = useAuth();
+  const section = useAdminSection();
 
   if (isLoading) {
     return (
@@ -52,13 +55,13 @@ export function AdminPage() {
     <Shell>
       <Section>
         <Container width="wide">
-          <div className="mb-10 flex flex-wrap items-end justify-between gap-4">
+          <div className="mb-8 flex flex-wrap items-end justify-between gap-4">
             <div>
               <span className="mb-3 inline-block font-display text-sm font-semibold uppercase tracking-widest text-brand">
                 Admin
               </span>
               <h1 className="font-display text-3xl font-bold tracking-tight text-text-primary sm:text-4xl">
-                Suscriptores
+                {section === "pone-rec" ? "Poné Rec™" : "Suscriptores"}
               </h1>
             </div>
             <div className="flex flex-wrap items-center gap-3">
@@ -66,9 +69,14 @@ export function AdminPage() {
               <EpisodesResyncButton />
             </div>
           </div>
-          <Card padding="md">
-            <SubscribersPanel />
-          </Card>
+          <AdminTabs current={section} />
+          {section === "pone-rec" ? (
+            <PoneRecAdminPanel />
+          ) : (
+            <Card padding="md">
+              <SubscribersPanel />
+            </Card>
+          )}
         </Container>
       </Section>
     </Shell>
