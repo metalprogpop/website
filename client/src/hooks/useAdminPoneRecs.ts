@@ -1,6 +1,10 @@
 import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
 import { toast } from "sonner";
-import type { AdminPoneRecList, AdminPoneRecUpdate } from "shared";
+import type {
+  AdminPoneRec,
+  AdminPoneRecList,
+  AdminPoneRecUpdate,
+} from "shared";
 import { adminApi } from "../lib/adminApi";
 
 const key = ["admin", "pone-rec"] as const;
@@ -8,53 +12,65 @@ const key = ["admin", "pone-rec"] as const;
 export const useAdminPoneRecs = () =>
   useQuery({ queryKey: key, queryFn: adminApi.listPoneRecs });
 
-// Every edit shows at once; if the save fails it rolls back and says why.
-export const useUpdatePoneRec = () => {
+const replaceEpisode = (
+  list: AdminPoneRecList | undefined,
+  program: number,
+  change: Partial<AdminPoneRec>,
+) =>
+  list && {
+    ...list,
+    episodes: list.episodes.map((episode) =>
+      episode.program === program ? { ...episode, ...change } : episode,
+    ),
+  };
+
+// Edits to one episode. Each change is computed from the episode as it is
+// on screen right then (earlier unsaved edits included), shown at once, and
+// saved one after the other, in order. A failed save undoes just its own
+// change and says why; the screen then settles on what the server has.
+export const useUpdatePoneRec = (program: number) => {
   const queryClient = useQueryClient();
-  return useMutation({
-    mutationFn: ({
-      program,
-      data,
-    }: {
-      program: number;
-      data: AdminPoneRecUpdate;
-    }) => adminApi.updatePoneRec(program, data),
-    onMutate: async ({ program, data }) => {
-      await queryClient.cancelQueries({ queryKey: key });
-      const before = queryClient.getQueryData<AdminPoneRecList>(key);
+  const mutationKey = [...key, program];
+  const mutation = useMutation({
+    mutationKey,
+    scope: { id: `pone-rec-${String(program)}` },
+    mutationFn: ({ data }: { data: AdminPoneRecUpdate; before: object }) =>
+      adminApi.updatePoneRec(program, data),
+    onError: (error, { before }) => {
       queryClient.setQueryData<AdminPoneRecList>(key, (old) =>
-        old
-          ? {
-              ...old,
-              episodes: old.episodes.map((episode) =>
-                episode.program === program ? { ...episode, ...data } : episode,
-              ),
-            }
-          : old,
+        replaceEpisode(old, program, before),
       );
-      return { before };
-    },
-    onError: (error, _vars, context) => {
-      queryClient.setQueryData(key, context?.before);
       toast.error(error.message);
     },
-    onSuccess: (saved) => {
-      queryClient.setQueryData<AdminPoneRecList>(key, (old) =>
-        old
-          ? {
-              tags: [...new Set([...old.tags, ...saved.tags])].sort((a, b) =>
-                a.localeCompare(b, "es"),
-              ),
-              episodes: old.episodes.map((episode) =>
-                episode.program === saved.program ? saved : episode,
-              ),
-            }
-          : old,
-      );
-    },
-    onSettled: () => {
+    onSettled: async () => {
+      // Only once the last queued edit is done, so a reply never shows an
+      // older state over a newer edit.
+      if (queryClient.isMutating({ mutationKey }) <= 1) {
+        await queryClient.invalidateQueries({ queryKey: key });
+      }
       // Members see the change right away too.
       void queryClient.invalidateQueries({ queryKey: ["fan-clu", "pone-rec"] });
     },
   });
+
+  return (change: (episode: AdminPoneRec) => AdminPoneRecUpdate) => {
+    const episode = queryClient
+      .getQueryData<AdminPoneRecList>(key)
+      ?.episodes.find((e) => e.program === program);
+    if (!episode) {
+      return;
+    }
+    const data = change(episode);
+    const before = Object.fromEntries(
+      Object.keys(data).map((field) => [
+        field,
+        episode[field as keyof AdminPoneRecUpdate],
+      ]),
+    );
+    void queryClient.cancelQueries({ queryKey: key });
+    queryClient.setQueryData<AdminPoneRecList>(key, (old) =>
+      replaceEpisode(old, program, data),
+    );
+    mutation.mutate({ data, before });
+  };
 };

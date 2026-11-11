@@ -8,18 +8,20 @@ export const chosenImagePath = (rec: AdminPoneRec) =>
   rec.thumbnails.find((t) => t.id === rec.thumbnailId)?.path ?? null;
 
 // The member's card, as members see it (title in full), opening the editor.
+// Its visible text names it, the default-image flag included.
 export function AdminPoneRecCard({
   rec,
   onOpen,
 }: {
   rec: AdminPoneRec;
-  onOpen: () => void;
+  onOpen: (opener: HTMLButtonElement) => void;
 }) {
   return (
     <button
       type="button"
-      onClick={onOpen}
-      aria-label={`Editar el Poné Rec™ del programa ${String(rec.program)}: ${rec.mainTopic}`}
+      onClick={(e) => {
+        onOpen(e.currentTarget);
+      }}
       className="group relative flex h-full w-full flex-col overflow-hidden rounded-2xl border border-border bg-surface text-left shadow-sm transition hover:-translate-y-0.5 hover:shadow-lg focus:outline-none focus-visible:ring-4 focus-visible:ring-brand/40"
     >
       <PoneRecImage path={chosenImagePath(rec)} className="w-full" />
