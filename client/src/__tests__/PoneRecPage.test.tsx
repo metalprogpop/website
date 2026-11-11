@@ -26,7 +26,6 @@ const rec = (program: number, overrides: Partial<PoneRec> = {}): PoneRec => ({
   ).toISOString(),
   durationSeconds: 1260,
   thumbnailPath: `/api/v1/fan-clu/pone-rec/${String(program)}/thumbnail`,
-  topics: [],
   tags: [],
   ...overrides,
 });
@@ -38,7 +37,7 @@ const catalog = () =>
         mainTopic: "Los peores olores de nuestras vidas",
         tags: ["Malos olores"],
       }),
-      rec(91, { topics: ["El viaje en micro a Mendoza"] }),
+      rec(91, { tags: ["Viajes en micro"] }),
       rec(80),
     ],
   });
@@ -71,7 +70,9 @@ beforeEach(() => {
   vi.stubEnv("VITE_API_URL", API_URL);
   localStorage.clear();
   vi.spyOn(HTMLMediaElement.prototype, "play").mockResolvedValue();
-  vi.spyOn(HTMLMediaElement.prototype, "pause").mockImplementation(() => undefined);
+  vi.spyOn(HTMLMediaElement.prototype, "pause").mockImplementation(
+    () => undefined,
+  );
 });
 
 afterEach(() => {
@@ -106,12 +107,12 @@ describe("PoneRecPage", () => {
     ).toBeInTheDocument();
     expect(screen.getByRole("heading", { name: "2026" })).toBeInTheDocument();
     expect(screen.getByRole("heading", { name: "2025" })).toBeInTheDocument();
-    // Tags and topics are for search, never shown.
+    // Tags are for search, never shown.
     expect(screen.queryByText("Malos olores")).not.toBeInTheDocument();
-    expect(screen.queryByText(/mendoza/i)).not.toBeInTheDocument();
+    expect(screen.queryByText(/viajes en micro/i)).not.toBeInTheDocument();
   });
 
-  it("finds episodes by tag or topic, ignoring accents", async () => {
+  it("finds episodes by main topic or tag, ignoring accents", async () => {
     const user = userEvent.setup();
     mockApi({ "/auth/me": member, "/fan-clu/pone-rec": catalog });
     renderPage();
@@ -121,7 +122,7 @@ describe("PoneRecPage", () => {
     expect(screen.getAllByRole("article")).toHaveLength(1);
 
     await user.clear(search);
-    await user.type(search, "mendozá");
+    await user.type(search, "micró");
     expect(
       screen.getByRole("heading", { name: "Tema del 91" }),
     ).toBeInTheDocument();

@@ -39,8 +39,8 @@ const normalize = (text: string) =>
     .replace(/[\u0300-\u036f]/g, "")
     .toLowerCase();
 
-// Matches the main topic, the searchable topics and the tags, ignoring
-// accents and case. A number matches the program.
+// Matches the main topic and the tags, ignoring accents and case. A number
+// matches the program.
 export const poneRecMatches = (rec: PoneRec, search: string) => {
   const needle = normalize(search.trim());
   if (!needle) {
@@ -49,7 +49,7 @@ export const poneRecMatches = (rec: PoneRec, search: string) => {
   if (/^\d+$/.test(needle)) {
     return String(rec.program) === needle;
   }
-  return [rec.mainTopic, ...rec.topics, ...rec.tags].some((text) =>
+  return [rec.mainTopic, ...rec.tags].some((text) =>
     normalize(text).includes(needle),
   );
 };
