@@ -4,8 +4,9 @@ import { dayMonth } from "../../../lib/fanClubVideos";
 import { minutes, thumbnailUrl } from "../../../lib/poneRec";
 import { PoneRecPlayButton } from "./PoneRecPlayButton";
 
-// One episode: its thumbnail and only its main topic, as decided. Topics
-// and tags stay out of sight; they're for search.
+// One episode: its thumbnail and only its main topic, as decided, always in
+// full (Guido: titles are never cut). Tags stay out of sight; they're for
+// search.
 export function PoneRecCard({ rec }: { rec: PoneRec }) {
   const image = thumbnailUrl(rec);
   return (
@@ -32,7 +33,7 @@ export function PoneRecCard({ rec }: { rec: PoneRec }) {
         </div>
       </div>
       <div className="p-4">
-        <h3 className="line-clamp-3 font-display text-base font-semibold leading-snug sm:text-lg text-text-primary">
+        <h3 className="font-display text-base font-semibold leading-snug sm:text-lg text-text-primary">
           {rec.mainTopic}
         </h3>
         <p className="mt-1 text-xs text-text-muted">
