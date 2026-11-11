@@ -1,4 +1,6 @@
 import {
+  adminPoneRecListSchema,
+  adminPoneRecSchema,
   apiErrorSchema,
   episodeResyncResultSchema,
   subscriberListResponseSchema,
@@ -6,6 +8,7 @@ import {
   subscriptionListSchema,
   subscriptionSchema,
   videoSyncResultSchema,
+  type AdminPoneRecUpdate,
   type Platform,
   type SubscriberUpdate,
   type SubscriptionStatus,
@@ -93,6 +96,12 @@ export const adminApi = {
   resyncEpisodes: async () =>
     episodeResyncResultSchema.parse(
       await request("/episodes/resync", { method: "POST" }),
+    ),
+  listPoneRecs: async () =>
+    adminPoneRecListSchema.parse(await request("/pone-rec")),
+  updatePoneRec: async (program: number, data: AdminPoneRecUpdate) =>
+    adminPoneRecSchema.parse(
+      await request(`/pone-rec/${String(program)}`, json("PATCH", data)),
     ),
   syncVideos: async (full: boolean) =>
     videoSyncResultSchema.parse(
