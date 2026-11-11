@@ -221,3 +221,24 @@ export const poneRecTags = pgTable(
     poneRecIdx: index("pone_rec_tags_pone_rec_id_idx").on(table.poneRecId),
   }),
 );
+
+// The images a Poné Rec™ episode can show: the pipeline's candidates and any
+// image chosen before. `pone_recs.thumbnail_key` is the chosen one (null
+// means the default image), always one of these live keys.
+export const poneRecThumbnails = pgTable(
+  "pone_rec_thumbnails",
+  {
+    id: serial("id").primaryKey(),
+    poneRecId: integer("pone_rec_id")
+      .notNull()
+      .references(() => poneRecs.id, { onDelete: "restrict" }),
+    s3Key: text("s3_key").notNull(),
+    createdAt: timestamp("created_at").defaultNow().notNull(),
+    deletedAt: timestamp("deleted_at"),
+  },
+  (table) => ({
+    keyLiveUnique: uniqueIndex("pone_rec_thumbnails_key_live_unique")
+      .on(table.poneRecId, table.s3Key)
+      .where(sql`${table.deletedAt} IS NULL`),
+  }),
+);
