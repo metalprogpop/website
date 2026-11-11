@@ -1,6 +1,7 @@
 import { describe, expect, it } from "vitest";
 import {
   candidateKeys,
+  dedupeTags,
   parsePoneRecKey,
   planPoneRecImport,
   poneRecImportSchema,
@@ -119,5 +120,14 @@ describe("proposals", () => {
     expect(
       poneRecProposalSchema.safeParse({ ...proposal, thumbnail: "x" }).success,
     ).toBe(false);
+  });
+});
+
+describe("dedupeTags", () => {
+  it("keeps the first of tags that differ only in case", () => {
+    expect(dedupeTags(["Sangre", "sangre", "Viajes", "SANGRE"])).toEqual([
+      "Sangre",
+      "Viajes",
+    ]);
   });
 });
