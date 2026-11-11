@@ -57,6 +57,13 @@
       "when": 1793450923758,
       "tag": "0007_add_pone_recs",
       "breakpoints": true
+    },
+    {
+      "idx": 8,
+      "version": "7",
+      "when": 1794433325168,
+      "tag": "0008_add_pone_rec_thumbnails",
+      "breakpoints": true
     }
   ]
 }
