@@ -25,7 +25,7 @@ function CatalogSkeleton() {
 const dateOf = (rec: PoneRec) => rec.publishedAt;
 
 // Every episode by year, newest first, with a search over what was talked
-// about: the main topic, the topics and the tags.
+// about: the main topic and the tags.
 export function PoneRecCatalog() {
   const { data: episodes, isLoading, isError } = usePoneRecs();
   const [search, setSearch] = useState("");

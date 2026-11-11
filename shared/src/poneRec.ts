@@ -1,8 +1,9 @@
 import { z } from "zod";
 
 // Poné Rec™, the Fan Club's bonus podcast (members only). Each episode
-// belongs to a program and shows only its main topic; its searchable topics
-// and its tags come along for search, and nothing else is served.
+// belongs to a program and shows only its main topic; its tags come along
+// for search. The topics the pipeline finds in the transcript stay on the
+// server.
 export const poneRecSchema = z.object({
   program: z.number().int().positive(),
   mainTopic: z.string(),
@@ -11,7 +12,6 @@ export const poneRecSchema = z.object({
   durationSeconds: z.number().int().nonnegative(),
   // Same-origin API path that serves the thumbnail to members.
   thumbnailPath: z.string().startsWith("/api/v1/fan-clu/pone-rec/").nullable(),
-  topics: z.array(z.string()),
   tags: z.array(z.string()),
 });
 

@@ -1,3 +1,4 @@
+import { createHash } from "node:crypto";
 import { and, asc, desc, eq, inArray, isNull } from "drizzle-orm";
 import type { PoneRec, PoneRecUrl } from "shared";
 import { db } from "../db/index.js";
@@ -77,11 +78,13 @@ export const importPoneRecs = async (
   return { imported: plan.rows.length, missingAudio: plan.missingAudio };
 };
 
-const thumbnailPath = (program: number) =>
-  `/api/v1/fan-clu/pone-rec/${String(program)}/thumbnail`;
+// The chosen image's key goes in the URL as a version, so browsers that
+// cached an earlier image (it's cached for a day) fetch the new one.
+const thumbnailPath = (program: number, key: string) =>
+  `/api/v1/fan-clu/pone-rec/${String(program)}/thumbnail?v=${createHash("sha256").update(key).digest("hex").slice(0, 12)}`;
 
-// Every live episode, newest first, with its searchable topics and tags.
-// Topics staff marked as not searchable never leave the server.
+// Every live episode, newest first, with its tags. The transcript's topics
+// never leave the server.
 export const listPoneRecs = async (): Promise<PoneRec[]> => {
   const episodes = await db
     .select({
@@ -98,29 +101,13 @@ export const listPoneRecs = async (): Promise<PoneRec[]> => {
   if (ids.length === 0) {
     return [];
   }
-  const [topics, tags] = await Promise.all([
-    db
-      .select({
-        poneRecId: poneRecTopics.poneRecId,
-        title: poneRecTopics.title,
-      })
-      .from(poneRecTopics)
-      .where(
-        and(
-          inArray(poneRecTopics.poneRecId, ids),
-          isNull(poneRecTopics.deletedAt),
-          eq(poneRecTopics.searchable, true),
-        ),
-      )
-      .orderBy(asc(poneRecTopics.position)),
-    db
-      .select({ poneRecId: poneRecTags.poneRecId, name: poneRecTags.name })
-      .from(poneRecTags)
-      .where(
-        and(inArray(poneRecTags.poneRecId, ids), isNull(poneRecTags.deletedAt)),
-      )
-      .orderBy(asc(poneRecTags.id)),
-  ]);
+  const tags = await db
+    .select({ poneRecId: poneRecTags.poneRecId, name: poneRecTags.name })
+    .from(poneRecTags)
+    .where(
+      and(inArray(poneRecTags.poneRecId, ids), isNull(poneRecTags.deletedAt)),
+    )
+    .orderBy(asc(poneRecTags.id));
   return Promise.all(
     episodes.map(async (episode) => {
       // The program's last episode dates it.
@@ -131,11 +118,8 @@ export const listPoneRecs = async (): Promise<PoneRec[]> => {
         publishedAt: last?.publishedAt.toISOString() ?? null,
         durationSeconds: episode.durationSeconds,
         thumbnailPath: episode.thumbnailKey
-          ? thumbnailPath(episode.program)
+          ? thumbnailPath(episode.program, episode.thumbnailKey)
           : null,
-        topics: topics
-          .filter((t) => t.poneRecId === episode.id)
-          .map((t) => t.title),
         tags: tags.filter((t) => t.poneRecId === episode.id).map((t) => t.name),
       };
     }),
