@@ -1,9 +1,15 @@
 import { and, eq, isNull } from "drizzle-orm";
 import { db } from "../db/index.js";
-import { poneRecTags, poneRecTopics, poneRecs } from "../db/schema.js";
+import {
+  poneRecTags,
+  poneRecThumbnails,
+  poneRecTopics,
+  poneRecs,
+} from "../db/schema.js";
 import { listMediaObjects, readMediaObject } from "../lib/media.js";
 import {
   candidateKeys,
+  dedupeTags,
   planPoneRecImport,
   PONE_REC_PREFIX,
   poneRecProposalSchema,
@@ -79,9 +85,9 @@ export const publishProposal = async (
     if (!saved) {
       throw new Error(`Could not save Poné Rec ${String(program)}`);
     }
-    // A revived episode drops whatever text it had before (kept on record).
+    // A revived episode drops whatever it had before (kept on record).
     const now = new Date();
-    for (const table of [poneRecTopics, poneRecTags]) {
+    for (const table of [poneRecTopics, poneRecTags, poneRecThumbnails]) {
       await tx
         .update(table)
         .set({ deletedAt: now })
@@ -100,9 +106,12 @@ export const publishProposal = async (
       );
     }
     if (proposal.tags.length > 0) {
-      await tx
-        .insert(poneRecTags)
-        .values(proposal.tags.map((name) => ({ poneRecId: saved.id, name })));
+      await tx.insert(poneRecTags).values(
+        dedupeTags(proposal.tags).map((name) => ({
+          poneRecId: saved.id,
+          name,
+        })),
+      );
     }
     return {
       created: true,

@@ -1,7 +1,9 @@
 import { describe, expect, it } from "vitest";
+import { adminPoneRecUpdateSchema } from "shared";
 import {
   candidateKeys,
   dedupeTags,
+  diffTags,
   parsePoneRecKey,
   planPoneRecImport,
   poneRecImportSchema,
@@ -95,6 +97,7 @@ describe("proposals", () => {
       { key: "Poné REC/propuestas/098/a.webp", size: 1 },
       { key: "Poné REC/propuestas/0980/x.webp", size: 1 },
       { key: "Poné REC/propuestas/097/a.webp", size: 1 },
+      { key: "Poné REC/propuestas/098/viejas/c.webp", size: 1 },
       { key: "Poné REC/Poné Rec 098.mp3", size: 1 },
     ];
     expect(candidateKeys(98, objects)).toEqual([
@@ -129,5 +132,52 @@ describe("dedupeTags", () => {
       "Sangre",
       "Viajes",
     ]);
+  });
+});
+
+describe("diffTags", () => {
+  it("soft-deletes the tags that go and adds the new ones", () => {
+    const current = [
+      { id: 1, name: "Sangre" },
+      { id: 2, name: "Jingles" },
+    ];
+    expect(diffTags(current, ["Sangre", "Halloween"])).toEqual({
+      gone: [{ id: 2, name: "Jingles" }],
+      added: ["Halloween"],
+    });
+  });
+});
+
+describe("limits shared with the admin", () => {
+  it("rejects a proposal the admin couldn't edit later", () => {
+    const proposal = {
+      program: 98,
+      mainTopic: "Tema",
+      durationSeconds: 1,
+      tags: Array.from({ length: 13 }, (_, i) => `Etiqueta ${String(i)}`),
+      topics: [],
+    };
+    expect(poneRecProposalSchema.safeParse(proposal).success).toBe(false);
+    expect(
+      poneRecProposalSchema.safeParse({ ...proposal, tags: ["x".repeat(41)] })
+        .success,
+    ).toBe(false);
+  });
+
+  it("lets staff edit only the main topic, the tags and the image", () => {
+    expect(
+      adminPoneRecUpdateSchema.safeParse({ mainTopic: "Otro", tags: [] })
+        .success,
+    ).toBe(true);
+    for (const field of [
+      { topics: [] },
+      { program: 5 },
+      { searchable: false },
+      { thumbnailKey: "Poné REC/x.webp" },
+    ]) {
+      const result = adminPoneRecUpdateSchema.safeParse(field);
+      expect(result.success).toBe(false);
+      expect(result.error?.issues.at(0)?.message).toMatch(/solo se pueden/i);
+    }
   });
 });

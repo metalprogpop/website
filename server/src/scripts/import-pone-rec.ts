@@ -6,9 +6,10 @@
 // after uploading more candidates to offer them too:
 //   pnpm import-pone-rec --propuesta 98
 //
-// Every episode at once, from an export of the approved content (to fill an
-// empty database). It holds exclusive content, so it never goes into the
-// repo: copy it into the container, run, and delete it.
+// Every episode at once, from an export of the approved content, only into
+// an empty catalog (it refuses otherwise, so staff edits are never lost).
+// It holds exclusive content, so it never goes into the repo: copy it into
+// the container, run, and delete it.
 //   pnpm import-pone-rec /tmp/pone-rec.json
 import { readFile } from "node:fs/promises";
 import { z } from "zod";

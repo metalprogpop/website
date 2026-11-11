@@ -1,8 +1,12 @@
-import { createHash } from "node:crypto";
 import { and, asc, desc, eq, inArray, isNull } from "drizzle-orm";
 import type { PoneRec, PoneRecUrl } from "shared";
 import { db } from "../db/index.js";
-import { poneRecTags, poneRecTopics, poneRecs } from "../db/schema.js";
+import {
+  poneRecTags,
+  poneRecThumbnails,
+  poneRecTopics,
+  poneRecs,
+} from "../db/schema.js";
 import { findEpisode } from "../episodes/catalog.js";
 import {
   listMediaObjects,
@@ -14,13 +18,17 @@ import {
   planPoneRecImport,
   PONE_REC_PREFIX,
   type PoneRecImport,
+  dedupeTags,
 } from "./files.js";
 import { addThumbnailOptions } from "./thumbnails.js";
 
 export type PoneRecImportResult = { imported: number; missingAudio: number[] };
 
-// Loads what staff approved. Each episode's topics and tags are replaced as
-// a whole: the previous ones are soft-deleted, so they stay on record.
+export class CatalogNotEmptyError extends Error {}
+
+// Fills an empty catalog from an export of the approved content. It refuses
+// when episodes are already published, so it can't overwrite staff edits
+// (new episodes go through the proposal import).
 export const importPoneRecs = async (
   entries: PoneRecImport,
 ): Promise<PoneRecImportResult> => {
@@ -29,6 +37,18 @@ export const importPoneRecs = async (
     await listMediaObjects(PONE_REC_PREFIX),
   );
   await db.transaction(async (tx) => {
+    const live = (
+      await tx
+        .select({ id: poneRecs.id })
+        .from(poneRecs)
+        .where(isNull(poneRecs.deletedAt))
+        .limit(1)
+    ).at(0);
+    if (live) {
+      throw new CatalogNotEmptyError(
+        "Ya hay Poné Rec publicados: para uno nuevo usá --propuesta <programa>.",
+      );
+    }
     const now = new Date();
     for (const row of plan.rows) {
       const values = {
@@ -72,7 +92,9 @@ export const importPoneRecs = async (
       if (row.tags.length > 0) {
         await tx
           .insert(poneRecTags)
-          .values(row.tags.map((name) => ({ poneRecId: saved.id, name })));
+          .values(
+            dedupeTags(row.tags).map((name) => ({ poneRecId: saved.id, name })),
+          );
       }
       if (row.thumbnailKey) {
         await addThumbnailOptions(tx, saved.id, [row.thumbnailKey]);
@@ -82,10 +104,11 @@ export const importPoneRecs = async (
   return { imported: plan.rows.length, missingAudio: plan.missingAudio };
 };
 
-// The chosen image's key goes in the URL as a version, so browsers that
-// cached an earlier image (it's cached for a day) fetch the new one.
-const thumbnailPath = (program: number, key: string) =>
-  `/api/v1/fan-clu/pone-rec/${String(program)}/thumbnail?v=${createHash("sha256").update(key).digest("hex").slice(0, 12)}`;
+// The chosen image's option id goes in the URL as a version, so browsers
+// that cached an earlier image (it's cached for a day) fetch the new one.
+// The id says nothing about the S3 key.
+const thumbnailPath = (program: number, version: number) =>
+  `/api/v1/fan-clu/pone-rec/${String(program)}/thumbnail?v=${String(version)}`;
 
 // Every live episode, newest first, with its tags. The transcript's topics
 // never leave the server.
@@ -96,9 +119,17 @@ export const listPoneRecs = async (): Promise<PoneRec[]> => {
       program: poneRecs.program,
       mainTopic: poneRecs.mainTopic,
       durationSeconds: poneRecs.durationSeconds,
-      thumbnailKey: poneRecs.thumbnailKey,
+      thumbnailVersion: poneRecThumbnails.id,
     })
     .from(poneRecs)
+    .leftJoin(
+      poneRecThumbnails,
+      and(
+        eq(poneRecThumbnails.poneRecId, poneRecs.id),
+        eq(poneRecThumbnails.s3Key, poneRecs.thumbnailKey),
+        isNull(poneRecThumbnails.deletedAt),
+      ),
+    )
     .where(isNull(poneRecs.deletedAt))
     .orderBy(desc(poneRecs.program));
   const ids = episodes.map((e) => e.id);
@@ -121,9 +152,10 @@ export const listPoneRecs = async (): Promise<PoneRec[]> => {
         mainTopic: episode.mainTopic,
         publishedAt: last?.publishedAt.toISOString() ?? null,
         durationSeconds: episode.durationSeconds,
-        thumbnailPath: episode.thumbnailKey
-          ? thumbnailPath(episode.program, episode.thumbnailKey)
-          : null,
+        thumbnailPath:
+          episode.thumbnailVersion === null
+            ? null
+            : thumbnailPath(episode.program, episode.thumbnailVersion),
         tags: tags.filter((t) => t.poneRecId === episode.id).map((t) => t.name),
       };
     }),

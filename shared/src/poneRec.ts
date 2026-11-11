@@ -65,19 +65,35 @@ export const adminPoneRecListSchema = z.object({
 
 export type AdminPoneRecList = z.infer<typeof adminPoneRecListSchema>;
 
+// Limits shared by the imports and the admin, so whatever the pipeline
+// publishes can always be edited.
+export const poneRecMainTopicSchema = z
+  .string()
+  .trim()
+  .min(1, "El tema principal no puede quedar vacío")
+  .max(200, "El tema principal es muy largo (hasta 200 caracteres)");
+
+export const poneRecTagsSchema = z
+  .array(
+    z
+      .string()
+      .trim()
+      .min(1, "Hay una etiqueta vacía")
+      .max(40, "Una etiqueta es muy larga (hasta 40 caracteres)"),
+  )
+  .max(12, "Hasta 12 etiquetas por episodio");
+
 // Staff edit only the main topic, the tags and the image. Anything else is
 // a 400, not silently ignored.
 export const adminPoneRecUpdateSchema = z
   .object({
-    mainTopic: z
-      .string()
-      .trim()
-      .min(1, "El tema principal no puede quedar vacío")
-      .max(200),
-    tags: z.array(z.string().trim().min(1).max(40)).max(12),
+    mainTopic: poneRecMainTopicSchema,
+    tags: poneRecTagsSchema,
     thumbnailId: z.number().int().positive().nullable(),
   })
   .partial()
-  .strict();
+  .strict(
+    "Solo se pueden editar el tema principal, las etiquetas y la portada",
+  );
 
 export type AdminPoneRecUpdate = z.infer<typeof adminPoneRecUpdateSchema>;
