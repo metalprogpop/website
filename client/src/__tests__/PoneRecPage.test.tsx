@@ -34,8 +34,8 @@ const catalog = () =>
   json({
     episodes: [
       rec(97, {
-        mainTopic: "Los peores olores de nuestras vidas",
-        tags: ["Malos olores"],
+        mainTopic: "Discos que nunca devolvimos",
+        tags: ["Vinilos"],
       }),
       rec(91, { tags: ["Viajes en micro"] }),
       rec(80),
@@ -102,13 +102,13 @@ describe("PoneRecPage", () => {
 
     expect(
       await screen.findByRole("heading", {
-        name: "Los peores olores de nuestras vidas",
+        name: "Discos que nunca devolvimos",
       }),
     ).toBeInTheDocument();
     expect(screen.getByRole("heading", { name: "2026" })).toBeInTheDocument();
     expect(screen.getByRole("heading", { name: "2025" })).toBeInTheDocument();
     // Tags are for search, never shown.
-    expect(screen.queryByText("Malos olores")).not.toBeInTheDocument();
+    expect(screen.queryByText("Vinilos")).not.toBeInTheDocument();
     expect(screen.queryByText(/viajes en micro/i)).not.toBeInTheDocument();
   });
 
@@ -118,7 +118,7 @@ describe("PoneRecPage", () => {
     renderPage();
     const search = await screen.findByRole("searchbox", { name: /buscar/i });
 
-    await user.type(search, "malos olores");
+    await user.type(search, "vinilos");
     expect(screen.getAllByRole("article")).toHaveLength(1);
 
     await user.clear(search);
@@ -147,7 +147,7 @@ describe("PoneRecPage", () => {
 
     await user.click(
       await screen.findByRole("button", {
-        name: "Escuchar: Los peores olores de nuestras vidas",
+        name: "Escuchar: Discos que nunca devolvimos",
       }),
     );
     await waitFor(() => {
@@ -155,7 +155,7 @@ describe("PoneRecPage", () => {
     });
     const bar = screen.getByRole("region", { name: "Reproductor" });
     expect(
-      within(bar).getByRole("link", { name: /los peores olores/i }),
+      within(bar).getByRole("link", { name: /discos que nunca devolvimos/i }),
     ).toHaveAttribute("href", "/fan-clu/pone-rec");
 
     fireEvent.error(audio());

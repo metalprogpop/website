@@ -114,9 +114,9 @@ describe("proposals", () => {
   it("validates the pipeline's proposal and rejects unknown fields", () => {
     const proposal = {
       program: 98,
-      mainTopic: "Cómo nos llevamos con la sangre",
+      mainTopic: "Las peores vacaciones en carpa",
       durationSeconds: 1101,
-      tags: ["Sangre"],
+      tags: ["Carpas"],
       topics: [{ title: "Un dedal", start: "16:55", searchable: true }],
     };
     expect(poneRecProposalSchema.safeParse(proposal).success).toBe(true);
@@ -128,8 +128,8 @@ describe("proposals", () => {
 
 describe("dedupeTags", () => {
   it("keeps the first of tags that differ only in case", () => {
-    expect(dedupeTags(["Sangre", "sangre", "Viajes", "SANGRE"])).toEqual([
-      "Sangre",
+    expect(dedupeTags(["Carpas", "carpas", "Viajes", "CARPAS"])).toEqual([
+      "Carpas",
       "Viajes",
     ]);
   });
@@ -138,10 +138,10 @@ describe("dedupeTags", () => {
 describe("diffTags", () => {
   it("soft-deletes the tags that go and adds the new ones", () => {
     const current = [
-      { id: 1, name: "Sangre" },
+      { id: 1, name: "Carpas" },
       { id: 2, name: "Jingles" },
     ];
-    expect(diffTags(current, ["Sangre", "Halloween"])).toEqual({
+    expect(diffTags(current, ["Carpas", "Halloween"])).toEqual({
       gone: [{ id: 2, name: "Jingles" }],
       added: ["Halloween"],
     });
