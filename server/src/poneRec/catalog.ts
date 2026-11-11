@@ -15,6 +15,7 @@ import {
   PONE_REC_PREFIX,
   type PoneRecImport,
 } from "./files.js";
+import { addThumbnailOptions } from "./thumbnails.js";
 
 export type PoneRecImportResult = { imported: number; missingAudio: number[] };
 
@@ -72,6 +73,9 @@ export const importPoneRecs = async (
         await tx
           .insert(poneRecTags)
           .values(row.tags.map((name) => ({ poneRecId: saved.id, name })));
+      }
+      if (row.thumbnailKey) {
+        await addThumbnailOptions(tx, saved.id, [row.thumbnailKey]);
       }
     }
   });
