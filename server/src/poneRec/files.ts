@@ -118,3 +118,16 @@ export const candidateKeys = (program: number, objects: MediaObject[]) =>
         /\.webp$/i.test(key),
     )
     .sort((a, b) => a.localeCompare(b));
+
+// Same tag twice, differing only in case, counts once (the first wins).
+export const dedupeTags = (tags: string[]) => {
+  const seen = new Set<string>();
+  return tags.filter((tag) => {
+    const key = tag.toLocaleLowerCase("es");
+    if (seen.has(key)) {
+      return false;
+    }
+    seen.add(key);
+    return true;
+  });
+};

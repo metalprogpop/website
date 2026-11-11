@@ -3,6 +3,7 @@ import cookieParser from "cookie-parser";
 import cors from "cors";
 import { authRouter } from "./routes/auth.js";
 import { adminRouter } from "./routes/admin.js";
+import { adminPoneRecRouter } from "./routes/adminPoneRec.js";
 import { episodesRouter } from "./routes/episodes.js";
 import { fanClubRouter } from "./routes/fanClub.js";
 import { videosRouter } from "./routes/videos.js";
@@ -28,6 +29,7 @@ app.get("/api/v1/health", (_req, res) => {
 });
 
 app.use("/api/v1/auth", authRouter);
+app.use("/api/v1/admin/pone-rec", adminPoneRecRouter);
 app.use("/api/v1/admin", adminRouter);
 app.use("/api/v1/episodes", episodesRouter);
 app.use("/api/v1/fan-clu/videos", videosRouter);
