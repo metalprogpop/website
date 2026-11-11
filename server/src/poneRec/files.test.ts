@@ -1,8 +1,10 @@
 import { describe, expect, it } from "vitest";
 import {
+  candidateKeys,
   parsePoneRecKey,
   planPoneRecImport,
   poneRecImportSchema,
+  poneRecProposalSchema,
 } from "./files.js";
 
 // Invented names: the bucket's real keys never go into the repo.
@@ -80,6 +82,42 @@ describe("poneRecImportSchema", () => {
       poneRecImportSchema.safeParse([
         { ...entry(97), thumbnailKey: "videos/x.webp" },
       ]).success,
+    ).toBe(false);
+  });
+});
+
+describe("proposals", () => {
+  it("lists a proposal's candidate images in name order", () => {
+    const objects = [
+      { key: "Poné REC/propuestas/098/b.webp", size: 1 },
+      { key: "Poné REC/propuestas/098/propuesta.json", size: 1 },
+      { key: "Poné REC/propuestas/098/a.webp", size: 1 },
+      { key: "Poné REC/propuestas/0980/x.webp", size: 1 },
+      { key: "Poné REC/propuestas/097/a.webp", size: 1 },
+      { key: "Poné REC/Poné Rec 098.mp3", size: 1 },
+    ];
+    expect(candidateKeys(98, objects)).toEqual([
+      "Poné REC/propuestas/098/a.webp",
+      "Poné REC/propuestas/098/b.webp",
+    ]);
+  });
+
+  it("matches a folder stored with a decomposed accent", () => {
+    const key = "Pone\u0301 REC/propuestas/098/a.webp";
+    expect(candidateKeys(98, [{ key, size: 1 }])).toEqual([key]);
+  });
+
+  it("validates the pipeline's proposal and rejects unknown fields", () => {
+    const proposal = {
+      program: 98,
+      mainTopic: "Cómo nos llevamos con la sangre",
+      durationSeconds: 1101,
+      tags: ["Sangre"],
+      topics: [{ title: "Un dedal", start: "16:55", searchable: true }],
+    };
+    expect(poneRecProposalSchema.safeParse(proposal).success).toBe(true);
+    expect(
+      poneRecProposalSchema.safeParse({ ...proposal, thumbnail: "x" }).success,
     ).toBe(false);
   });
 });

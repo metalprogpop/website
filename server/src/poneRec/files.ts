@@ -78,3 +78,43 @@ export const planPoneRecImport = (
   }
   return { rows, missingAudio };
 };
+
+// A new episode's proposal, as the pipeline uploads it to the bucket:
+// "Poné REC/propuestas/098/propuesta.json" plus candidate images (.webp)
+// in the same folder.
+export const PROPOSALS_PREFIX = `${PONE_REC_PREFIX}propuestas/`;
+
+export const proposalFolder = (program: number) =>
+  `${PROPOSALS_PREFIX}${String(program).padStart(3, "0")}/`;
+
+export const poneRecProposalSchema = z
+  .object({
+    program: z.number().int().positive(),
+    mainTopic: z.string().trim().min(1),
+    durationSeconds: z.number().int().positive(),
+    tags: z.array(z.string().trim().min(1)),
+    topics: z.array(
+      z.object({
+        title: z.string().trim().min(1),
+        start: z.string().nullable().optional(),
+        quote: z.string().nullable().optional(),
+        searchable: z.boolean(),
+      }),
+    ),
+  })
+  .strict();
+
+export type PoneRecProposal = z.infer<typeof poneRecProposalSchema>;
+
+// The candidate images in a proposal's folder, in name order.
+export const candidateKeys = (program: number, objects: MediaObject[]) =>
+  objects
+    .map((object) => object.key)
+    .filter(
+      (key) =>
+        key
+          .normalize("NFC")
+          .startsWith(proposalFolder(program).normalize("NFC")) &&
+        /\.webp$/i.test(key),
+    )
+    .sort((a, b) => a.localeCompare(b));
