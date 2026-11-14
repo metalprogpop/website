@@ -129,6 +129,27 @@ export type Appearance = {
   year: number;
 };
 
-// Interviews and guest spots on other shows. The section stays hidden while
-// the list is empty.
-export const appearances: Appearance[] = [];
+const hqs = "Historias que Suenan · FM Imaginaria";
+
+// Interviews and guest spots on other shows, newest first. The section stays
+// hidden while the list is empty. Edit this list by hand.
+export const appearances: Appearance[] = [
+  {
+    title: "Charla con Guido, el Rey Tut",
+    outlet: hqs,
+    url: "https://www.youtube.com/watch?v=_D-2pk9svxM",
+    year: 2026,
+  },
+  {
+    title: "Entrevista a Angel",
+    outlet: hqs,
+    url: "https://www.youtube.com/watch?v=3m9RX-3N-5U",
+    year: 2026,
+  },
+  {
+    title: "Entrevista a Gonzalo",
+    outlet: hqs,
+    url: "https://www.youtube.com/watch?v=1gP4fz-oerM",
+    year: 2026,
+  },
+];
