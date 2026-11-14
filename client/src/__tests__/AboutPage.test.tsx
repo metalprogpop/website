@@ -75,12 +75,19 @@ describe("AboutPage", () => {
     );
   });
 
-  it("hides the appearances section while there are none", () => {
+  it("links to the shows that invited us", () => {
     renderPage();
 
+    const section = screen.getByRole("region", { name: /nos invitaron/i });
+    const links = within(section).getAllByRole("link");
+    expect(links).toHaveLength(3);
+    for (const link of links) {
+      expect(link).toHaveAttribute("target", "_blank");
+      expect(link).toHaveAttribute("rel", "noopener noreferrer");
+    }
     expect(
-      screen.queryByRole("region", { name: /nos invitaron/i }),
-    ).not.toBeInTheDocument();
+      within(section).getByRole("link", { name: /entrevista a angel/i }),
+    ).toHaveAttribute("href", "https://www.youtube.com/watch?v=3m9RX-3N-5U");
   });
 
   it("links to the about page from the header", () => {
